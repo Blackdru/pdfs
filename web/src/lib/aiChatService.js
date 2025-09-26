@@ -11,22 +11,47 @@ class AIChatService {
     try {
       console.log('Initializing AI chat for file:', fileId)
       
-      // Clear any existing sessions for this file to start fresh
-      this.clearSessionsForFile(fileId)
+      // Check if already initializing to prevent race conditions
+      if (this.initializingFiles && this.initializingFiles.has(fileId)) {
+        console.log('Already initializing chat for file:', fileId)
+        return {
+          success: false,
+          message: 'Chat initialization already in progress',
+          fileId: fileId
+        }
+      }
       
-      // First, create embeddings for the file
-      const embeddingResponse = await api.createEmbeddings(fileId)
-      console.log('Embeddings created:', embeddingResponse)
+      // Mark as initializing
+      if (!this.initializingFiles) {
+        this.initializingFiles = new Set()
+      }
+      this.initializingFiles.add(fileId)
       
-      this.isInitialized = true
-      return {
-        success: true,
-        message: 'AI chat initialized successfully',
-        fileId: fileId,
-        chunks: embeddingResponse.chunks || 0
+      try {
+        // Clear any existing sessions for this file to start fresh
+        this.clearSessionsForFile(fileId)
+        
+        // First, create embeddings for the file
+        const embeddingResponse = await api.createEmbeddings(fileId)
+        console.log('Embeddings created:', embeddingResponse)
+        
+        this.isInitialized = true
+        return {
+          success: true,
+          message: 'AI chat initialized successfully',
+          fileId: fileId,
+          chunks: embeddingResponse.chunks || 0
+        }
+      } finally {
+        // Remove from initializing set
+        this.initializingFiles.delete(fileId)
       }
     } catch (error) {
       console.error('Failed to initialize AI chat:', error)
+      // Make sure to remove from initializing set on error
+      if (this.initializingFiles) {
+        this.initializingFiles.delete(fileId)
+      }
       throw new Error(`Failed to initialize AI chat: ${error.message}`)
     }
   }

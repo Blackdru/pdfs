@@ -43,9 +43,17 @@ const AIAssistant = ({ fileId, fileName, onClose, isMinimized, onToggleMinimize 
       setMessages([])
       setSessionId(null)
       setIsInitialized(false)
-      initializeChat()
+      
+      // Don't auto-initialize, wait for explicit initialization
+      // This prevents race conditions with the main component
+      setMessages([{
+        role: 'assistant',
+        content: `Hello! I'm ready to help you with "${fileName}". Your document has been processed and I'm ready to answer questions about it. What would you like to know?`,
+        timestamp: new Date().toISOString()
+      }])
+      setIsInitialized(true)
     }
-  }, [fileId, hasAIAccess])
+  }, [fileId, hasAIAccess, fileName])
 
   useEffect(() => {
     scrollToBottom()

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { api } from '../lib/api'
 import { Button } from './ui/button'
+import ProcessingModal from './ProcessingModal'
 import toast from 'react-hot-toast'
 import { 
   FileText, 
@@ -43,6 +44,13 @@ const FileManager = () => {
   const [sortBy, setSortBy] = useState('date') // 'name', 'date', 'size', 'type'
   const [filterType, setFilterType] = useState('all') // 'all', 'pdf', 'image', 'document'
   const [isLoading, setIsLoading] = useState(true)
+  
+  // Deletion progress modal state
+  const [isDeletingFiles, setIsDeletingFiles] = useState(false)
+  const [deletionProgress, setDeletionProgress] = useState(0)
+  const [deletionStage, setDeletionStage] = useState('')
+  const [deletionCurrentStep, setDeletionCurrentStep] = useState(0)
+  const [filesToDelete, setFilesToDelete] = useState([])
 
   useEffect(() => {
     loadFiles()
@@ -180,19 +188,93 @@ const FileManager = () => {
   const handleDeleteSelected = async () => {
     if (selectedFiles.length === 0) return
     
+    // Get file names for display
+    const filesToDeleteData = selectedFiles.map(fileId => {
+      const file = files.find(f => f.id === fileId)
+      return { id: fileId, name: file?.name || 'Unknown file' }
+    })
+    
+    setFilesToDelete(filesToDeleteData)
+    setIsDeletingFiles(true)
+    setDeletionProgress(0)
+    setDeletionCurrentStep(0)
+    setDeletionStage('Preparing to delete files...')
+    
     try {
-      // Delete files from API
-      for (const fileId of selectedFiles) {
-        await api.deleteFile(fileId)
+      const totalFiles = selectedFiles.length
+      let deletedCount = 0
+      let failedCount = 0
+      
+      // Step 1: Preparing
+      setDeletionStage('Preparing file deletion...')
+      setDeletionCurrentStep(0)
+      await new Promise(resolve => setTimeout(resolve, 500)) // Brief pause for UX
+      
+      // Step 2: Deleting files
+      setDeletionStage('Deleting files from server...')
+      setDeletionCurrentStep(1)
+      
+      for (let i = 0; i < selectedFiles.length; i++) {
+        const fileId = selectedFiles[i]
+        const fileName = filesToDeleteData[i].name
+        
+        try {
+          setDeletionStage(`Deleting ${fileName}...`)
+          await api.deleteFile(fileId)
+          deletedCount++
+          
+          // Update progress
+          const progress = Math.round(((i + 1) / totalFiles) * 80) // 80% for deletion phase
+          setDeletionProgress(progress)
+          
+          // Small delay for better UX on fast connections
+          await new Promise(resolve => setTimeout(resolve, 200))
+        } catch (error) {
+          console.error(`Error deleting file ${fileName}:`, error)
+          failedCount++
+        }
       }
       
-      // Remove from local state
-      setFiles(prev => prev.filter(file => !selectedFiles.includes(file.id)))
+      // Step 3: Updating interface
+      setDeletionStage('Updating file list...')
+      setDeletionCurrentStep(2)
+      setDeletionProgress(90)
+      
+      // Remove successfully deleted files from local state
+      const successfullyDeleted = selectedFiles.filter((_, index) => index < deletedCount)
+      setFiles(prev => prev.filter(file => !successfullyDeleted.includes(file.id)))
       setSelectedFiles([])
-      toast.success(`${selectedFiles.length} file(s) deleted successfully`)
+      
+      await new Promise(resolve => setTimeout(resolve, 500))
+      
+      // Step 4: Complete
+      setDeletionStage('Deletion completed!')
+      setDeletionCurrentStep(3)
+      setDeletionProgress(100)
+      
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      // Show results
+      if (failedCount === 0) {
+        toast.success(`${deletedCount} file(s) deleted successfully`)
+      } else if (deletedCount > 0) {
+        toast.success(`${deletedCount} file(s) deleted, ${failedCount} failed`)
+      } else {
+        toast.error('Failed to delete files')
+      }
+      
     } catch (error) {
-      console.error('Error deleting files:', error)
+      console.error('Error during bulk deletion:', error)
+      setDeletionStage('Deletion failed')
       toast.error('Failed to delete files')
+    } finally {
+      // Close modal after a brief delay
+      setTimeout(() => {
+        setIsDeletingFiles(false)
+        setDeletionProgress(0)
+        setDeletionCurrentStep(0)
+        setFilesToDelete([])
+      }, 1500)
     }
   }
 
@@ -223,13 +305,57 @@ const FileManager = () => {
   }
 
   const handleDeleteFile = async (fileId) => {
+    const file = files.find(f => f.id === fileId)
+    if (!file) return
+    
+    setFilesToDelete([{ id: fileId, name: file.name }])
+    setIsDeletingFiles(true)
+    setDeletionProgress(0)
+    setDeletionCurrentStep(0)
+    setDeletionStage('Preparing to delete file...')
+    
     try {
+      // Step 1: Preparing
+      setDeletionStage('Preparing file deletion...')
+      setDeletionCurrentStep(0)
+      setDeletionProgress(10)
+      await new Promise(resolve => setTimeout(resolve, 300))
+      
+      // Step 2: Deleting
+      setDeletionStage(`Deleting ${file.name}...`)
+      setDeletionCurrentStep(1)
+      setDeletionProgress(50)
+      
       await api.deleteFile(fileId)
-      setFiles(prev => prev.filter(file => file.id !== fileId))
+      
+      // Step 3: Updating interface
+      setDeletionStage('Updating file list...')
+      setDeletionCurrentStep(2)
+      setDeletionProgress(90)
+      
+      setFiles(prev => prev.filter(f => f.id !== fileId))
+      await new Promise(resolve => setTimeout(resolve, 300))
+      
+      // Step 4: Complete
+      setDeletionStage('File deleted successfully!')
+      setDeletionCurrentStep(3)
+      setDeletionProgress(100)
+      
+      await new Promise(resolve => setTimeout(resolve, 800))
       toast.success('File deleted successfully')
+      
     } catch (error) {
       console.error('Error deleting file:', error)
+      setDeletionStage('Deletion failed')
       toast.error('Failed to delete file')
+    } finally {
+      // Close modal after a brief delay
+      setTimeout(() => {
+        setIsDeletingFiles(false)
+        setDeletionProgress(0)
+        setDeletionCurrentStep(0)
+        setFilesToDelete([])
+      }, 1000)
     }
   }
 
@@ -663,6 +789,31 @@ const FileManager = () => {
           </div>
         )}
       </div>
+
+      {/* File Deletion Progress Modal */}
+      <ProcessingModal
+        isOpen={isDeletingFiles}
+        title="Deleting Files"
+        fileName={filesToDelete.length === 1 
+          ? filesToDelete[0]?.name 
+          : `${filesToDelete.length} files`
+        }
+        progress={deletionProgress}
+        stage={deletionStage}
+        icon={Trash2}
+        description={filesToDelete.length === 1 
+          ? "Removing file from your account and freeing up storage space"
+          : `Removing ${filesToDelete.length} files from your account and freeing up storage space`
+        }
+        steps={[
+          { name: 'Preparing', icon: Upload },
+          { name: 'Deleting', icon: Trash2 },
+          { name: 'Updating', icon: Download },
+          { name: 'Complete', icon: Eye }
+        ]}
+        currentStep={deletionCurrentStep}
+        estimatedTime={filesToDelete.length * 2} // 2 seconds per file estimate
+      />
     </div>
   )
 }

@@ -6,6 +6,7 @@ import { downloadBlob } from '../lib/utils'
 import { Button } from '../components/ui/button'
 import InlineFileUpload from '../components/InlineFileUpload'
 import ProcessingModal from '../components/ProcessingModal'
+import AIAssistant from '../components/AIAssistant'
 import toast from 'react-hot-toast'
 import { 
   Brain,
@@ -55,6 +56,10 @@ const AdvancedTools = () => {
   const [clearFileUpload, setClearFileUpload] = useState(false)
   const [chatSessions, setChatSessions] = useState({})
   const [currentMessage, setCurrentMessage] = useState('')
+  const [showAIAssistant, setShowAIAssistant] = useState(false)
+  const [aiAssistantMinimized, setAiAssistantMinimized] = useState(false)
+  const [currentFileForAI, setCurrentFileForAI] = useState(null)
+  const [initializingAIChat, setInitializingAIChat] = useState(false)
 
   const proTools = [
     {
@@ -311,7 +316,7 @@ const AdvancedTools = () => {
           result = await handleAdvancedOCR(uploadedFileIds[0])
           break
         case 'ai-chat':
-          result = await handleAIChat(uploadedFileIds[0])
+          result = await handleAIChat(uploadedFileIds[0], files)
           break
         case 'smart-summary':
           result = await handleSmartSummary(uploadedFileIds[0])
@@ -473,43 +478,99 @@ const AdvancedTools = () => {
     }
   }
 
-  const handleAIChat = async (fileId) => {
-    // First, try to run OCR if the file doesn't have extracted text
+  const handleAIChat = async (fileId, files) => {
+    // Prevent duplicate initialization
+    if (initializingAIChat) {
+      console.log('AI Chat initialization already in progress, skipping...')
+      return { initialized: false, message: 'Already initializing' }
+    }
+    
+    setInitializingAIChat(true)
+    let ocrCompleted = false
+    
     try {
-      console.log('Initializing AI Chat for file:', fileId)
+      console.log('Starting AI Chat initialization for file ID:', fileId)
+      toast.loading('Preparing document for AI chat...', { id: 'ai-chat-init' })
       
-      // Try to run OCR first to ensure we have text
       try {
-        await api.post('/ai/ocr', {
-          fileId: fileId,
-          language: 'eng+tel',
-          enhanceImage: true
+        // First, try to create embeddings directly
+        const result = await api.post('/ai/create-embeddings', { 
+          fileId: fileId 
         })
-        console.log('OCR completed for AI Chat')
-      } catch (ocrError) {
-        console.log('OCR may have already been done or failed:', ocrError.message)
-        // Continue anyway - the embeddings endpoint will handle this
+        
+        console.log('Embeddings created successfully:', result)
+        toast.dismiss('ai-chat-init')
+        toast.success('AI Chat initialized! You can now chat with your document.')
+        
+      } catch (embeddingError) {
+        console.log('Embeddings failed, checking if OCR is needed:', embeddingError.message)
+        
+        // If embeddings fail due to no text content, run OCR first
+        if (embeddingError.message.includes('No text content found') || 
+            embeddingError.message.includes('Please run OCR')) {
+          
+          toast.dismiss('ai-chat-init')
+          toast.loading('Extracting text from document...', { id: 'ai-chat-ocr' })
+          
+          try {
+            // Run OCR first
+            const ocrResult = await api.post('/ai/ocr', {
+              fileId: fileId,
+              language: 'eng+tel',
+              enhanceImage: true
+            })
+            
+            console.log('OCR completed for AI chat:', ocrResult)
+            ocrCompleted = true
+            toast.dismiss('ai-chat-ocr')
+            
+            // Wait a moment for OCR to be fully processed
+            await new Promise(resolve => setTimeout(resolve, 1000))
+            
+            toast.loading('Creating AI embeddings...', { id: 'ai-chat-embeddings' })
+            
+            // Now try to create embeddings again
+            const embeddingResult = await api.post('/ai/create-embeddings', { 
+              fileId: fileId 
+            })
+            
+            console.log('Embeddings created after OCR:', embeddingResult)
+            toast.dismiss('ai-chat-embeddings')
+            toast.success('AI Chat initialized! Text extracted and processed successfully.')
+            
+          } catch (ocrError) {
+            console.error('OCR failed for AI chat:', ocrError)
+            toast.dismiss('ai-chat-ocr')
+            toast.dismiss('ai-chat-embeddings')
+            throw new Error(`Failed to extract text from document: ${ocrError.message}`)
+          }
+        } else {
+          // Different error, re-throw
+          toast.dismiss('ai-chat-init')
+          throw embeddingError
+        }
       }
       
-      // Now create embeddings
-      const result = await api.post('/ai/create-embeddings', { fileId })
+      // Set up AI Assistant
+      setCurrentFileForAI({
+        id: fileId,
+        name: files[0].name
+      })
+      setShowAIAssistant(true)
+      setAiAssistantMinimized(false)
       
-      setChatSessions(prev => ({
-        ...prev,
-        [fileId]: {
-          initialized: true,
-          messages: [],
-          filename: 'Document'
-        }
-      }))
-      
-      toast.success('AI Chat initialized! You can now chat with your document.')
       setUploadedFiles([])
       setIsProcessing(false)
-      return result
+      return { initialized: true, ocrCompleted }
+      
     } catch (error) {
       console.error('AI Chat initialization error:', error)
+      toast.dismiss('ai-chat-init')
+      toast.dismiss('ai-chat-ocr')
+      toast.dismiss('ai-chat-embeddings')
       throw error
+    } finally {
+      setInitializingAIChat(false)
     }
   }
 
@@ -1272,7 +1333,70 @@ const AdvancedTools = () => {
             </div>
           )}
 
+              {/* AI Chat Results Display */}
+              {toolResults && toolResults.type === 'ai-chat' && (
+                <div className="bg-grey-900 rounded-3xl border border-grey-800 p-8 mb-8">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center">
+                      <MessageSquare className="h-6 w-6 text-pink-400 mr-3" />
+                      <h3 className="text-xl font-semibold text-grey-200">AI Chat Initialized</h3>
+                    </div>
+                    <div className="bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">
+                      Ready
+                    </div>
                   </div>
+                  
+                  <div className="bg-grey-800 rounded-xl p-6 text-center">
+                    <MessageSquare className="h-12 w-12 text-pink-400 mx-auto mb-4" />
+                    <h4 className="text-lg font-semibold text-grey-200 mb-2">
+                      AI Chat is Ready!
+                    </h4>
+                    <p className="text-grey-400 mb-4">
+                      Your document has been processed and is ready for AI-powered conversations.
+                      You can now ask questions about the content.
+                    </p>
+                    <Button className="bg-pink-600 hover:bg-pink-700 text-white">
+                      <MessageSquare className="h-4 w-4 mr-2" />
+                      Start Chatting
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Tool Results Display */}
+              {toolResults && !['smart-summary', 'ai-chat'].includes(toolResults.type) && (
+                <div className="bg-grey-900 rounded-3xl border border-grey-800 p-8 mb-8">
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center">
+                      <CheckCircle className="h-6 w-6 text-green-400 mr-3" />
+                      <h3 className="text-xl font-semibold text-grey-200">Processing Complete</h3>
+                    </div>
+                    <div className="bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">
+                      Success
+                    </div>
+                  </div>
+                  
+                  <div className="bg-grey-800 rounded-xl p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="text-lg font-semibold text-grey-200 mb-1">
+                          {toolResults.toolName} Completed
+                        </h4>
+                        <p className="text-grey-400">
+                          Your files have been processed successfully and downloaded.
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm text-grey-400">
+                          Processed at: {new Date(toolResults.timestamp).toLocaleString()}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
       </div>
 
       {/* Processing Modal */}
@@ -1285,6 +1409,19 @@ const AdvancedTools = () => {
         icon={selectedTool ? selectedTool.icon : FileText}
         description={selectedTool ? selectedTool.description : 'Processing your files with professional-grade tools'}
       />
+
+      {/* AI Assistant */}
+      {showAIAssistant && currentFileForAI && (
+        <div className="fixed bottom-4 right-4 z-50">
+          <AIAssistant
+            fileId={currentFileForAI.id}
+            fileName={currentFileForAI.name}
+            onClose={() => setShowAIAssistant(false)}
+            isMinimized={aiAssistantMinimized}
+            onToggleMinimize={() => setAiAssistantMinimized(!aiAssistantMinimized)}
+          />
+        </div>
+      )}
     </div>
   )
 }

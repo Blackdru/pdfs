@@ -4,7 +4,7 @@ import { useSubscription } from '../contexts/SubscriptionContext'
 import { api } from '../lib/api'
 import { downloadBlob } from '../lib/utils'
 import { Button } from '../components/ui/button'
-import InlineFileUpload from '../components/InlineFileUpload'
+import FileUploadModal from '../components/FileUploadModal'
 import ProcessingModal from '../components/ProcessingModal'
 import AIAssistant from '../components/AIAssistant'
 import toast from 'react-hot-toast'
@@ -54,6 +54,7 @@ const AdvancedTools = () => {
   const [ocrResults, setOcrResults] = useState(null)
   const [toolResults, setToolResults] = useState(null)
   const [clearFileUpload, setClearFileUpload] = useState(false)
+  const [showUploadModal, setShowUploadModal] = useState(false)
   const [chatSessions, setChatSessions] = useState({})
   const [currentMessage, setCurrentMessage] = useState('')
   const [showAIAssistant, setShowAIAssistant] = useState(false)
@@ -233,6 +234,14 @@ const AdvancedTools = () => {
     setChatSessions({})
     setCurrentMessage('')
     setTimeout(() => setClearFileUpload(false), 100)
+    
+    // Scroll to upload section after tool selection
+    setTimeout(() => {
+      const uploadSection = document.getElementById('upload-section')
+      if (uploadSection) {
+        uploadSection.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }
+    }, 200)
   }
 
   const handleFilesUploaded = async (files) => {
@@ -763,47 +772,6 @@ const AdvancedTools = () => {
       </div>
 
       <div className="relative z-10">
-        {/* Premium Hero Section */}
-        <div className="bg-gradient-to-br from-grey-900 via-grey-800 to-grey-900 border-b border-grey-800">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-            <div className="text-center">
-              <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full text-sm font-medium mb-6">
-                <Crown className="h-4 w-4 mr-2" />
-                Professional PDF Suite
-                <Sparkles className="h-4 w-4 ml-2" />
-              </div>
-              <h1 className="text-4xl md:text-6xl font-bold text-grey-100 mb-6">
-                Advanced PDF Tools
-                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
-                  Powered by AI
-                </span>
-              </h1>
-              <p className="text-xl text-grey-400 max-w-3xl mx-auto mb-8">
-                Unlock professional-grade PDF processing with AI-powered tools, advanced security features, and enterprise-level capabilities.
-              </p>
-              
-              {/* Premium Stats */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-8 max-w-3xl mx-auto">
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-purple-400 mb-2">99.9%</div>
-                  <div className="text-grey-400">OCR Accuracy</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-pink-400 mb-2">10x</div>
-                  <div className="text-grey-400">Faster Processing</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-blue-400 mb-2">256-bit</div>
-                  <div className="text-grey-400">Encryption</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-green-400 mb-2">24/7</div>
-                  <div className="text-grey-400">Support</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
 
         {/* Usage Warning */}
         {usageExceeded && (
@@ -948,18 +916,45 @@ const AdvancedTools = () => {
               </div>
 
               {/* File Upload Area */}
-              <div className="bg-grey-800 rounded-2xl p-6 mb-6">
+              <div id="upload-section" className="bg-grey-800 rounded-2xl p-6 mb-6 text-center">
                 <h3 className="text-lg font-semibold text-grey-200 mb-4">
                   {selectedTool.multipleFiles ? 'Upload Files' : 'Upload File'}
                 </h3>
                 
-                <InlineFileUpload
-                  onFilesUploaded={handleFilesUploaded}
-                  acceptedFiles={selectedTool.acceptedFiles}
-                  multiple={selectedTool.multipleFiles}
-                  maxFiles={selectedTool.multipleFiles ? 10 : 1}
-                  clearFiles={clearFileUpload}
-                />
+                <Button
+                  onClick={() => setShowUploadModal(true)}
+                  className={`bg-gradient-to-r ${selectedTool.color} text-white px-8 py-4 text-lg font-semibold hover:shadow-lg transition-all duration-300`}
+                >
+                  <Upload className="h-5 w-5 mr-2" />
+                  {selectedTool.multipleFiles ? 'Select Files' : 'Select File'}
+                </Button>
+
+                <p className="text-sm text-grey-400 mt-3">
+                  Supports: {selectedTool.acceptedFiles.replace(/\./g, '').toUpperCase()}
+                  {selectedTool.multipleFiles && ` • Up to 10 files`}
+                </p>
+
+                {/* Uploaded Files Display */}
+                {uploadedFiles.length > 0 && (
+                  <div className="mt-6 space-y-3">
+                    <h4 className="text-sm font-medium text-grey-300">
+                      Selected Files ({uploadedFiles.length})
+                    </h4>
+                    <div className="space-y-2">
+                      {uploadedFiles.map((file, index) => (
+                        <div key={index} className="flex items-center justify-between p-3 bg-grey-700 rounded-lg">
+                          <div className="flex items-center space-x-3">
+                            <FileText className="h-4 w-4 text-grey-400" />
+                            <span className="text-sm text-grey-200 truncate">{file.name}</span>
+                          </div>
+                          <span className="text-xs text-grey-400">
+                            {(file.size / 1024 / 1024).toFixed(2)} MB
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {selectedTool.minFiles > 1 && uploadedFiles.length > 0 && uploadedFiles.length < selectedTool.minFiles && (
                   <div className="mt-4 p-4 bg-blue-900 border border-blue-800 rounded-xl flex items-center">
@@ -1410,6 +1405,62 @@ const AdvancedTools = () => {
         description={selectedTool ? selectedTool.description : 'Processing your files with professional-grade tools'}
       />
 
+      {/* File Upload Modal */}
+      <FileUploadModal
+        isOpen={showUploadModal}
+        onClose={() => setShowUploadModal(false)}
+        onFilesUploaded={handleFilesUploaded}
+        acceptedFiles={selectedTool?.acceptedFiles || '.pdf'}
+        multiple={selectedTool?.multipleFiles || false}
+        maxFiles={selectedTool?.multipleFiles ? 10 : 1}
+        title={`Upload Files for ${selectedTool?.title || 'Processing'}`}
+        description={selectedTool?.description || 'Select files to upload and process'}
+        toolName={selectedTool?.title || ''}
+        toolIcon={selectedTool?.icon || Upload}
+      />
+
+      {/* Premium Hero Section */}
+        <div className="bg-gradient-to-br from-grey-900 via-grey-800 to-grey-900 border-b border-grey-800">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div className="text-center">
+              <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full text-sm font-medium mb-6">
+                <Crown className="h-4 w-4 mr-2" />
+                Professional PDF Suite
+                <Sparkles className="h-4 w-4 ml-2" />
+              </div>
+              <h1 className="text-4xl md:text-6xl font-bold text-grey-100 mb-6">
+                Advanced PDF Tools
+                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
+                  Powered by AI
+                </span>
+              </h1>
+              <p className="text-xl text-grey-400 max-w-3xl mx-auto mb-8">
+                Unlock professional-grade PDF processing with AI-powered tools, advanced security features, and enterprise-level capabilities.
+              </p>
+              
+              {/* Premium Stats */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-8 max-w-3xl mx-auto">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-purple-400 mb-2">99.9%</div>
+                  <div className="text-grey-400">OCR Accuracy</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-pink-400 mb-2">10x</div>
+                  <div className="text-grey-400">Faster Processing</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-blue-400 mb-2">256-bit</div>
+                  <div className="text-grey-400">Encryption</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-green-400 mb-2">24/7</div>
+                  <div className="text-grey-400">Support</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
       {/* AI Assistant */}
       {showAIAssistant && currentFileForAI && (
         <div className="fixed bottom-4 right-4 z-50">

@@ -18,6 +18,7 @@ import Admin from './pages/Admin'
 import Profile from './pages/Profile'
 import Billing from './pages/Billing'
 import Upgrade from './pages/Upgrade'
+import Pricing from './pages/Pricing'
 
 // Components
 import Navbar from './components/Navbar'
@@ -94,6 +95,7 @@ function App() {
                     </ProtectedRoute>
                   } 
                 />
+                <Route path="/pricing" element={<Pricing />} />
                 <Route 
                   path="/admin" 
                   element={

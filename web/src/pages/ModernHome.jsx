@@ -322,7 +322,6 @@ const ModernHome = () => {
                   <div className={`inline-flex items-center justify-center w-20 h-20 ${benefit.bgGradient} rounded-3xl shadow-xl mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500`}>
                     <benefit.icon className="h-10 w-10 text-white" />
                   </div>
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-grey-700 to-transparent rounded-3xl"></div>
                 </div>
                 <h3 className="heading-dark-4 mb-4 group-hover:text-grey-100 transition-colors">{benefit.title}</h3>
                 <p className="body-dark text-grey-400 group-hover:text-grey-300 transition-colors">{benefit.description}</p>
@@ -383,7 +382,6 @@ const ModernHome = () => {
           <div className="grid md:grid-cols-3 gap-12">
             {[
               {
-                step: '01',
                 icon: Upload,
                 title: 'Upload & Drop',
                 description: 'Drag and drop your files or select them from your device. We support all major formats.',
@@ -391,7 +389,6 @@ const ModernHome = () => {
                 delay: '100ms'
               },
               {
-                step: '02',
                 icon: Palette,
                 title: 'Choose & Customize',
                 description: 'Select your desired tool and customize settings with our intelligent recommendations.',
@@ -399,7 +396,6 @@ const ModernHome = () => {
                 delay: '300ms'
               },
               {
-                step: '03',
                 icon: Download,
                 title: 'Download & Enjoy',
                 description: 'Get your perfectly processed files instantly with our lightning-fast processing engine.',
@@ -419,7 +415,6 @@ const ModernHome = () => {
                     {step.step}
                     <step.icon className="absolute inset-0 m-auto h-10 w-10 opacity-30" />
                   </div>
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-grey-700 to-transparent rounded-3xl"></div>
                 </div>
                 
                 <h3 className="heading-dark-4 mb-4 group-hover:text-grey-100 transition-colors">{step.title}</h3>
@@ -428,7 +423,7 @@ const ModernHome = () => {
                 {index < 2 && (
                   <div className="hidden md:block absolute top-12 left-full w-full z-10">
                     <div className="flex items-center justify-center">
-                      <ArrowRight className="h-8 w-8 text-grey-600 group-hover:text-grey-500 transition-colors duration-300" />
+                      
                     </div>
                   </div>
                 )}

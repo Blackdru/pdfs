@@ -24,7 +24,8 @@ import {
   Star,
   Sparkles,
   Rocket,
-  Heart
+  Heart,
+  DollarSign
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -61,6 +62,10 @@ const ModernNavbar = () => {
     { path: '/files', label: 'Files', icon: FolderOpen },
     { path: '/tools', label: 'Tools', icon: GitMerge },
     { path: '/advanced-tools', label: 'Pro Tools', icon: Sparkles, isPro: true },
+  ]
+
+  const publicNavItems = [
+    { path: '/pricing', label: 'Pricing', icon: DollarSign },
   ]
 
   return (
@@ -110,77 +115,19 @@ const ModernNavbar = () => {
                 </Link>
               ))}
 
-              {/* Quick Tools Dropdown */}
-              {user && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="nav-dark-link nav-dark-inactive">
-                      <Zap className="h-5 w-5" />
-                      <span className="font-semibold">Quick Tools</span>
-                      <ChevronDown className="ml-1 h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="dropdown-dark">
-                    <div className="p-3">
-                      <div className="caption-dark mb-4 px-2">PDF Operations</div>
-                      <DropdownMenuItem 
-                        onClick={() => navigate('/tools')}
-                        className="dropdown-item-dark"
-                      >
-                        <GitMerge className="mr-4 h-5 w-5 text-blue-400" />
-                        <div>
-                          <div className="font-semibold">Merge PDFs</div>
-                          <div className="text-xs text-grey-500">Combine multiple files</div>
-                        </div>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={() => navigate('/tools')}
-                        className="dropdown-item-dark"
-                      >
-                        <Scissors className="mr-4 h-5 w-5 text-green-400" />
-                        <div>
-                          <div className="font-semibold">Split PDFs</div>
-                          <div className="text-xs text-grey-500">Extract pages</div>
-                        </div>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={() => navigate('/tools')}
-                        className="dropdown-item-dark"
-                      >
-                        <Archive className="mr-4 h-5 w-5 text-purple-400" />
-                        <div>
-                          <div className="font-semibold">Compress PDFs</div>
-                          <div className="text-xs text-grey-500">Reduce file size</div>
-                        </div>
-                      </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={() => navigate('/tools')}
-                        className="dropdown-item-dark"
-                      >
-                        <Image className="mr-4 h-5 w-5 text-orange-400" />
-                        <div>
-                          <div className="font-semibold">Convert Images</div>
-                          <div className="text-xs text-grey-500">Images to PDF</div>
-                        </div>
-                      </DropdownMenuItem>
-                      <DropdownMenuSeparator className="my-3" />
-                      <DropdownMenuItem 
-                        onClick={() => navigate('/advanced-tools')}
-                        className="dropdown-item-dark bg-blue-950 hover:bg-blue-900"
-                      >
-                        <Sparkles className="mr-4 h-5 w-5 text-blue-400" />
-                        <div>
-                          <div className="font-semibold flex items-center text-blue-300">
-                            Professional Tools
-                            <Star className="ml-2 h-4 w-4 text-blue-400 fill-current" />
-                          </div>
-                          <div className="text-xs text-blue-400">Advanced AI features</div>
-                        </div>
-                      </DropdownMenuItem>
-                    </div>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
+              {/* Public Navigation Items */}
+              {publicNavItems.map((item) => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`nav-dark-link ${
+                    isActivePath(item.path) ? 'nav-dark-active' : 'nav-dark-inactive'
+                  }`}
+                >
+                  <item.icon className="h-5 w-5" />
+                  <span className="font-semibold">{item.label}</span>
+                </Link>
+              ))}
             </div>
 
             {/* Right Side Actions */}
@@ -312,28 +259,43 @@ const ModernNavbar = () => {
       {isMobileMenuOpen && (
         <div className="fixed top-20 left-0 right-0 z-40 bg-grey-900 border-b border-grey-800 shadow-lg md:hidden animate-slide-down-fade">
           <div className="layout-dark-container py-8">
-            {user && (
-              <div className="space-y-3 mb-8">
-                {navItems.map((item) => (
-                  <Link
-                    key={item.path}
-                    to={item.path}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className={`flex items-center space-x-4 px-6 py-4 rounded-2xl font-semibold transition-all duration-300 ${
-                      isActivePath(item.path)
-                        ? 'text-blue-300 bg-blue-950 shadow-sm'
-                        : 'text-grey-400 hover:text-grey-200 hover:bg-grey-800'
-                    }`}
-                  >
-                    <item.icon className="h-6 w-6" />
-                    <span>{item.label}</span>
-                    {item.isPro && (
-                      <Star className="h-4 w-4 text-blue-400 fill-current" />
-                    )}
-                  </Link>
-                ))}
-              </div>
-            )}
+            <div className="space-y-3 mb-8">
+              {user && navItems.map((item) => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`flex items-center space-x-4 px-6 py-4 rounded-2xl font-semibold transition-all duration-300 ${
+                    isActivePath(item.path)
+                      ? 'text-blue-300 bg-blue-950 shadow-sm'
+                      : 'text-grey-400 hover:text-grey-200 hover:bg-grey-800'
+                  }`}
+                >
+                  <item.icon className="h-6 w-6" />
+                  <span>{item.label}</span>
+                  {item.isPro && (
+                    <Star className="h-4 w-4 text-blue-400 fill-current" />
+                  )}
+                </Link>
+              ))}
+              
+              {/* Public Navigation Items */}
+              {publicNavItems.map((item) => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`flex items-center space-x-4 px-6 py-4 rounded-2xl font-semibold transition-all duration-300 ${
+                    isActivePath(item.path)
+                      ? 'text-blue-300 bg-blue-950 shadow-sm'
+                      : 'text-grey-400 hover:text-grey-200 hover:bg-grey-800'
+                  }`}
+                >
+                  <item.icon className="h-6 w-6" />
+                  <span>{item.label}</span>
+                </Link>
+              ))}
+            </div>
 
             {!user && (
               <div className="flex flex-col space-y-4">

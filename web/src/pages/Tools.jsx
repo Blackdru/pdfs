@@ -189,6 +189,14 @@ const Tools = () => {
     setIsProcessing(false)
     setClearFileUpload(true)
     setTimeout(() => setClearFileUpload(false), 100)
+    
+    // Scroll to upload section after tool selection
+    setTimeout(() => {
+      const uploadSection = document.getElementById('upload-section')
+      if (uploadSection) {
+        uploadSection.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }
+    }, 200)
   }
 
   const handleFilesUploaded = async (files) => {
@@ -555,42 +563,6 @@ const Tools = () => {
       </div>
 
       <div className="relative z-10">
-        {/* Hero Section */}
-        <div className="bg-gradient-to-br from-grey-900 via-grey-800 to-grey-900 border-b border-grey-800">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-            <div className="text-center">
-              <div className="inline-flex items-center px-4 py-2 bg-blue-900 text-blue-300 rounded-full text-sm font-medium mb-6">
-                <Sparkles className="h-4 w-4 mr-2" />
-                Professional PDF Tools
-              </div>
-              <h1 className="text-4xl md:text-6xl font-bold text-grey-100 mb-6">
-                Transform Your PDFs
-                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
-                  Like Magic
-                </span>
-              </h1>
-              <p className="text-xl text-grey-400 max-w-3xl mx-auto mb-8">
-                Choose from our powerful suite of PDF tools to merge, split, compress, and convert your documents with professional-grade quality.
-              </p>
-              
-              {/* Stats */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-2xl mx-auto">
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-blue-400 mb-2">1M+</div>
-                  <div className="text-grey-400">Files Processed</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-green-400 mb-2">99.9%</div>
-                  <div className="text-grey-400">Uptime</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-purple-400 mb-2">50K+</div>
-                  <div className="text-grey-400">Happy Users</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
 
         {/* Usage Warning */}
         {usageExceeded && (
@@ -763,7 +735,7 @@ const Tools = () => {
               </div>
 
               {/* File Upload Button */}
-              <div className="bg-grey-800 rounded-2xl p-6 mb-6 text-center">
+              <div id="upload-section" className="bg-grey-800 rounded-2xl p-6 mb-6 text-center">
                 <h3 className="text-lg font-semibold text-grey-200 mb-4">
                   {selectedTool.multipleFiles ? 'Upload Files' : 'Upload File'}
                 </h3>
@@ -1032,6 +1004,44 @@ const Tools = () => {
         icon={selectedTool ? selectedTool.icon : FileText}
         description={selectedTool ? selectedTool.description : 'Processing your files with advanced options'}
       />
+
+        {/* Hero Section */}
+        <div className="bg-gradient-to-br from-grey-900 via-grey-800 to-grey-900 border-b border-grey-800">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+            <div className="text-center">
+              <div className="inline-flex items-center px-4 py-2 bg-blue-900 text-blue-300 rounded-full text-sm font-medium mb-6">
+                <Sparkles className="h-4 w-4 mr-2" />
+                Professional PDF Tools
+              </div>
+              <h1 className="text-4xl md:text-6xl font-bold text-grey-100 mb-6">
+                Transform Your PDFs
+                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
+                  Like Magic
+                </span>
+              </h1>
+              <p className="text-xl text-grey-400 max-w-3xl mx-auto mb-8">
+                Choose from our powerful suite of PDF tools to merge, split, compress, and convert your documents with professional-grade quality.
+              </p>
+              
+              {/* Stats */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-2xl mx-auto">
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-blue-400 mb-2">1M+</div>
+                  <div className="text-grey-400">Files Processed</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-green-400 mb-2">99.9%</div>
+                  <div className="text-grey-400">Uptime</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-3xl font-bold text-purple-400 mb-2">50K+</div>
+                  <div className="text-grey-400">Happy Users</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
 
       {/* AI Assistant */}
       {showAIAssistant && currentFileForAI && (

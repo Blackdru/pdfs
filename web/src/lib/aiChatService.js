@@ -11,6 +11,9 @@ class AIChatService {
     try {
       console.log('Initializing AI chat for file:', fileId)
       
+      // Clear any existing sessions for this file to start fresh
+      this.clearSessionsForFile(fileId)
+      
       // First, create embeddings for the file
       const embeddingResponse = await api.createEmbeddings(fileId)
       console.log('Embeddings created:', embeddingResponse)
@@ -185,6 +188,17 @@ class AIChatService {
   // Clear all sessions
   clearAllSessions() {
     this.sessions.clear()
+  }
+
+  // Clear sessions for a specific file
+  clearSessionsForFile(fileId) {
+    const sessionsToDelete = []
+    for (const [sessionId, session] of this.sessions.entries()) {
+      if (session.fileId === fileId) {
+        sessionsToDelete.push(sessionId)
+      }
+    }
+    sessionsToDelete.forEach(sessionId => this.sessions.delete(sessionId))
   }
 
   // Get session info

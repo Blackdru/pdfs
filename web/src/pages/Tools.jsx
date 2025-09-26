@@ -1005,61 +1005,7 @@ const Tools = () => {
             </div>
           )}
 
-          {/* Usage Stats */}
-          {usage && (
-            <div className="bg-grey-900 rounded-3xl border border-grey-800 p-8">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center">
-                  <Award className="h-6 w-6 text-blue-400 mr-3" />
-                  <h3 className="text-xl font-semibold text-grey-200">Your Usage</h3>
-                </div>
-                <span className="text-sm bg-grey-800 text-grey-400 px-3 py-1 rounded-full">
-                  {subscription?.plan || 'Free'} Plan
-                </span>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-grey-200 mb-1">
-                    {usage.current}/{usage.limit === -1 ? '∞' : usage.limit}
                   </div>
-                  <div className="text-grey-400 text-sm">Files Processed</div>
-                  <div className="w-full bg-grey-800 rounded-full h-2 mt-2">
-                    <div 
-                      className="bg-gradient-to-r from-blue-500 to-purple-500 h-2 rounded-full transition-all duration-500" 
-                      style={{ 
-                        width: `${usage.limit === -1 ? '0' : Math.min(((usage.current || 0) / (usage.limit || 1)) * 100, 100)}%` 
-                      }}
-                    />
-                  </div>
-                </div>
-                
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-grey-200 mb-1">
-                    {usage.limit === -1 ? '0' : Math.round(((usage.current || 0) / (usage.limit || 1)) * 100)}%
-                  </div>
-                  <div className="text-grey-400 text-sm">Usage This Month</div>
-                </div>
-                
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-grey-200 mb-1">
-                    {usage.limit === -1 ? '∞' : Math.max(0, usage.limit - usage.current)}
-                  </div>
-                  <div className="text-grey-400 text-sm">Remaining</div>
-                </div>
-              </div>
-              
-              {subscription?.plan === 'free' && (
-                <div className="mt-6 text-center">
-                  <Button className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-2">
-                    <Sparkles className="h-4 w-4 mr-2" />
-                    Upgrade for Unlimited
-                  </Button>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
       </div>
 
       {/* File Upload Modal */}

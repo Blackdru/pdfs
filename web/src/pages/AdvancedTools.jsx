@@ -224,6 +224,9 @@ const AdvancedTools = () => {
     setToolResults(null)
     setIsProcessing(false)
     setClearFileUpload(true)
+    // Clear chat sessions when switching tools
+    setChatSessions({})
+    setCurrentMessage('')
     setTimeout(() => setClearFileUpload(false), 100)
   }
 
@@ -366,6 +369,14 @@ const AdvancedTools = () => {
           
           result = { files: compressedFiles }
           break
+
+        case 'encrypt-pro':
+          result = await handleEncryptPro(uploadedFileIds)
+          break
+
+        case 'digital-sign':
+          result = await handleDigitalSign(uploadedFileIds[0])
+          break
           
         default:
           throw new Error('Tool not implemented yet')
@@ -503,8 +514,7 @@ const AdvancedTools = () => {
   }
 
   const handleSmartSummary = async (fileId) => {
-    const result = await api.post('/ai/smart-summary', { 
-      fileId,
+    const result = await api.smartSummary(fileId, {
       includeKeyPoints: true,
       includeSentiment: true,
       includeEntities: true
@@ -512,7 +522,7 @@ const AdvancedTools = () => {
     
     setToolResults({
       type: 'smart-summary',
-      result: result,
+      result: result.result,
       timestamp: new Date().toISOString(),
       fileId: fileId
     })
@@ -521,6 +531,115 @@ const AdvancedTools = () => {
     setUploadedFiles([])
     setIsProcessing(false)
     return result
+  }
+
+  const handleEncryptPro = async (fileIds) => {
+    try {
+      const encryptedFiles = []
+      
+      for (const fileId of fileIds) {
+        // Generate a secure password for demonstration
+        const password = `SecurePDF_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`
+        
+        const response = await fetch(`${API_BASE_URL}/advanced-pdf/password-protect`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session?.access_token}`
+          },
+          body: JSON.stringify({
+            fileId: fileId,
+            password: password,
+            permissions: {
+              printing: true,
+              copying: false,
+              editing: false,
+              annotating: false,
+              fillingForms: true,
+              extracting: false,
+              assembling: false,
+              printingHighRes: false
+            },
+            outputName: `encrypted_${Date.now()}.pdf`,
+            encryptionLevel: '256-bit'
+          })
+        })
+
+        if (!response.ok) {
+          const errorData = await response.json()
+          throw new Error(errorData.error || 'Encryption failed')
+        }
+
+        const result = await response.json()
+        encryptedFiles.push(result.file)
+        
+        // Show password to user
+        toast.success(`File encrypted! Password: ${password}`, { duration: 10000 })
+        
+        // Also copy password to clipboard
+        try {
+          await navigator.clipboard.writeText(password)
+          toast.success('Password copied to clipboard!')
+        } catch (clipboardError) {
+          console.warn('Could not copy to clipboard:', clipboardError)
+        }
+      }
+
+      toast.success(`${encryptedFiles.length} file(s) encrypted successfully with AES-256!`)
+      return { files: encryptedFiles }
+      
+    } catch (error) {
+      console.error('Encryption error:', error)
+      throw error
+    }
+  }
+
+  const handleDigitalSign = async (fileId) => {
+    try {
+      // Get user information for signature
+      const signerName = user?.user_metadata?.full_name || user?.email || 'Digital Signer'
+      
+      const response = await fetch(`${API_BASE_URL}/advanced-pdf/digital-sign`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
+        },
+        body: JSON.stringify({
+          fileId: fileId,
+          signatureData: {
+            name: signerName,
+            reason: 'Document approval and authentication',
+            location: 'Digital Platform',
+            contactInfo: user?.email || 'contact@example.com'
+          },
+          position: {
+            x: 100,
+            y: 100,
+            width: 200,
+            height: 100,
+            page: 1
+          },
+          outputName: `signed_${Date.now()}.pdf`,
+          signatureType: 'advanced',
+          timestampAuthority: true
+        })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Digital signing failed')
+      }
+
+      const result = await response.json()
+      
+      toast.success('Document digitally signed with advanced certificate!')
+      return { file: result.file }
+      
+    } catch (error) {
+      console.error('Digital signing error:', error)
+      throw error
+    }
   }
 
   const sendChatMessage = async (fileId) => {
@@ -825,167 +944,335 @@ const AdvancedTools = () => {
 
           {/* Results Section */}
           {(ocrResults || Object.keys(chatSessions).length > 0 || toolResults) && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-              {/* OCR Results */}
-              {ocrResults && (
+            <div className="space-y-8 mb-8">
+              {/* Smart Summary Results */}
+              {toolResults && toolResults.type === 'smart-summary' && (
                 <div className="bg-grey-900 rounded-3xl border border-grey-800 p-8">
                   <div className="flex items-center justify-between mb-6">
                     <h3 className="text-xl font-semibold text-grey-200 flex items-center">
-                      <Eye className="h-5 w-5 mr-2" />
-                      OCR Results
+                      <Sparkles className="h-5 w-5 mr-2" />
+                      AI Summary Results
                     </h3>
-                    <div className="bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">
-                      {Math.round(ocrResults.confidence || 0)}% confidence
+                    <div className="flex items-center space-x-2">
+                      <div className="bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">
+                        Complete
+                      </div>
+                      <Button
+                        onClick={() => setToolResults(null)}
+                        size="sm"
+                        variant="outline"
+                        className="border-grey-600 text-grey-300 hover:bg-grey-700"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
                     </div>
                   </div>
                   
-                  <div className="space-y-4">
-                    <div className="p-4 bg-grey-800 rounded-xl">
-                      <h4 className="font-medium text-grey-200 mb-2">{ocrResults.filename}</h4>
-                      <textarea
-                        value={ocrResults.text}
-                        readOnly
-                        className="w-full bg-grey-700 border border-grey-600 text-grey-200 rounded-lg p-3 h-32 resize-none"
-                      />
-                      <div className="flex justify-between items-center mt-3">
-                        <span className="text-xs text-grey-400">
-                          {ocrResults.pageCount || 0} pages • {ocrResults.detectedLanguage || 'Multiple languages'}
-                        </span>
-                        <Button
-                          onClick={() => navigator.clipboard.writeText(ocrResults.text)}
-                          size="sm"
-                          variant="outline"
-                          className="border-grey-600 text-grey-300 hover:bg-grey-700"
-                        >
-                          <Copy className="h-4 w-4 mr-1" />
-                          Copy
-                        </Button>
+                  <div className="space-y-6">
+                    {/* Main Summary */}
+                    {toolResults.result.summary && (
+                      <div className="p-6 bg-grey-800 rounded-xl">
+                        <h4 className="font-medium text-grey-200 mb-3 flex items-center">
+                          <FileText className="h-4 w-4 mr-2" />
+                          Executive Summary
+                        </h4>
+                        <div className="bg-grey-700 rounded-lg p-4">
+                          <p className="text-grey-200 leading-relaxed whitespace-pre-wrap">
+                            {toolResults.result.summary}
+                          </p>
+                        </div>
+                        <div className="flex justify-between items-center mt-3">
+                          <span className="text-xs text-grey-400">
+                            Generated: {new Date(toolResults.timestamp).toLocaleString()}
+                          </span>
+                          <Button
+                            onClick={() => navigator.clipboard.writeText(toolResults.result.summary)}
+                            size="sm"
+                            variant="outline"
+                            className="border-grey-600 text-grey-300 hover:bg-grey-700"
+                          >
+                            <Copy className="h-4 w-4 mr-1" />
+                            Copy Summary
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                    
-                    {ocrResults.entities && ocrResults.entities.length > 0 && (
-                      <div className="p-4 bg-grey-800 rounded-xl">
-                        <h4 className="font-medium text-grey-200 mb-2">Detected Entities</h4>
+                    )}
+
+                    {/* Key Points */}
+                    {toolResults.result.keyPoints && toolResults.result.keyPoints.length > 0 && (
+                      <div className="p-6 bg-grey-800 rounded-xl">
+                        <h4 className="font-medium text-grey-200 mb-3 flex items-center">
+                          <CheckCircle className="h-4 w-4 mr-2" />
+                          Key Points
+                        </h4>
+                        <div className="space-y-2">
+                          {toolResults.result.keyPoints.map((point, index) => (
+                            <div key={index} className="flex items-start space-x-3 p-3 bg-grey-700 rounded-lg">
+                              <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                <span className="text-white text-xs font-bold">{index + 1}</span>
+                              </div>
+                              <p className="text-grey-200 text-sm">{point}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Sentiment Analysis */}
+                    {toolResults.result.sentiment && (
+                      <div className="p-6 bg-grey-800 rounded-xl">
+                        <h4 className="font-medium text-grey-200 mb-3 flex items-center">
+                          <Brain className="h-4 w-4 mr-2" />
+                          Sentiment Analysis
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <div className="text-center p-4 bg-grey-700 rounded-lg">
+                            <div className="text-2xl font-bold text-green-400 mb-1">
+                              {Math.round((toolResults.result.sentiment.positive || 0) * 100)}%
+                            </div>
+                            <div className="text-grey-400 text-sm">Positive</div>
+                          </div>
+                          <div className="text-center p-4 bg-grey-700 rounded-lg">
+                            <div className="text-2xl font-bold text-yellow-400 mb-1">
+                              {Math.round((toolResults.result.sentiment.neutral || 0) * 100)}%
+                            </div>
+                            <div className="text-grey-400 text-sm">Neutral</div>
+                          </div>
+                          <div className="text-center p-4 bg-grey-700 rounded-lg">
+                            <div className="text-2xl font-bold text-red-400 mb-1">
+                              {Math.round((toolResults.result.sentiment.negative || 0) * 100)}%
+                            </div>
+                            <div className="text-grey-400 text-sm">Negative</div>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Entities */}
+                    {toolResults.result.entities && toolResults.result.entities.length > 0 && (
+                      <div className="p-6 bg-grey-800 rounded-xl">
+                        <h4 className="font-medium text-grey-200 mb-3 flex items-center">
+                          <Users className="h-4 w-4 mr-2" />
+                          Detected Entities
+                        </h4>
                         <div className="flex flex-wrap gap-2">
-                          {ocrResults.entities.map((entity, index) => (
-                            <span key={index} className="bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
+                          {toolResults.result.entities.map((entity, index) => (
+                            <span key={index} className="bg-purple-600 text-white text-xs px-3 py-1 rounded-full">
                               {entity}
                             </span>
                           ))}
                         </div>
                       </div>
                     )}
-                  </div>
-                </div>
-              )}
 
-              {/* AI Chat */}
-              {Object.keys(chatSessions).length > 0 && (
-                <div className="bg-grey-900 rounded-3xl border border-grey-800 p-8">
-                  <h3 className="text-xl font-semibold text-grey-200 flex items-center mb-6">
-                    <MessageSquare className="h-5 w-5 mr-2" />
-                    AI Chat
-                  </h3>
-                  
-                  {Object.entries(chatSessions).map(([fileId, session]) => (
-                    <div key={fileId} className="space-y-4">
-                      <div className="flex items-center justify-between">
-                        <h4 className="font-medium text-grey-200">{session.filename}</h4>
-                        <div className="bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">
-                          Active
-                        </div>
+                    {/* Actions */}
+                    <div className="flex items-center justify-between p-6 bg-grey-800 rounded-xl">
+                      <div>
+                        <h4 className="font-medium text-grey-200 mb-1">Summary Generated Successfully!</h4>
+                        <p className="text-grey-400 text-sm">
+                          AI-powered analysis complete with insights and key findings.
+                        </p>
                       </div>
-                      
-                      <div className="h-48 overflow-y-auto bg-grey-800 rounded-xl p-4 space-y-3">
-                        {session.messages.map((message, index) => (
-                          <div
-                            key={index}
-                            className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                          >
-                            <div
-                              className={`max-w-xs px-4 py-2 rounded-xl ${
-                                message.role === 'user'
-                                  ? 'bg-blue-600 text-white'
-                                  : 'bg-grey-700 text-grey-200'
-                              }`}
-                            >
-                              <p className="text-sm">{message.content}</p>
-                              {message.confidence && (
-                                <p className="text-xs opacity-75 mt-1">
-                                  Confidence: {Math.round(message.confidence || 0)}%
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                      
-                      <div className="flex space-x-2">
-                        <input
-                          value={currentMessage}
-                          onChange={(e) => setCurrentMessage(e.target.value)}
-                          placeholder="Ask about this document..."
-                          className="flex-1 bg-grey-800 border border-grey-600 text-grey-200 rounded-lg px-3 py-2"
-                          onKeyPress={(e) => e.key === 'Enter' && sendChatMessage(fileId)}
-                        />
+                      <div className="flex space-x-3">
                         <Button
-                          onClick={() => sendChatMessage(fileId)}
-                          className="bg-blue-600 hover:bg-blue-700"
+                          onClick={() => {
+                            const summaryText = [
+                              'AI SUMMARY REPORT',
+                              '==================',
+                              '',
+                              'EXECUTIVE SUMMARY:',
+                              toolResults.result.summary || 'No summary available',
+                              '',
+                              'KEY POINTS:',
+                              ...(toolResults.result.keyPoints || []).map((point, i) => `${i + 1}. ${point}`),
+                              '',
+                              'SENTIMENT ANALYSIS:',
+                              `Positive: ${Math.round((toolResults.result.sentiment?.positive || 0) * 100)}%`,
+                              `Neutral: ${Math.round((toolResults.result.sentiment?.neutral || 0) * 100)}%`,
+                              `Negative: ${Math.round((toolResults.result.sentiment?.negative || 0) * 100)}%`,
+                              '',
+                              'ENTITIES:',
+                              ...(toolResults.result.entities || []).map(entity => `- ${entity}`),
+                              '',
+                              `Generated: ${new Date(toolResults.timestamp).toLocaleString()}`
+                            ].join('\n');
+                            
+                            const blob = new Blob([summaryText], { type: 'text/plain' });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement('a');
+                            a.href = url;
+                            a.download = `ai_summary_${Date.now()}.txt`;
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+                            URL.revokeObjectURL(url);
+                            toast.success('Summary report downloaded!');
+                          }}
+                          className="bg-yellow-600 hover:bg-yellow-700 text-white"
                         >
-                          <MessageSquare className="h-4 w-4" />
+                          <Download className="h-4 w-4 mr-2" />
+                          Download Report
+                        </Button>
+                        <Button
+                          onClick={() => setToolResults(null)}
+                          variant="outline"
+                          className="border-grey-600 text-grey-300 hover:bg-grey-700"
+                        >
+                          Clear Results
                         </Button>
                       </div>
                     </div>
-                  ))}
+                  </div>
                 </div>
               )}
+
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                {/* OCR Results */}
+                {ocrResults && (
+                  <div className="bg-grey-900 rounded-3xl border border-grey-800 p-8">
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-xl font-semibold text-grey-200 flex items-center">
+                        <Eye className="h-5 w-5 mr-2" />
+                        OCR Results
+                      </h3>
+                      <div className="flex items-center space-x-2">
+                        <div className="bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">
+                          {Math.round(ocrResults.confidence || 0)}% confidence
+                        </div>
+                        <Button
+                          onClick={() => setOcrResults(null)}
+                          size="sm"
+                          variant="outline"
+                          className="border-grey-600 text-grey-300 hover:bg-grey-700"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <div className="p-4 bg-grey-800 rounded-xl">
+                        <h4 className="font-medium text-grey-200 mb-2">{ocrResults.filename}</h4>
+                        <textarea
+                          value={ocrResults.text}
+                          readOnly
+                          className="w-full bg-grey-700 border border-grey-600 text-grey-200 rounded-lg p-3 h-32 resize-none"
+                        />
+                        <div className="flex justify-between items-center mt-3">
+                          <span className="text-xs text-grey-400">
+                            {ocrResults.pageCount || 0} pages • {ocrResults.detectedLanguage || 'Multiple languages'}
+                          </span>
+                          <Button
+                            onClick={() => navigator.clipboard.writeText(ocrResults.text)}
+                            size="sm"
+                            variant="outline"
+                            className="border-grey-600 text-grey-300 hover:bg-grey-700"
+                          >
+                            <Copy className="h-4 w-4 mr-1" />
+                            Copy
+                          </Button>
+                        </div>
+                      </div>
+                      
+                      {ocrResults.entities && ocrResults.entities.length > 0 && (
+                        <div className="p-4 bg-grey-800 rounded-xl">
+                          <h4 className="font-medium text-grey-200 mb-2">Detected Entities</h4>
+                          <div className="flex flex-wrap gap-2">
+                            {ocrResults.entities.map((entity, index) => (
+                              <span key={index} className="bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
+                                {entity}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {/* AI Chat */}
+                {Object.keys(chatSessions).length > 0 && (
+                  <div className="bg-grey-900 rounded-3xl border border-grey-800 p-8">
+                    <div className="flex items-center justify-between mb-6">
+                      <h3 className="text-xl font-semibold text-grey-200 flex items-center">
+                        <MessageSquare className="h-5 w-5 mr-2" />
+                        AI Chat
+                      </h3>
+                      <Button
+                        onClick={() => setChatSessions({})}
+                        size="sm"
+                        variant="outline"
+                        className="border-grey-600 text-grey-300 hover:bg-grey-700"
+                      >
+                        <X className="h-4 w-4 mr-1" />
+                        Close Chat
+                      </Button>
+                    </div>
+                    
+                    {Object.entries(chatSessions).map(([fileId, session]) => (
+                      <div key={fileId} className="space-y-4">
+                        <div className="flex items-center justify-between">
+                          <h4 className="font-medium text-grey-200">{session.filename}</h4>
+                          <div className="bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">
+                            Active
+                          </div>
+                        </div>
+                        
+                        <div className="h-48 overflow-y-auto bg-grey-800 rounded-xl p-4 space-y-3">
+                          {session.messages.length === 0 ? (
+                            <div className="text-center text-grey-400 py-8">
+                              <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                              <p>Start a conversation with your document!</p>
+                            </div>
+                          ) : (
+                            session.messages.map((message, index) => (
+                              <div
+                                key={index}
+                                className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                              >
+                                <div
+                                  className={`max-w-xs px-4 py-2 rounded-xl ${
+                                    message.role === 'user'
+                                      ? 'bg-blue-600 text-white'
+                                      : 'bg-grey-700 text-grey-200'
+                                  }`}
+                                >
+                                  <p className="text-sm">{message.content}</p>
+                                  {message.confidence && (
+                                    <p className="text-xs opacity-75 mt-1">
+                                      Confidence: {Math.round(message.confidence || 0)}%
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            ))
+                          )}
+                        </div>
+                        
+                        <div className="flex space-x-2">
+                          <input
+                            value={currentMessage}
+                            onChange={(e) => setCurrentMessage(e.target.value)}
+                            placeholder="Ask about this document..."
+                            className="flex-1 bg-grey-800 border border-grey-600 text-grey-200 rounded-lg px-3 py-2"
+                            onKeyPress={(e) => e.key === 'Enter' && sendChatMessage(fileId)}
+                          />
+                          <Button
+                            onClick={() => sendChatMessage(fileId)}
+                            className="bg-blue-600 hover:bg-blue-700"
+                          >
+                            <MessageSquare className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
-          {/* Usage Stats */}
-          {usage && (
-            <div className="bg-grey-900 rounded-3xl border border-grey-800 p-8">
-              <div className="flex items-center justify-between mb-6">
-                <div className="flex items-center">
-                  <Award className="h-6 w-6 text-purple-400 mr-3" />
-                  <h3 className="text-xl font-semibold text-grey-200">Your Usage</h3>
-                </div>
-                <span className="text-sm bg-gradient-to-r from-purple-500 to-pink-500 text-white px-3 py-1 rounded-full font-medium">
-                  {subscription?.plan || 'Pro'} Plan
-                </span>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-grey-200 mb-1">
-                    {usage.current}/{usage.limit === -1 ? '∞' : usage.limit}
                   </div>
-                  <div className="text-grey-400 text-sm">Files Processed</div>
-                  <div className="w-full bg-grey-800 rounded-full h-2 mt-2">
-                    <div 
-                      className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all duration-500" 
-                      style={{ width: `${usage.limit === -1 ? 0 : Math.min(((usage.current || 0) / (usage.limit || 1)) * 100, 100)}%` }}
-                    />
-                  </div>
-                </div>
-                
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-grey-200 mb-1">
-                    {usage.limit === -1 ? '0' : `${Math.round(((usage.current || 0) / (usage.limit || 1)) * 100)}`}%
-                  </div>
-                  <div className="text-grey-400 text-sm">Usage This Month</div>
-                </div>
-                
-                <div className="text-center">
-                  <div className="text-2xl font-bold text-grey-200 mb-1">
-                    {usage.limit === -1 ? '∞' : `${Math.max(0, (usage.limit || 0) - (usage.current || 0))}`}
-                  </div>
-                  <div className="text-grey-400 text-sm">Remaining</div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
       </div>
 
       {/* Processing Modal */}

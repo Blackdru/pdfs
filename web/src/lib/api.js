@@ -480,6 +480,13 @@ class ApiClient {
     })
   }
 
+  async smartSummary(fileId, options = {}) {
+    return this.request('/ai/smart-summary', {
+      method: 'POST',
+      body: JSON.stringify({ fileId, ...options }),
+    })
+  }
+
   async createEmbeddings(fileId, options = {}) {
     return this.request('/ai/create-embeddings', {
       method: 'POST',

@@ -39,6 +39,10 @@ const AIAssistant = ({ fileId, fileName, onClose, isMinimized, onToggleMinimize 
 
   useEffect(() => {
     if (fileId && hasAIAccess) {
+      // Clear previous messages when fileId changes
+      setMessages([])
+      setSessionId(null)
+      setIsInitialized(false)
       initializeChat()
     }
   }, [fileId, hasAIAccess])

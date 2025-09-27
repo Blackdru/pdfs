@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useSubscription } from '../contexts/SubscriptionContext'
 import { api } from '../lib/api'
@@ -61,6 +61,10 @@ const AdvancedTools = () => {
   const [aiAssistantMinimized, setAiAssistantMinimized] = useState(false)
   const [currentFileForAI, setCurrentFileForAI] = useState(null)
   const [initializingAIChat, setInitializingAIChat] = useState(false)
+  const [processingProgress, setProcessingProgress] = useState(0)
+  const [processingStage, setProcessingStage] = useState('Initializing...')
+  const [processingSteps, setProcessingSteps] = useState([])
+  const [currentStep, setCurrentStep] = useState(0)
 
   const proTools = [
     {
@@ -222,6 +226,90 @@ const AdvancedTools = () => {
 
   const filteredTools = getAvailableTools()
 
+  // Progress tracking helper functions
+  // Extract processing steps configuration to module level for better performance
+  const PROCESSING_STEPS_CONFIG = {
+    'advanced-ocr': [
+      { name: 'Uploading File', icon: Upload },
+      { name: 'AI Enhancement', icon: Brain },
+      { name: 'Text Extraction', icon: Eye },
+      { name: 'Entity Detection', icon: Users },
+      { name: 'Complete', icon: CheckCircle }
+    ],
+    'ai-chat': [
+      { name: 'Uploading File', icon: Upload },
+      { name: 'Text Processing', icon: FileText },
+      { name: 'Creating Embeddings', icon: Brain },
+      { name: 'AI Initialization', icon: MessageSquare },
+      { name: 'Complete', icon: CheckCircle }
+    ],
+    'smart-summary': [
+      { name: 'Uploading File', icon: Upload },
+      { name: 'Text Analysis', icon: Brain },
+      { name: 'Generating Summary', icon: Sparkles },
+      { name: 'Sentiment Analysis', icon: TrendingUp },
+      { name: 'Entity Extraction', icon: Users },
+      { name: 'Complete', icon: CheckCircle }
+    ],
+    'pro-merge': [
+      { name: 'Uploading Files', icon: Upload },
+      { name: 'Processing PDFs', icon: FileText },
+      { name: 'Merging Documents', icon: GitMerge },
+      { name: 'Optimizing Output', icon: Zap },
+      { name: 'Complete', icon: CheckCircle }
+    ],
+    'precision-split': [
+      { name: 'Uploading File', icon: Upload },
+      { name: 'Analyzing Structure', icon: Eye },
+      { name: 'Splitting Pages', icon: Scissors },
+      { name: 'Creating Archive', icon: Archive },
+      { name: 'Complete', icon: CheckCircle }
+    ],
+    'smart-compress': [
+      { name: 'Uploading Files', icon: Upload },
+      { name: 'Analyzing Content', icon: Eye },
+      { name: 'Optimizing Images', icon: Layers },
+      { name: 'Compressing PDFs', icon: Archive },
+      { name: 'Complete', icon: CheckCircle }
+    ],
+    'encrypt-pro': [
+      { name: 'Uploading Files', icon: Upload },
+      { name: 'Generating Keys', icon: Shield },
+      { name: 'Applying Encryption', icon: Lock },
+      { name: 'Security Verification', icon: CheckCircle },
+      { name: 'Complete', icon: Download }
+    ],
+    'digital-sign': [
+      { name: 'Uploading File', icon: Upload },
+      { name: 'Certificate Setup', icon: Shield },
+      { name: 'Digital Signing', icon: Award },
+      { name: 'Verification', icon: CheckCircle },
+      { name: 'Complete', icon: Download }
+    ]
+  }
+
+  const updateProgress = (progress, stage, step = null) => {
+    setProcessingProgress(progress)
+    setProcessingStage(stage)
+    if (step !== null) {
+      setCurrentStep(step)
+    }
+  }
+
+  const initializeProcessingSteps = (toolId) => {
+    const steps = PROCESSING_STEPS_CONFIG[toolId] || [
+      { name: 'Uploading', icon: Upload },
+      { name: 'Processing', icon: FileText },
+      { name: 'Finalizing', icon: CheckCircle },
+      { name: 'Complete', icon: Download }
+    ]
+
+    setProcessingSteps(steps)
+    setCurrentStep(0)
+    setProcessingProgress(0)
+    setProcessingStage('Initializing...')
+  }
+
   const handleToolSelect = (tool) => {
     setSelectedTool(tool)
     setUploadedFiles([])
@@ -297,9 +385,14 @@ const AdvancedTools = () => {
 
     setIsProcessing(true)
     
+    // Initialize progress tracking
+    initializeProcessingSteps(selectedTool.id)
+    updateProgress(5, 'Preparing files for processing...', 0)
+    
     try {
       let uploadedFileIds = []
       
+      updateProgress(10, 'Uploading files to server...', 0)
       toast.success(`Uploading ${files.length} file(s)...`)
       
       for (const file of files) {
@@ -587,11 +680,19 @@ const AdvancedTools = () => {
     console.log('=== SMART SUMMARY DEBUG ===')
     console.log('Starting smart summary for fileId:', fileId)
     
+    updateProgress(30, 'Analyzing document text...', 1)
+    
+    updateProgress(50, 'Generating AI summary...', 2)
+    
     const result = await api.smartSummary(fileId, {
       includeKeyPoints: true,
       includeSentiment: true,
       includeEntities: true
     })
+    
+    updateProgress(70, 'Performing sentiment analysis...', 3)
+    
+    updateProgress(85, 'Extracting entities...', 4)
     
     console.log('Smart summary API response:', result)
     console.log('Result structure:', {
@@ -610,6 +711,8 @@ const AdvancedTools = () => {
     } else {
       console.error('❌ No result object in API response!')
     }
+    
+    updateProgress(100, 'Smart summary completed!', 5)
     
     setToolResults({
       type: 'smart-summary',
@@ -1054,7 +1157,7 @@ const AdvancedTools = () => {
                   
                   <div className="space-y-6">
                     {/* Main Summary */}
-                    {toolResults.result.summary && (
+                    {toolResults.result && (
                       <div className="p-6 bg-grey-800 rounded-xl">
                         <h4 className="font-medium text-grey-200 mb-3 flex items-center">
                           <FileText className="h-4 w-4 mr-2" />
@@ -1062,7 +1165,7 @@ const AdvancedTools = () => {
                         </h4>
                         <div className="bg-grey-700 rounded-lg p-4">
                           <p className="text-grey-200 leading-relaxed whitespace-pre-wrap">
-                            {toolResults.result.summary}
+                            {toolResults.result?.summary || 'No summary available'}
                           </p>
                         </div>
                         <div className="flex justify-between items-center mt-3">
@@ -1070,7 +1173,7 @@ const AdvancedTools = () => {
                             Generated: {new Date(toolResults.timestamp).toLocaleString()}
                           </span>
                           <Button
-                            onClick={() => navigator.clipboard.writeText(toolResults.result.summary)}
+                            onClick={() => navigator.clipboard.writeText(toolResults.result?.summary || 'No summary available')}
                             size="sm"
                             variant="outline"
                             className="border-grey-600 text-grey-300 hover:bg-grey-700"
@@ -1083,7 +1186,7 @@ const AdvancedTools = () => {
                     )}
 
                     {/* Key Points */}
-                    {toolResults.result.keyPoints && toolResults.result.keyPoints.length > 0 && (
+                    {toolResults.result?.keyPoints && toolResults.result.keyPoints.length > 0 && (
                       <div className="p-6 bg-grey-800 rounded-xl">
                         <h4 className="font-medium text-grey-200 mb-3 flex items-center">
                           <CheckCircle className="h-4 w-4 mr-2" />
@@ -1103,7 +1206,7 @@ const AdvancedTools = () => {
                     )}
 
                     {/* Sentiment Analysis */}
-                    {toolResults.result.sentiment && (
+                    {toolResults.result?.sentiment && (
                       <div className="p-6 bg-grey-800 rounded-xl">
                         <h4 className="font-medium text-grey-200 mb-3 flex items-center">
                           <Brain className="h-4 w-4 mr-2" />
@@ -1133,7 +1236,7 @@ const AdvancedTools = () => {
                     )}
 
                     {/* Entities */}
-                    {toolResults.result.entities && toolResults.result.entities.length > 0 && (
+                    {toolResults.result?.entities && toolResults.result.entities.length > 0 && (
                       <div className="p-6 bg-grey-800 rounded-xl">
                         <h4 className="font-medium text-grey-200 mb-3 flex items-center">
                           <Users className="h-4 w-4 mr-2" />
@@ -1160,6 +1263,17 @@ const AdvancedTools = () => {
                       <div className="flex space-x-3">
                         <Button
                           onClick={() => {
+                            // Sanitize user input to prevent XSS
+                            const escapeHtml = (text) => {
+                              const div = document.createElement('div');
+                              div.textContent = text;
+                              return div.innerHTML;
+                            };
+                            
+                            const summaryContent = toolResults.result?.summary || 'No summary available';
+                            const keyPointsContent = toolResults.result?.keyPoints || [];
+                            const entitiesContent = toolResults.result?.entities || [];
+                            
                             const summaryText = [
                               'AI SUMMARY REPORT',
                               '==================',
@@ -1181,6 +1295,169 @@ const AdvancedTools = () => {
                               `Generated: ${new Date(toolResults.timestamp).toLocaleString()}`
                             ].join('\n');
                             
+                            // Create HTML content with sanitized data
+                            const htmlContent = `
+                              <!DOCTYPE html>
+                              <html lang="en">
+                              <head>
+                                <meta charset="UTF-8">
+                                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                                <title>AI Summary Report - PDFPet</title>
+                                <style>
+                                  * { margin: 0; padding: 0; box-sizing: border-box; }
+                                  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #e2e8f0; min-height: 100vh; padding: 2rem; }
+                                  .container { max-width: 800px; margin: 0 auto; background: rgba(30, 41, 59, 0.8); border-radius: 20px; padding: 2rem; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); backdrop-filter: blur(10px); border: 1px solid rgba(148, 163, 184, 0.1); }
+                                  .header { text-align: center; margin-bottom: 2rem; padding-bottom: 1rem; border-bottom: 2px solid rgba(148, 163, 184, 0.2); }
+                                  .header h1 { font-size: 2.5rem; font-weight: 800; background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 0.5rem; }
+                                  .section { margin-bottom: 2rem; background: rgba(15, 23, 42, 0.5); border-radius: 12px; padding: 1.5rem; border: 1px solid rgba(148, 163, 184, 0.1); }
+                                  .summary-text { line-height: 1.7; color: #cbd5e1; background: rgba(15, 23, 42, 0.3); padding: 1rem; border-radius: 8px; border-left: 4px solid #a855f7; }
+                                  .key-points { list-style: none; }
+                                  .key-points li { background: rgba(15, 23, 42, 0.3); margin-bottom: 0.5rem; padding: 0.75rem; border-radius: 8px; border-left: 3px solid #3b82f6; }
+                                  .entity-tag { background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%); color: white; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 500; margin: 0.25rem; display: inline-block; }
+                                  .btn { padding: 0.75rem 1.5rem; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; margin: 0.5rem; }
+                                  .btn-primary { background: linear-gradient(135deg, #a855f7 0%, #ec4899 100%); color: white; }
+                                  .btn-secondary { background: rgba(148, 163, 184, 0.1); color: #e2e8f0; border: 1px solid rgba(148, 163, 184, 0.2); }
+                                </style>
+                              </head>
+                              <body>
+                                <div class="container">
+                                  <div class="header">
+                                    <h1>AI Summary Report</h1>
+                                    <p>Generated by PDFPet Advanced AI</p>
+                                  </div>
+                                  
+                                  <div class="section">
+                                    <h2>Executive Summary</h2>
+                                    <div class="summary-text">${summaryContent.replace(/\n/g, '<br>')}</div>
+                                  </div>
+                                  
+                                  ${keyPointsContent.length > 0 ? `
+                                  <div class="section">
+                                    <h2>Key Points</h2>
+                                    <ul class="key-points">
+                                      ${keyPointsContent.map((point, i) => `<li>${i + 1}. ${point}</li>`).join('')}
+                                    </ul>
+                                  </div>` : ''}
+                                  
+                                  ${toolResults.result.sentiment ? `
+                                  <div class="section">
+                                    <h2>Sentiment Analysis</h2>
+                                    <div>Positive: ${Math.round((toolResults.result.sentiment.positive || 0) * 100)}%</div>
+                                    <div>Neutral: ${Math.round((toolResults.result.sentiment.neutral || 0) * 100)}%</div>
+                                    <div>Negative: ${Math.round((toolResults.result.sentiment.negative || 0) * 100)}%</div>
+                                  </div>` : ''}
+                                  
+                                  ${entitiesContent.length > 0 ? `
+                                  <div class="section">
+                                    <h2>Detected Entities</h2>
+                                    <div>${entitiesContent.map(entity => `<span class="entity-tag">${entity}</span>`).join('')}</div>
+                                  </div>` : ''}
+                                  
+                                  <div style="text-align: center; margin-top: 2rem;">
+                                    <button class="btn btn-primary" onclick="downloadReport()">📥 Download Report</button>
+                                    <button class="btn btn-secondary" onclick="window.print()">🖨️ Print Report</button>
+                                    <button class="btn btn-secondary" onclick="copyToClipboard()">📋 Copy Text</button>
+                                  </div>
+                                  
+                                  <div style="text-align: center; margin-top: 2rem; color: #64748b; font-size: 0.875rem;">
+                                    <p>Generated on ${new Date(toolResults.timestamp).toLocaleString()}</p>
+                                    <p>Powered by PDFPet AI • Professional PDF Tools</p>
+                                  </div>
+                                </div>
+                                
+                                <script>
+                                  const summaryText = ${JSON.stringify(summaryText)};
+                                  
+                                  function downloadReport() {
+                                    try {
+                                      const blob = new Blob([summaryText], { type: 'text/plain' });
+                                      const url = URL.createObjectURL(blob);
+                                      const a = document.createElement('a');
+                                      a.href = url;
+                                      a.download = 'ai_summary_${Date.now()}.txt';
+                                      document.body.appendChild(a);
+                                      a.click();
+                                      document.body.removeChild(a);
+                                      URL.revokeObjectURL(url);
+                                    } catch (e) {
+                                      alert('Download failed: ' + e.message);
+                                    }
+                                  }
+                                  
+                                  function copyToClipboard() {
+                                    try {
+                                      navigator.clipboard.writeText(summaryText).then(() => {
+                                        alert('Summary copied to clipboard!');
+                                      }).catch(() => {
+                                        const textArea = document.createElement('textarea');
+                                        textArea.value = summaryText;
+                                        document.body.appendChild(textArea);
+                                        textArea.select();
+                                        document.execCommand('copy');
+                                        document.body.removeChild(textArea);
+                                        alert('Summary copied to clipboard!');
+                                      });
+                                    } catch (e) {
+                                      alert('Copy failed: ' + e.message);
+                                    }
+                                  }
+                                </script>
+                              </body>
+                              </html>
+                            `;
+                            
+                            try {
+                              const newWindow = window.open('', '_blank', 'width=900,height=700,scrollbars=yes,resizable=yes');
+                              if (newWindow) {
+                                newWindow.document.write(htmlContent);
+                                newWindow.document.close();
+                                toast.success('Summary report opened in new window!');
+                              } else {
+                                throw new Error('Popup blocked');
+                              }
+                            } catch (error) {
+                              // Fallback to download if popup blocked or fails
+                              const blob = new Blob([summaryText], { type: 'text/plain' });
+                              const url = URL.createObjectURL(blob);
+                              const a = document.createElement('a');
+                              a.href = url;
+                              a.download = `ai_summary_${Date.now()}.txt`;
+                              document.body.appendChild(a);
+                              a.click();
+                              document.body.removeChild(a);
+                              URL.revokeObjectURL(url);
+                              toast.success('Summary report downloaded! (Popup blocked)');
+                            }
+                          }}
+                          className="bg-yellow-600 hover:bg-yellow-700 text-white"
+                        >
+                          <Eye className="h-4 w-4 mr-2" />
+                          View Report
+                        </Button>
+                        <Button
+                          onClick={() => {
+                            const summaryText = [
+                              'AI SUMMARY REPORT',
+                              '==================',
+                              '',
+                              'EXECUTIVE SUMMARY:',
+                              toolResults.result.summary || 'No summary available',
+                              '',
+                              'KEY POINTS:',
+                              ...(toolResults.result.keyPoints || []).map((point, i) => `${i + 1}. ${point}`),
+                              '',
+                              'SENTIMENT ANALYSIS:',
+                              `Positive: ${Math.round((toolResults.result.sentiment?.positive || 0) * 100)}%`,
+                              `Neutral: ${Math.round((toolResults.result.sentiment?.neutral || 0) * 100)}%`,
+                              `Negative: ${Math.round((toolResults.result.sentiment?.negative || 0) * 100)}%`,
+                              '',
+                              'ENTITIES:',
+                              ...(toolResults.result.entities || []).map(entity => `- ${entity}`),
+                              '',
+                              `Generated: ${new Date(toolResults.timestamp).toLocaleString()}`
+                            ].join('\n');
+                            
+                            // Download as text file
                             const blob = new Blob([summaryText], { type: 'text/plain' });
                             const url = URL.createObjectURL(blob);
                             const a = document.createElement('a');
@@ -1190,12 +1467,12 @@ const AdvancedTools = () => {
                             a.click();
                             document.body.removeChild(a);
                             URL.revokeObjectURL(url);
-                            toast.success('Summary report downloaded!');
+                            toast.success('Summary downloaded as text file!');
                           }}
-                          className="bg-yellow-600 hover:bg-yellow-700 text-white"
+                          className="bg-blue-600 hover:bg-blue-700 text-white"
                         >
                           <Download className="h-4 w-4 mr-2" />
-                          Download Report
+                          Download Summary
                         </Button>
                         <Button
                           onClick={() => setToolResults(null)}
@@ -1422,31 +1699,6 @@ const AdvancedTools = () => {
 
       </div>
 
-      {/* Processing Modal */}
-      <ProcessingModal 
-        isOpen={isProcessing}
-        title={selectedTool ? `${selectedTool.title}` : 'Processing'}
-        fileName={uploadedFiles.map(f => f.name).join(', ')}
-        progress={50}
-        stage="Processing your files with advanced algorithms..."
-        icon={selectedTool ? selectedTool.icon : FileText}
-        description={selectedTool ? selectedTool.description : 'Processing your files with professional-grade tools'}
-      />
-
-      {/* File Upload Modal */}
-      <FileUploadModal
-        isOpen={showUploadModal}
-        onClose={() => setShowUploadModal(false)}
-        onFilesUploaded={handleFilesUploaded}
-        acceptedFiles={selectedTool?.acceptedFiles || '.pdf'}
-        multiple={selectedTool?.multipleFiles || false}
-        maxFiles={selectedTool?.multipleFiles ? 10 : 1}
-        title={`Upload Files for ${selectedTool?.title || 'Processing'}`}
-        description={selectedTool?.description || 'Select files to upload and process'}
-        toolName={selectedTool?.title || ''}
-        toolIcon={selectedTool?.icon || Upload}
-      />
-
       {/* Premium Hero Section */}
         <div className="bg-gradient-to-br from-grey-900 via-grey-800 to-grey-900 border-b border-grey-800">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -1488,6 +1740,34 @@ const AdvancedTools = () => {
             </div>
           </div>
         </div>
+
+      {/* Processing Modal */}
+      <ProcessingModal 
+        isOpen={isProcessing}
+        title={selectedTool ? `${selectedTool.title}` : 'Processing'}
+        fileName={uploadedFiles.map(f => f.name).join(', ')}
+        progress={processingProgress}
+        stage={processingStage}
+        icon={selectedTool ? selectedTool.icon : FileText}
+        description={selectedTool ? selectedTool.description : 'Processing your files with professional-grade tools'}
+        steps={processingSteps}
+        currentStep={currentStep}
+        estimatedTime={useMemo(() => selectedTool ? parseInt(selectedTool.processingTime.replace(/[^\d]/g, '')) : 60, [selectedTool?.processingTime])}
+      />
+
+      {/* File Upload Modal */}
+      <FileUploadModal
+        isOpen={showUploadModal}
+        onClose={() => setShowUploadModal(false)}
+        onFilesUploaded={handleFilesUploaded}
+        acceptedFiles={selectedTool?.acceptedFiles || '.pdf'}
+        multiple={selectedTool?.multipleFiles || false}
+        maxFiles={selectedTool?.multipleFiles ? 10 : 1}
+        title={`Upload Files for ${selectedTool?.title || 'Processing'}`}
+        description={selectedTool?.description || 'Select files to upload and process'}
+        toolName={selectedTool?.title || ''}
+        toolIcon={selectedTool?.icon || Upload}
+      />
         
       {/* AI Assistant */}
       {showAIAssistant && currentFileForAI && (

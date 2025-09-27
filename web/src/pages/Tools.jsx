@@ -52,6 +52,10 @@ const Tools = () => {
   const [showAIAssistant, setShowAIAssistant] = useState(false)
   const [aiAssistantMinimized, setAiAssistantMinimized] = useState(false)
   const [currentFileForAI, setCurrentFileForAI] = useState(null)
+  const [processingProgress, setProcessingProgress] = useState(0)
+  const [processingStage, setProcessingStage] = useState('Initializing...')
+  const [processingSteps, setProcessingSteps] = useState([])
+  const [currentStep, setCurrentStep] = useState(0)
 
   const tools = [
     {
@@ -180,6 +184,67 @@ const Tools = () => {
 
   const filteredTools = getAvailableTools()
 
+  // Progress tracking helper functions
+  const updateProgress = (progress, stage, step = null) => {
+    setProcessingProgress(progress)
+    setProcessingStage(stage)
+    if (step !== null) {
+      setCurrentStep(step)
+    }
+  }
+
+  const initializeProcessingSteps = (toolId) => {
+    const stepsByTool = {
+      'merge': [
+        { name: 'Uploading Files', icon: Upload },
+        { name: 'Processing PDFs', icon: FileText },
+        { name: 'Merging Documents', icon: GitMerge },
+        { name: 'Complete', icon: CheckCircle }
+      ],
+      'split': [
+        { name: 'Uploading File', icon: Upload },
+        { name: 'Analyzing Structure', icon: Eye },
+        { name: 'Splitting Pages', icon: Scissors },
+        { name: 'Complete', icon: CheckCircle }
+      ],
+      'compress': [
+        { name: 'Uploading Files', icon: Upload },
+        { name: 'Analyzing Content', icon: Eye },
+        { name: 'Compressing PDFs', icon: Archive },
+        { name: 'Complete', icon: CheckCircle }
+      ],
+      'convert': [
+        { name: 'Uploading Images', icon: Upload },
+        { name: 'Processing Images', icon: Image },
+        { name: 'Creating PDF', icon: FileText },
+        { name: 'Complete', icon: CheckCircle }
+      ],
+      'ocr': [
+        { name: 'Uploading File', icon: Upload },
+        { name: 'Image Enhancement', icon: Sparkles },
+        { name: 'Text Extraction', icon: Eye },
+        { name: 'Complete', icon: CheckCircle }
+      ],
+      'ai-chat': [
+        { name: 'Uploading File', icon: Upload },
+        { name: 'Text Processing', icon: FileText },
+        { name: 'AI Initialization', icon: MessageSquare },
+        { name: 'Complete', icon: CheckCircle }
+      ]
+    }
+
+    const steps = stepsByTool[toolId] || [
+      { name: 'Uploading', icon: Upload },
+      { name: 'Processing', icon: FileText },
+      { name: 'Complete', icon: CheckCircle }
+    ]
+
+    setProcessingSteps(steps)
+    setCurrentStep(0)
+    setProcessingProgress(0)
+    setProcessingStage('Initializing...')
+  }
+
   const handleToolSelect = (tool) => {
     setSelectedTool(tool)
     setUploadedFiles([])
@@ -256,10 +321,15 @@ const Tools = () => {
 
     setIsProcessing(true)
     
+    // Initialize progress tracking
+    initializeProcessingSteps(selectedTool.id)
+    updateProgress(5, 'Preparing files for processing...', 0)
+    
     try {
       let uploadedFileIds = []
       
       // First upload files to server
+      updateProgress(15, 'Uploading files to server...', 0)
       toast.success(`Uploading ${files.length} file(s)...`)
       
       for (const file of files) {
@@ -999,10 +1069,13 @@ const Tools = () => {
         isOpen={isProcessing}
         title={selectedTool ? `${selectedTool.title}` : 'Processing'}
         fileName={uploadedFiles.map(f => f.name).join(', ')}
-        progress={50}
-        stage="Processing your files..."
+        progress={processingProgress}
+        stage={processingStage}
         icon={selectedTool ? selectedTool.icon : FileText}
         description={selectedTool ? selectedTool.description : 'Processing your files with advanced options'}
+        steps={processingSteps}
+        currentStep={currentStep}
+        estimatedTime={selectedTool ? parseInt(selectedTool.processingTime.replace(/[^\d]/g, '')) : 60}
       />
 
         {/* Hero Section */}

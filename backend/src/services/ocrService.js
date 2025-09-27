@@ -5,7 +5,6 @@ const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const pdf2pic = require('pdf2pic');
 const pdfParse = require('pdf-parse');
-const pdfPoppler = require('pdf-poppler');
 
 class OCRService {
   constructor() {
@@ -228,158 +227,101 @@ class OCRService {
       await fs.writeFile(tempPdfPath, pdfBuffer);
       await fs.mkdir(tempImagesDir, { recursive: true });
 
-      // Try pdf-poppler first (more reliable)
       let pages = [];
       let totalText = '';
       let totalConfidence = 0;
       let processedPages = 0;
 
-      try {
-        console.log('Trying pdf-poppler for PDF to image conversion...');
-        
-        const options = {
-          format: 'png',
-          out_dir: tempImagesDir,
-          out_prefix: 'page',
-          page: null // Convert all pages
-        };
+      console.log('Using pdf2pic for PDF to image conversion...');
+      
+      // Use pdf2pic as the primary method (Linux compatible)
+      const convert = pdf2pic.fromPath(tempPdfPath, {
+        density: 200,           // DPI for image quality
+        saveFilename: 'page',   // Filename prefix
+        savePath: tempImagesDir, // Output directory
+        format: 'png',          // Output format
+        width: 2000,            // Max width
+        height: 2000            // Max height
+      });
 
-        const popplerResult = await pdfPoppler.convert(tempPdfPath, options);
-        console.log('pdf-poppler conversion result:', popplerResult ? popplerResult.length : 0, 'pages');
+      // Process pages with pdf2pic
+      for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
+        try {
+          console.log(`Converting page ${pageNum}...`);
+          const pageImage = await convert(pageNum, { responseType: 'image' });
+          
+          if (!pageImage || !pageImage.path) {
+            console.log(`No more pages at page ${pageNum}, stopping conversion`);
+            break;
+          }
 
-        if (popplerResult && popplerResult.length > 0) {
-          // Process each page with OCR
-          for (let i = 0; i < Math.min(popplerResult.length, maxPages); i++) {
-            const pageInfo = popplerResult[i];
-            const imagePath = pageInfo.path;
+          // Verify image file exists and is valid
+          const imageStats = await fs.stat(pageImage.path);
+          if (imageStats.size === 0) {
+            console.warn(`Page ${pageNum} image is empty, skipping`);
+            continue;
+          }
 
+          console.log(`Page ${pageNum} converted successfully, size: ${imageStats.size} bytes`);
+
+          let imagePath = pageImage.path;
+
+          // Enhance image if requested
+          if (enhanceImage) {
             try {
-              // Verify image file exists
-              const stats = await fs.stat(imagePath);
-              if (stats.size === 0) {
-                console.warn(`Page ${i + 1} image is empty, skipping`);
-                continue;
+              const enhancedPath = await this.enhanceImageForOCR(pageImage.path);
+              if (enhancedPath && enhancedPath !== pageImage.path) {
+                imagePath = enhancedPath;
+                console.log(`Page ${pageNum} enhanced for better OCR`);
               }
-
-              let processImagePath = imagePath;
-
-              // Enhance image if requested
-              if (enhanceImage) {
-                try {
-                  const enhancedPath = await this.enhanceImageForOCR(imagePath);
-                  if (enhancedPath && enhancedPath !== imagePath) {
-                    processImagePath = enhancedPath;
-                  }
-                } catch (enhanceError) {
-                  console.warn(`Image enhancement failed for page ${i + 1}, using original:`, enhanceError.message);
-                }
-              }
-
-              // Perform OCR on this page
-              const ocrResult = await this.performOCR(processImagePath, language);
-
-              pages.push({
-                page: i + 1,
-                text: ocrResult.text,
-                confidence: ocrResult.confidence,
-                words: ocrResult.words
-              });
-
-              totalText += ocrResult.text + '\n\n';
-              totalConfidence += ocrResult.confidence;
-              processedPages++;
-
-              // Clean up enhanced image if different from original
-              if (processImagePath !== imagePath) {
-                await this.cleanupFile(processImagePath);
-              }
-
-            } catch (pageError) {
-              console.warn(`Error processing page ${i + 1}:`, pageError.message);
-              continue;
+            } catch (enhanceError) {
+              console.warn(`Image enhancement failed for page ${pageNum}, using original:`, enhanceError.message);
+              imagePath = pageImage.path;
             }
           }
-        }
-      } catch (popplerError) {
-        console.warn('pdf-poppler failed, trying pdf2pic:', popplerError.message);
-        
-        // Fallback to pdf2pic
-        try {
-          const convert = pdf2pic.fromPath(tempPdfPath, {
-            density: 200,
-            saveFilename: 'page',
-            savePath: tempImagesDir,
-            format: 'png',
-            width: 2000,
-            height: 2000
+
+          // Perform OCR on this page
+          console.log(`Performing OCR on page ${pageNum}...`);
+          const ocrResult = await this.performOCR(imagePath, language);
+
+          pages.push({
+            page: pageNum,
+            text: ocrResult.text,
+            confidence: ocrResult.confidence,
+            words: ocrResult.words
           });
 
-          // Process pages with pdf2pic
-          for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
-            try {
-              const pageImage = await convert(pageNum, { responseType: 'image' });
-              if (!pageImage || !pageImage.path) {
-                console.log(`No more pages at page ${pageNum}`);
-                break;
-              }
+          totalText += ocrResult.text + '\n\n';
+          totalConfidence += ocrResult.confidence;
+          processedPages++;
 
-              // Verify image file exists and is valid
-              const imageStats = await fs.stat(pageImage.path);
-              if (imageStats.size === 0) {
-                console.warn(`Page ${pageNum} image is empty, skipping`);
-                continue;
-              }
+          console.log(`Page ${pageNum} OCR completed, confidence: ${ocrResult.confidence}`);
 
-              let imagePath = pageImage.path;
-
-              // Enhance image if requested
-              if (enhanceImage) {
-                try {
-                  const enhancedPath = await this.enhanceImageForOCR(pageImage.path);
-                  if (enhancedPath && enhancedPath !== pageImage.path) {
-                    imagePath = enhancedPath;
-                  }
-                } catch (enhanceError) {
-                  console.warn(`Image enhancement failed for page ${pageNum}, using original:`, enhanceError.message);
-                  imagePath = pageImage.path;
-                }
-              }
-
-              // Perform OCR on this page
-              const ocrResult = await this.performOCR(imagePath, language);
-
-              pages.push({
-                page: pageNum,
-                text: ocrResult.text,
-                confidence: ocrResult.confidence,
-                words: ocrResult.words
-              });
-
-              totalText += ocrResult.text + '\n\n';
-              totalConfidence += ocrResult.confidence;
-              processedPages++;
-
-              // Clean up enhanced image if different from original
-              if (imagePath !== pageImage.path) {
-                await this.cleanupFile(imagePath);
-              }
-
-            } catch (pageError) {
-              console.warn(`Error processing page ${pageNum}:`, pageError.message);
-              continue;
-            }
+          // Clean up enhanced image if different from original
+          if (imagePath !== pageImage.path) {
+            await this.cleanupFile(imagePath);
           }
-        } catch (pdf2picError) {
-          console.error('Both pdf-poppler and pdf2pic failed:', pdf2picError.message);
-          throw new Error('Failed to convert PDF to images. Please ensure the PDF is not corrupted or password-protected.');
+
+        } catch (pageError) {
+          console.warn(`Error processing page ${pageNum}:`, pageError.message);
+          
+          // If it's a "page not found" error, we've reached the end
+          if (pageError.message.includes('page') && pageError.message.includes('not found')) {
+            console.log(`Reached end of PDF at page ${pageNum}`);
+            break;
+          }
+          
+          continue;
         }
       }
 
       if (processedPages === 0) {
-        throw new Error('No pages could be processed successfully');
+        throw new Error('No pages could be processed successfully. Please ensure the PDF is not corrupted or password-protected.');
       }
 
       const avgConfidence = processedPages > 0 ? totalConfidence / processedPages : 0;
+
+      console.log(`PDF OCR completed: ${processedPages} pages processed with average confidence ${avgConfidence}`);
 
       return {
         text: totalText.trim(),

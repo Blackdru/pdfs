@@ -6,10 +6,12 @@ class AIService {
     // Determine which API to use
     const useOpenRouter = process.env.OPENROUTER_API_KEY && 
                          process.env.OPENROUTER_API_KEY !== 'your_openrouter_api_key_here' &&
-                         process.env.OPENROUTER_API_KEY !== 'sk-test-key-for-development';
+                         process.env.OPENROUTER_API_KEY !== 'sk-test-key-for-development' &&
+                         (process.env.OPENROUTER_API_KEY.startsWith('sk-or-') || process.env.OPENROUTER_API_KEY.startsWith('sk-or-v1-'));
     const useOpenAI = process.env.OPENAI_API_KEY && 
                      process.env.OPENAI_API_KEY !== 'your_openai_api_key_here' &&
-                     process.env.OPENAI_API_KEY !== 'sk-test-key-for-development';
+                     process.env.OPENAI_API_KEY !== 'sk-test-key-for-development' &&
+                     process.env.OPENAI_API_KEY.startsWith('sk-');
     
     console.log('AI Service initialization:');
     console.log('- OpenRouter key available:', !!process.env.OPENROUTER_API_KEY);
@@ -57,7 +59,8 @@ class AIService {
   // Check if AI features are enabled
   isEnabled() {
     return process.env.ENABLE_AI_FEATURES === 'true' && 
-           (process.env.OPENAI_API_KEY || process.env.OPENROUTER_API_KEY);
+           this.openai !== null && 
+           this.model !== null;
   }
 
   // Test the AI connection

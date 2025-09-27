@@ -584,13 +584,41 @@ const AdvancedTools = () => {
   }
 
   const handleSmartSummary = async (fileId) => {
+    console.log('=== SMART SUMMARY DEBUG ===')
+    console.log('Starting smart summary for fileId:', fileId)
+    
     const result = await api.smartSummary(fileId, {
       includeKeyPoints: true,
       includeSentiment: true,
       includeEntities: true
     })
     
+    console.log('Smart summary API response:', result)
+    console.log('Result structure:', {
+      message: result.message,
+      result: result.result,
+      fileId: result.fileId
+    })
+    
+    if (result.result) {
+      console.log('Summary details:')
+      console.log('- Summary length:', result.result.summary ? result.result.summary.length : 0)
+      console.log('- Summary preview:', result.result.summary ? result.result.summary.substring(0, 100) + '...' : 'NO SUMMARY')
+      console.log('- Key points count:', result.result.keyPoints ? result.result.keyPoints.length : 0)
+      console.log('- Sentiment:', result.result.sentiment)
+      console.log('- Entities count:', result.result.entities ? result.result.entities.length : 0)
+    } else {
+      console.error('❌ No result object in API response!')
+    }
+    
     setToolResults({
+      type: 'smart-summary',
+      result: result.result,
+      timestamp: new Date().toISOString(),
+      fileId: fileId
+    })
+    
+    console.log('Tool results set:', {
       type: 'smart-summary',
       result: result.result,
       timestamp: new Date().toISOString(),

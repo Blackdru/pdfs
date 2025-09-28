@@ -65,7 +65,7 @@ const ModernNavbar = () => {
   ]
 
   const publicNavItems = [
-    { path: '/pricing', label: 'Pricing', icon: DollarSign },
+    { path: '/upgrade', label: 'Pricing', icon: DollarSign },
   ]
 
   return (

@@ -1,10 +1,10 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
-import { FileText, Mail, Lock, User, Chrome, ArrowRight, Sparkles, Heart, CheckCircle } from 'lucide-react'
+import { FileText, Mail, Lock, User, Chrome, ArrowRight, Sparkles, Heart, CheckCircle, Shield, Rocket } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 const Register = () => {
@@ -63,136 +63,97 @@ const Register = () => {
   ]
 
   return (
-    <div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-grey-950 relative overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute inset-0 bg-grey-900 opacity-30"></div>
-      <div className="absolute top-20 left-10 w-72 h-72 bg-green-900 rounded-full filter blur-3xl opacity-40 animate-float"></div>
-      <div className="absolute bottom-20 right-10 w-72 h-72 bg-purple-900 rounded-full filter blur-3xl opacity-40 animate-float" style={{ animationDelay: '2s' }}></div>
+    <div className="min-h-screen flex items-center justify-center py-16 px-4 sm:px-6 lg:px-8 bg-grey-950 relative overflow-hidden">
+      {/* Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-blue-950 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-green-950 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-purple-950 rounded-full blur-3xl animate-float" style={{ animationDelay: '4s' }}></div>
+      </div>
       
-      <div className="max-w-md w-full space-y-8 relative z-10">
-        {/* Header */}
-        <div className="text-center">
-          <Link to="/" className="inline-flex items-center justify-center mb-8 group">
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl blur-lg opacity-30 group-hover:opacity-50 transition-opacity"></div>
-              <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 p-4 rounded-2xl">
-                <FileText className="h-12 w-12 text-white" />
-              </div>
-            </div>
-            <div className="ml-4">
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                PDFPet
-              </h1>
-              <div className="flex items-center justify-center mt-1">
-                <Heart className="h-3 w-3 text-red-500 mr-1" />
-                <span className="text-xs text-muted-foreground">Your PDF companion</span>
-              </div>
-            </div>
-          </Link>
-          
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">Join PDFPet today!</h2>
-          <p className="text-muted-foreground">
-            Create your account and start transforming PDFs like magic
-          </p>
-        </div>
-
-        {/* Features Preview */}
-        <div className="bg-grey-800 rounded-2xl p-6 border border-grey-700">
-          <div className="flex items-center mb-4">
-            <Sparkles className="h-5 w-5 text-blue-400 mr-2" />
-            <span className="font-semibold text-blue-400">What you'll get:</span>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            {features.map((feature, index) => (
-              <div key={index} className="flex items-center text-sm">
-                <CheckCircle className="h-4 w-4 text-green-500 mr-2 flex-shrink-0" />
-                <span className="text-gray-700 dark:text-gray-300">{feature}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-
+      <div className="max-w-lg w-full space-y-10 relative z-10">
         {/* Register Form */}
-        <Card className="dark-card shadow-2xl backdrop-blur-xl">
-          <CardHeader className="space-y-1 pb-6">
-            <CardTitle className="text-2xl font-bold text-center">Create your account</CardTitle>
-            <CardDescription className="text-center">
+        <div className="dark-card p-10 bg-grey-900 shadow-blue-lg">
+          <div className="space-y-2 pb-8">
+            <h3 className="heading-dark-4 text-center">Create your account</h3>
+            <p className="body-dark-small text-grey-400 text-center">
               Get started with your free PDFPet account
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="space-y-2">
-                <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            </p>
+          </div>
+          
+          <div className="space-y-8">
+            <form onSubmit={handleSubmit} className="space-y-8">
+              <div className="space-y-3">
+                <label htmlFor="name" className="block text-sm font-semibold text-grey-300">
                   Full name
                 </label>
                 <div className="relative">
-                  <User className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
-                  <Input
+                  <User className="absolute left-4 top-4 h-5 w-5 text-grey-500" />
+                  <input
                     id="name"
                     name="name"
                     type="text"
                     value={formData.name}
                     onChange={handleChange}
                     placeholder="Enter your full name"
-                    className="dark-input pl-10 h-12"
+                    className="dark-input pl-12"
                     required
                   />
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <div className="space-y-3">
+                <label htmlFor="email" className="block text-sm font-semibold text-grey-300">
                   Email address
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
-                  <Input
+                  <Mail className="absolute left-4 top-4 h-5 w-5 text-grey-500" />
+                  <input
                     id="email"
                     name="email"
                     type="email"
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="Enter your email"
-                    className="dark-input pl-10 h-12"
+                    className="dark-input pl-12"
                     required
                   />
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <div className="space-y-3">
+                <label htmlFor="password" className="block text-sm font-semibold text-grey-300">
                   Password
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
-                  <Input
+                  <Lock className="absolute left-4 top-4 h-5 w-5 text-grey-500" />
+                  <input
                     id="password"
                     name="password"
                     type="password"
                     value={formData.password}
                     onChange={handleChange}
                     placeholder="Create a password"
-                    className="dark-input pl-10 h-12"
+                    className="dark-input pl-12"
                     required
                   />
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              <div className="space-y-3">
+                <label htmlFor="confirmPassword" className="block text-sm font-semibold text-grey-300">
                   Confirm password
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-3 h-5 w-5 text-muted-foreground" />
-                  <Input
+                  <Lock className="absolute left-4 top-4 h-5 w-5 text-grey-500" />
+                  <input
                     id="confirmPassword"
                     name="confirmPassword"
                     type="password"
                     value={formData.confirmPassword}
                     onChange={handleChange}
                     placeholder="Confirm your password"
-                    className="dark-input pl-10 h-12"
+                    className="dark-input pl-12"
                     required
                   />
                 </div>
@@ -200,19 +161,19 @@ const Register = () => {
 
               <Button 
                 type="submit" 
-                className="btn-blue w-full h-12" 
+                className="w-full btn-blue text-lg py-4 h-auto font-semibold" 
                 disabled={loading}
               >
                 {loading ? (
                   <div className="flex items-center">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    <div className="loading-dark mr-3"></div>
                     Creating account...
                   </div>
                 ) : (
                   <div className="flex items-center">
-                    <Sparkles className="mr-2 h-4 w-4" />
+                    <Rocket className="mr-3 h-5 w-5" />
                     Create account
-                    <ArrowRight className="ml-2 h-4 w-4" />
+                    <ArrowRight className="ml-3 h-5 w-5" />
                   </div>
                 )}
               </Button>
@@ -220,46 +181,51 @@ const Register = () => {
 
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-gray-300 dark:border-gray-600" />
+                <span className="w-full border-t border-grey-800" />
               </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white dark:bg-gray-900 px-2 text-muted-foreground">
+              <div className="relative flex justify-center text-sm uppercase">
+                <span className="bg-grey-900 px-4 text-grey-500 font-semibold">
                   Or continue with
                 </span>
               </div>
             </div>
 
             <Button
-              variant="outline"
-              className="btn-dark-outline w-full h-12"
               onClick={handleGoogleSignIn}
               disabled={loading}
+              className="w-full btn-dark-outline text-lg py-4 h-auto font-semibold"
             >
-              <Chrome className="mr-2 h-5 w-5 text-red-500" />
+              <Chrome className="mr-3 h-5 w-5 text-purple-400" />
               Continue with Google
             </Button>
 
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground">
+            <div className="text-center space-y-6">
+              <p className="body-dark-small text-grey-400">
                 Already have an account?{' '}
                 <Link 
                   to="/login" 
-                  className="font-medium text-blue-600 hover:text-blue-500 transition-colors"
+                  className="font-semibold text-blue-400 hover:text-blue-300 transition-colors duration-200"
                 >
                   Sign in here
                 </Link>
               </p>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
+
+        {/* Security Badge */}
+        <div className="flex items-center justify-center space-x-3 text-grey-400">
+          <Shield className="h-5 w-5 text-green-400" />
+          <span className="text-sm font-medium">Bank-level security & encryption</span>
+        </div>
 
         {/* Footer */}
         <div className="text-center">
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-grey-500 leading-relaxed">
             By creating an account, you agree to our{' '}
-            <Link to="/terms" className="underline hover:text-primary">Terms of Service</Link>
+            <Link to="/terms-conditions" className="underline hover:text-blue-400 transition-colors duration-200">Terms of Service</Link>
             {' '}and{' '}
-            <Link to="/privacy" className="underline hover:text-primary">Privacy Policy</Link>
+            <Link to="/privacy-policy" className="underline hover:text-blue-400 transition-colors duration-200">Privacy Policy</Link>
           </p>
         </div>
       </div>

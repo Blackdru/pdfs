@@ -37,46 +37,41 @@ const Pricing = () => {
         '10 files per month',
         '10 MB max file size',
         '100 MB storage',
-        '5 OCR pages/month',
-        '10 AI messages/month',
-        'Basic PDF tools'
+        'No OCR or AI features',
+        'Basic PDF tools only'
+      ]
+    },
+    {
+      id: 'basic',
+      name: 'Basic',
+      price: 1,
+      description: 'Great for regular users',
+      popular: true,
+      features: [
+        '100 files per month',
+        '50 MB max file size',
+        '500 MB storage',
+        '50 OCR pages',
+        '50 AI chat messages',
+        '50 AI summaries',
+        'Access to all advanced tools'
       ]
     },
     {
       id: 'pro',
       name: 'Pro',
-      price: 1,
-      description: 'Great for regular users',
-      popular: true,
-      features: [
-        '500 files per month',
-        '50 MB max file size',
-        '2 GB storage',
-        '200 OCR pages/month',
-        '1,000 AI messages/month',
-        'Advanced OCR features',
-        'Batch processing (20 files)',
-        'API access',
-        'Custom watermarks'
-      ]
-    },
-    {
-      id: 'premium',
-      name: 'Premium',
       price: 10,
       description: 'For power users and teams',
       bestValue: true,
       features: [
-        'Unlimited files',
+        'Unlimited files per month',
         '200 MB max file size',
-        '20 GB storage',
-        'Unlimited OCR',
-        'Unlimited AI messages',
-        'Advanced AI models',
-        'Unlimited batch processing',
-        'Priority processing',
-        'Priority support',
-        'Advanced analytics'
+        'Unlimited storage',
+        'Unlimited OCR pages',
+        'Unlimited AI chat',
+        'Unlimited AI summaries',
+        'All advanced tools & settings',
+        'Priority support'
       ]
     }
   ]
@@ -86,68 +81,62 @@ const Pricing = () => {
     {
       feature: 'Monthly Price',
       free: 'Free',
-      pro: '$1/month',
-      premium: '$10/month'
+      basic: '$1/month',
+      pro: '$10/month'
     },
     {
       feature: 'Files per month',
       free: '10',
-      pro: '500',
-      premium: 'Unlimited'
+      basic: '100',
+      pro: 'Unlimited'
     },
     {
       feature: 'Max file size',
       free: '10 MB',
-      pro: '50 MB',
-      premium: '200 MB'
+      basic: '50 MB',
+      pro: '200 MB'
     },
     {
       feature: 'Storage',
       free: '100 MB',
-      pro: '2 GB',
-      premium: '20 GB'
+      basic: '500 MB',
+      pro: 'Unlimited'
     },
     {
-      feature: 'OCR Processing',
-      free: '5 pages/month',
-      pro: '200 pages/month',
-      premium: 'Unlimited'
+      feature: 'OCR Pages',
+      free: 'None',
+      basic: '50',
+      pro: 'Unlimited'
     },
     {
       feature: 'AI Chat Messages',
-      free: '10 messages/month',
-      pro: '1,000 messages/month',
-      premium: 'Unlimited'
+      free: 'None',
+      basic: '50',
+      pro: 'Unlimited'
     },
     {
-      feature: 'Advanced OCR Features',
+      feature: 'AI Summary',
+      free: 'None',
+      basic: '50',
+      pro: 'Unlimited'
+    },
+    {
+      feature: 'Advanced Tools',
       free: false,
-      pro: true,
-      premium: true
+      basic: true,
+      pro: true
     },
     {
-      feature: 'Advanced AI Models',
+      feature: 'Advanced Settings',
       free: false,
-      pro: false,
-      premium: true
-    },
-    {
-      feature: 'Batch Processing',
-      free: 'Single files',
-      pro: 'Up to 20 files',
-      premium: 'Unlimited'
-    },
-    {
-      feature: 'API Access',
-      free: false,
-      pro: true,
-      premium: true
+      basic: false,
+      pro: true
     },
     {
       feature: 'Priority Support',
       free: false,
-      pro: false,
-      premium: true
+      basic: false,
+      pro: true
     }
   ]
 
@@ -205,8 +194,8 @@ const Pricing = () => {
               <CardHeader className="text-center pb-4">
                 <div className="flex justify-center mb-2">
                   {plan.id === 'free' && <Star className="h-6 w-6 text-blue-500" />}
-                  {plan.id === 'pro' && <Zap className="h-6 w-6 text-purple-500" />}
-                  {plan.id === 'premium' && <Crown className="h-6 w-6 text-blue-500" />}
+                  {plan.id === 'basic' && <Zap className="h-6 w-6 text-purple-500" />}
+                  {plan.id === 'pro' && <Crown className="h-6 w-6 text-blue-500" />}
                 </div>
                 <CardTitle className="text-2xl font-bold text-grey-100">{plan.name}</CardTitle>
                 <CardDescription className="text-lg text-grey-300">
@@ -260,25 +249,29 @@ const Pricing = () => {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-grey-800">
-                    <th className="text-left py-3 px-4 font-medium text-grey-200">Feature</th>
-                    <th className="text-center py-3 px-4">
-                      <div className="flex items-center justify-center gap-2">
-                        <Star className="h-4 w-4 text-blue-400" />
-                        <span className="font-medium text-grey-200">Free</span>
+                    <th className="text-left py-3 px-2 sm:px-4 font-medium text-grey-200 text-sm sm:text-base">Feature</th>
+                    <th className="text-center py-3 px-2 sm:px-4">
+                      <div className="flex items-center justify-center gap-1 sm:gap-2">
+                        <Star className="h-3 w-3 sm:h-4 sm:w-4 text-blue-400" />
+                        <span className="font-medium text-grey-200 text-xs sm:text-sm">Free</span>
                       </div>
                     </th>
-                    <th className="text-center py-3 px-4">
-                      <div className="flex items-center justify-center gap-2">
-                        <Zap className="h-4 w-4 text-purple-400" />
-                        <span className="font-medium text-grey-200">Pro</span>
-                        <Badge className="ml-1 badge-purple">Popular</Badge>
+                    <th className="text-center py-3 px-2 sm:px-4">
+                      <div className="flex items-center justify-center gap-1 sm:gap-2 flex-col sm:flex-row">
+                        <div className="flex items-center gap-1">
+                          <Zap className="h-3 w-3 sm:h-4 sm:w-4 text-purple-400" />
+                          <span className="font-medium text-grey-200 text-xs sm:text-sm">Basic</span>
+                        </div>
+                        <Badge className="text-xs badge-purple">Popular</Badge>
                       </div>
                     </th>
-                    <th className="text-center py-3 px-4">
-                      <div className="flex items-center justify-center gap-2">
-                        <Crown className="h-4 w-4 text-blue-400" />
-                        <span className="font-medium text-grey-200">Premium</span>
-                        <Badge className="ml-1 badge-blue">Best Value</Badge>
+                    <th className="text-center py-3 px-2 sm:px-4">
+                      <div className="flex items-center justify-center gap-1 sm:gap-2 flex-col sm:flex-row">
+                        <div className="flex items-center gap-1">
+                          <Crown className="h-3 w-3 sm:h-4 sm:w-4 text-blue-400" />
+                          <span className="font-medium text-grey-200 text-xs sm:text-sm">Pro</span>
+                        </div>
+                        <Badge className="text-xs badge-blue">Best Value</Badge>
                       </div>
                     </th>
                   </tr>
@@ -286,15 +279,15 @@ const Pricing = () => {
                 <tbody>
                   {comparisonFeatures.map((row, index) => (
                     <tr key={index} className="border-b border-grey-800 hover:bg-grey-800/50">
-                      <td className="py-3 px-4 font-medium text-grey-300">{row.feature}</td>
-                      <td className="py-3 px-4 text-center text-grey-300">
+                      <td className="py-3 px-2 sm:px-4 font-medium text-grey-300 text-sm">{row.feature}</td>
+                      <td className="py-3 px-2 sm:px-4 text-center text-grey-300">
                         {renderFeatureValue(row.free)}
                       </td>
-                      <td className="py-3 px-4 text-center text-grey-300">
-                        {renderFeatureValue(row.pro)}
+                      <td className="py-3 px-2 sm:px-4 text-center text-grey-300">
+                        {renderFeatureValue(row.basic)}
                       </td>
-                      <td className="py-3 px-4 text-center text-grey-300">
-                        {renderFeatureValue(row.premium)}
+                      <td className="py-3 px-2 sm:px-4 text-center text-grey-300">
+                        {renderFeatureValue(row.pro)}
                       </td>
                     </tr>
                   ))}
@@ -353,13 +346,13 @@ const Pricing = () => {
           <p className="text-grey-400">
             Join thousands of users who trust PDFPet for their document processing needs
           </p>
-          <div className="flex justify-center gap-4">
+          <div className="flex flex-col sm:flex-row justify-center gap-4">
             {!user ? (
               <>
                 <Button 
                   size="lg"
                   onClick={() => navigate('/register')}
-                  className="btn-purple"
+                  className="btn-purple w-full sm:w-auto"
                 >
                   <Sparkles className="mr-2 h-4 w-4" />
                   Get Started Free
@@ -368,7 +361,7 @@ const Pricing = () => {
                   size="lg" 
                   variant="outline"
                   onClick={() => navigate('/login')}
-                  className="btn-dark-outline"
+                  className="btn-dark-outline w-full sm:w-auto"
                 >
                   Sign In
                 </Button>
@@ -377,18 +370,18 @@ const Pricing = () => {
               <>
                 <Button 
                   size="lg"
-                  onClick={() => handleSelectPlan('pro')}
-                  className="btn-purple"
+                  onClick={() => handleSelectPlan('basic')}
+                  className="btn-purple w-full sm:w-auto"
                 >
                   Start for free
                 </Button>
                 <Button 
                   size="lg" 
                   variant="outline"
-                  onClick={() => handleSelectPlan('premium')}
-                  className="btn-dark-outline"
+                  onClick={() => handleSelectPlan('pro')}
+                  className="btn-dark-outline w-full sm:w-auto"
                 >
-                  Go Premium
+                  Go Pro
                 </Button>
               </>
             )}

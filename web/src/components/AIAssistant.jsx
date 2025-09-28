@@ -202,7 +202,7 @@ const AIAssistant = ({ fileId, fileName, onClose, isMinimized, onToggleMinimize 
   }
 
   return (
-    <Card className="bg-grey-900 border-grey-800 flex flex-col h-96 max-w-md">
+    <Card className="bg-grey-900 border-grey-800 flex flex-col h-[80vh] md:h-[70vh] w-full max-w-full md:max-w-2xl lg:max-w-4xl">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-grey-800">
         <div className="flex items-center space-x-3">
@@ -262,7 +262,7 @@ const AIAssistant = ({ fileId, fileName, onClose, isMinimized, onToggleMinimize 
                 className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                  className={`max-w-[85%] md:max-w-[70%] lg:max-w-[60%] px-4 py-3 rounded-lg ${
                     message.role === 'user'
                       ? 'bg-blue-600 text-white'
                       : message.error

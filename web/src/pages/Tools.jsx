@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useSubscription } from '../contexts/SubscriptionContext'
+import { useSubscriptionAccess } from '../hooks/useSubscriptionAccess'
 import { api } from '../lib/api'
 import { downloadBlob } from '../lib/utils'
 import { Button } from '../components/ui/button'
 import FileUploadModal from '../components/FileUploadModal'
 import ProcessingModal from '../components/ProcessingModal'
 import AIAssistant from '../components/AIAssistant'
+import UpgradeModal from '../components/UpgradeModal'
 import toast from 'react-hot-toast'
 import { 
   GitMerge, 
@@ -39,6 +41,13 @@ import {
 const Tools = () => {
   const { user, session } = useAuth()
   const { subscription, usage } = useSubscription()
+  const { 
+    checkAccess, 
+    showUpgradeModal, 
+    upgradeModalData, 
+    closeUpgradeModal,
+    filterToolsByAccess 
+  } = useSubscriptionAccess()
   
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
   const [selectedTool, setSelectedTool] = useState(null)
@@ -165,20 +174,13 @@ const Tools = () => {
   const categories = ['All', 'Basic', 'Optimization', 'Conversion', 'AI-Powered']
   const [selectedCategory, setSelectedCategory] = useState('All')
 
-  // Filter tools based on user's plan
+  // Filter tools based on category (show all tools regardless of plan)
   const getAvailableTools = () => {
-    let availableTools = tools
-    
-    // If user is on free plan, remove OCR and AI Chat tools
-    if (subscription?.plan === 'free' || !subscription?.plan) {
-      availableTools = tools.filter(tool => !['ocr', 'ai-chat'].includes(tool.id))
-    }
-    
-    // Apply category filter
+    // Apply category filter only
     if (selectedCategory === 'All') {
-      return availableTools
+      return tools
     } else {
-      return availableTools.filter(tool => tool.category === selectedCategory)
+      return tools.filter(tool => tool.category === selectedCategory)
     }
   }
 
@@ -246,6 +248,18 @@ const Tools = () => {
   }
 
   const handleToolSelect = (tool) => {
+    console.log('Tool selected:', tool.id, 'Current plan:', subscription?.plan)
+    
+    // Check if user has access to this tool
+    const hasToolAccess = checkAccess(tool.id, tool.title, tool.description)
+    console.log('Access check result:', hasToolAccess)
+    
+    if (!hasToolAccess) {
+      console.log('Access denied, showing upgrade modal')
+      return // Access denied, upgrade modal will be shown
+    }
+
+    console.log('Access granted, proceeding with tool selection')
     setSelectedTool(tool)
     setUploadedFiles([])
     setProcessedFiles([])
@@ -636,14 +650,14 @@ const Tools = () => {
 
         {/* Usage Warning */}
         {usageExceeded && (
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div className="bg-red-900 border border-red-800 rounded-2xl p-6 flex items-center">
-              <AlertCircle className="h-6 w-6 text-red-400 mr-4 flex-shrink-0" />
-              <div>
-                <h3 className="font-semibold text-red-300 mb-1">Usage Limit Reached</h3>
-                <p className="text-red-400">You've reached your monthly processing limit. Upgrade to continue processing files.</p>
+          <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
+            <div className="bg-red-900 border border-red-800 rounded-2xl p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+              <AlertCircle className="h-5 w-5 sm:h-6 sm:w-6 text-red-400 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-red-300 mb-1 text-sm sm:text-base">Usage Limit Reached</h3>
+                <p className="text-red-400 text-xs sm:text-sm">You've reached your monthly processing limit. Upgrade to continue processing files.</p>
               </div>
-              <Button className="ml-auto bg-red-700 hover:bg-red-600 text-white">
+              <Button className="w-full sm:w-auto bg-red-700 hover:bg-red-600 text-white text-sm sm:text-base">
                 Upgrade Now
               </Button>
             </div>
@@ -651,25 +665,27 @@ const Tools = () => {
         )}
 
         {/* Category Filter */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex flex-wrap justify-center gap-3 mb-12">
-            {categories.map((category) => (
-              <button
-                key={category}
-                onClick={() => setSelectedCategory(category)}
-                className={`px-6 py-3 rounded-full font-medium transition-all duration-300 ${
-                  selectedCategory === category
-                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
-                    : 'bg-grey-800 text-grey-300 hover:bg-grey-700 hover:text-grey-200'
-                }`}
-              >
-                {category}
-              </button>
-            ))}
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-6 sm:py-8">
+          <div className="overflow-x-auto pb-2 mb-8 sm:mb-12">
+            <div className="flex justify-center gap-2 sm:gap-3 min-w-max px-2">
+              {categories.map((category) => (
+                <button
+                  key={category}
+                  onClick={() => setSelectedCategory(category)}
+                  className={`px-4 sm:px-6 py-2 sm:py-3 rounded-full font-medium transition-all duration-300 text-sm sm:text-base whitespace-nowrap ${
+                    selectedCategory === category
+                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
+                      : 'bg-grey-800 text-grey-300 hover:bg-grey-700 hover:text-grey-200'
+                  }`}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Tools Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 mb-12 sm:mb-16">
             {filteredTools.map((tool) => (
               <div
                 key={tool.id}
@@ -727,70 +743,7 @@ const Tools = () => {
             ))}
           </div>
 
-          {/* Premium Tools Section for Free Users */}
-          {(subscription?.plan === 'free' || !subscription?.plan) && (
-            <div className="bg-gradient-to-br from-purple-900 via-pink-900 to-purple-900 rounded-3xl border border-purple-800 p-8 mb-16">
-              <div className="text-center mb-8">
-                <div className="inline-flex items-center px-4 py-2 bg-purple-800 text-purple-300 rounded-full text-sm font-medium mb-4">
-                  <Star className="h-4 w-4 mr-2" />
-                  Premium Features
-                </div>
-                <h2 className="text-3xl font-bold text-white mb-4">
-                  Unlock Advanced AI Tools
-                </h2>
-                <p className="text-purple-200 max-w-2xl mx-auto">
-                  Upgrade to Pro or Premium to access powerful AI-driven features like OCR text extraction and AI document chat.
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                {tools.filter(tool => ['ocr', 'ai-chat'].includes(tool.id)).map((tool) => (
-                  <div
-                    key={tool.id}
-                    className="relative bg-grey-900/50 rounded-2xl border border-purple-700/50 p-6 opacity-75"
-                  >
-                    {/* Premium Lock Badge */}
-                    <div className="absolute -top-2 -right-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs font-bold px-3 py-1 rounded-full flex items-center">
-                      <Star className="h-3 w-3 mr-1" />
-                      PRO
-                    </div>
-
-                    <div className="flex items-center mb-4">
-                      <div className={`w-12 h-12 ${tool.iconBg} rounded-xl flex items-center justify-center mr-4 opacity-75`}>
-                        <tool.icon className="h-6 w-6 text-white" />
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-bold text-white">{tool.title}</h3>
-                        <p className="text-purple-300 text-sm">{tool.description}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center justify-between text-sm text-purple-400">
-                      <div className="flex items-center">
-                        <Clock className="h-4 w-4 mr-1" />
-                        {tool.processingTime}
-                      </div>
-                      <div className="flex items-center">
-                        <TrendingUp className="h-4 w-4 mr-1" />
-                        {tool.popularity}% Popular
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="text-center">
-                <Button className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-8 py-4 text-lg font-semibold hover:shadow-2xl transition-all duration-300">
-                  <Sparkles className="h-5 w-5 mr-2" />
-                  Upgrade to Pro - $1/month
-                </Button>
-                <p className="text-purple-300 text-sm mt-3">
-                  ✨ Unlimited processing • 🤖 AI features • 📊 Advanced analytics
-                </p>
-              </div>
-            </div>
-          )}
-
+          
           {/* Selected Tool Processing Area */}
           {selectedTool && (
             <div className="bg-grey-900 rounded-3xl border border-grey-800 p-8 mb-8">
@@ -1128,6 +1081,17 @@ const Tools = () => {
           />
         </div>
       )}
+
+      {/* Upgrade Modal */}
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={closeUpgradeModal}
+        requiredPlan={upgradeModalData.requiredPlan}
+        toolName={upgradeModalData.toolName}
+        toolDescription={upgradeModalData.toolDescription}
+      />
+      
+
     </div>
   )
 }

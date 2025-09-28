@@ -16,6 +16,7 @@ const aiRoutes = require('./routes/ai');
 const batchRoutes = require('./routes/batch');
 const folderRoutes = require('./routes/folders');
 const subscriptionRoutes = require('./routes/subscriptions');
+const webhookRoutes = require('./routes/webhooks');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -35,7 +36,7 @@ app.use(limiter);
 // CORS configuration
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://your-domain.com', 'https://your-mobile-app.com']
+    ? ['https://budzee.one', 'https://your-mobile-app.com']
     : ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:19006'], // React, Vite, and Expo dev servers
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -80,6 +81,8 @@ app.use('/api/folders', folderRoutes);
 console.log('Folder routes loaded');
 app.use('/api/subscriptions', subscriptionRoutes);
 console.log('Subscription routes loaded');
+app.use('/api/webhooks', webhookRoutes);
+console.log('Webhook routes loaded');
 
 // 404 handler
 app.use('*', (req, res) => {

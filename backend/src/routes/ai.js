@@ -3,6 +3,7 @@ const { supabase, supabaseAdmin } = require('../config/supabase');
 const { authenticateUser } = require('../middleware/auth');
 const { 
   requireProPlan, 
+  requireFeature,
   enforceAILimit, 
   trackUsage 
 } = require('../middleware/subscriptionMiddleware');
@@ -15,7 +16,7 @@ const router = express.Router();
 // OCR - Extract text from PDF/Image
 router.post('/ocr', 
   authenticateUser, 
-  requireProPlan,
+  requireFeature('ocr_processing'),
   enforceAILimit,
   trackUsage('ai_operation', 1, (req, data) => ({ 
     action: 'ocr', 
@@ -274,7 +275,7 @@ router.post('/ocr',
 // Create embeddings for AI chat
 router.post('/create-embeddings', 
   authenticateUser, 
-  requireProPlan,
+  requireFeature('ai_features'),
   async (req, res) => {
   try {
     console.log('=== CREATE EMBEDDINGS ENDPOINT CALLED ===');
@@ -426,7 +427,7 @@ router.post('/create-embeddings',
 // AI Chat endpoint
 router.post('/chat', 
   authenticateUser, 
-  requireProPlan,
+  requireFeature('pdf_chat'),
   async (req, res) => {
   try {
     const { fileId, message, conversationHistory = [] } = req.body;
@@ -475,7 +476,7 @@ router.post('/chat',
 // Smart summary endpoint
 router.post('/smart-summary', 
   authenticateUser, 
-  requireProPlan,
+  requireFeature('summaries'),
   async (req, res) => {
   try {
     console.log('=== SMART SUMMARY ENDPOINT CALLED ===');

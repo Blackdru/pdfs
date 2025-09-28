@@ -403,81 +403,87 @@ const FileManager = () => {
         </div>
 
         {/* Search and Filters */}
-        <div className="flex flex-col md:flex-row gap-4 mb-8">
-          <div className="flex-1 relative">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-grey-500" />
+        <div className="flex flex-col gap-4 mb-6 sm:mb-8">
+          <div className="relative">
+            <Search className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-grey-500" />
             <input
               type="text"
               placeholder="Search files..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="dark-input pl-12"
+              className="w-full bg-grey-800 border border-grey-700 text-grey-200 rounded-xl pl-10 sm:pl-12 pr-4 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
           
-          <div className="flex space-x-3">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="btn-dark-outline">
-                  <Filter className="h-4 w-4 mr-2" />
-                  Filter
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="dropdown-dark">
-                <DropdownMenuItem onClick={() => setFilterType('all')} className="dropdown-item-dark">
-                  All Files
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setFilterType('pdf')} className="dropdown-item-dark">
-                  PDF Files
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setFilterType('image')} className="dropdown-item-dark">
-                  Images
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setFilterType('document')} className="dropdown-item-dark">
-                  Documents
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex gap-2 sm:gap-3 flex-1">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="flex-1 sm:flex-none btn-dark-outline text-xs sm:text-sm">
+                    <Filter className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                    <span className="hidden sm:inline">Filter</span>
+                    <span className="sm:hidden">Filter</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="dropdown-dark">
+                  <DropdownMenuItem onClick={() => setFilterType('all')} className="dropdown-item-dark">
+                    All Files
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setFilterType('pdf')} className="dropdown-item-dark">
+                    PDF Files
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setFilterType('image')} className="dropdown-item-dark">
+                    Images
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setFilterType('document')} className="dropdown-item-dark">
+                    Documents
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
 
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="btn-dark-outline">
-                  <Calendar className="h-4 w-4 mr-2" />
-                  Sort
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="dropdown-dark">
-                <DropdownMenuItem onClick={() => setSortBy('date')} className="dropdown-item-dark">
-                  Date Modified
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setSortBy('name')} className="dropdown-item-dark">
-                  Name
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setSortBy('size')} className="dropdown-item-dark">
-                  File Size
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => setSortBy('type')} className="dropdown-item-dark">
-                  File Type
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="flex-1 sm:flex-none btn-dark-outline text-xs sm:text-sm">
+                    <Calendar className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                    <span className="hidden sm:inline">Sort</span>
+                    <span className="sm:hidden">Sort</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="dropdown-dark">
+                  <DropdownMenuItem onClick={() => setSortBy('date')} className="dropdown-item-dark">
+                    Date Modified
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSortBy('name')} className="dropdown-item-dark">
+                    Name
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSortBy('size')} className="dropdown-item-dark">
+                    File Size
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSortBy('type')} className="dropdown-item-dark">
+                    File Type
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
 
-            <div className="flex border border-grey-700 rounded-xl bg-grey-800">
+            <div className="flex border border-grey-700 rounded-xl bg-grey-800 w-full sm:w-auto">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setViewMode('grid')}
-                className={`rounded-r-none ${viewMode === 'grid' ? 'bg-blue-600 text-white' : 'text-grey-400 hover:text-grey-200'}`}
+                className={`flex-1 sm:flex-none rounded-r-none text-xs sm:text-sm ${viewMode === 'grid' ? 'bg-blue-600 text-white' : 'text-grey-400 hover:text-grey-200'}`}
               >
-                <Grid className="h-4 w-4" />
+                <Grid className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-0" />
+                <span className="sm:hidden">Grid</span>
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setViewMode('list')}
-                className={`rounded-l-none border-l border-grey-700 ${viewMode === 'list' ? 'bg-blue-600 text-white' : 'text-grey-400 hover:text-grey-200'}`}
+                className={`flex-1 sm:flex-none rounded-l-none border-l border-grey-700 text-xs sm:text-sm ${viewMode === 'list' ? 'bg-blue-600 text-white' : 'text-grey-400 hover:text-grey-200'}`}
               >
-                <List className="h-4 w-4" />
+                <List className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-0" />
+                <span className="sm:hidden">List</span>
               </Button>
             </div>
           </div>

@@ -97,32 +97,40 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="container mx-auto py-8 px-4">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">
-            Welcome back, {user?.user_metadata?.name || user?.email}
-          </h1>
-          <p className="text-muted-foreground">
-            Manage your PDF files with AI-powered tools
-          </p>
+    <div className="min-h-screen bg-grey-950 px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="flex flex-col space-y-4 sm:space-y-6 mb-6 sm:mb-8">
+          <div className="text-center sm:text-left">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2 text-grey-100 break-words">
+              Welcome back, {user?.user_metadata?.name || user?.email?.split('@')[0] || 'User'}
+            </h1>
+            <p className="text-sm sm:text-base text-grey-400">
+              Manage your PDF files with AI-powered tools
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-2 w-full sm:w-auto sm:ml-auto">
+            <Button 
+              variant="outline" 
+              onClick={() => setShowBatchProcessor(true)}
+              className="w-full sm:w-auto btn-dark-outline text-sm sm:text-base py-2 sm:py-2"
+            >
+              <Zap className="mr-2 h-4 w-4 flex-shrink-0" />
+              <span className="truncate">Batch Process</span>
+            </Button>
+            <Button 
+              onClick={() => setShowUpload(true)}
+              className="w-full sm:w-auto btn-blue text-sm sm:text-base py-2 sm:py-2"
+            >
+              <Upload className="mr-2 h-4 w-4 flex-shrink-0" />
+              <span className="truncate">Upload Files</span>
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center space-x-2 mt-4 md:mt-0">
-          <Button variant="outline" onClick={() => setShowBatchProcessor(true)}>
-            <Zap className="mr-2 h-4 w-4" />
-            Batch Process
-          </Button>
-          <Button onClick={() => setShowUpload(true)}>
-            <Upload className="mr-2 h-4 w-4" />
-            Upload Files
-          </Button>
-        </div>
-      </div>
 
-      {/* Stats Cards */}
-      {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+        {/* Stats Cards */}
+        {stats && (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Total Files</CardTitle>
@@ -180,25 +188,27 @@ const Dashboard = () => {
       )}
 
       {/* Main Content */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="overview" className="flex items-center">
-            <Activity className="h-4 w-4 mr-2" />
-            Overview
-          </TabsTrigger>
-          <TabsTrigger value="files" className="flex items-center">
-            <FolderOpen className="h-4 w-4 mr-2" />
-            File Manager
-          </TabsTrigger>
-          <TabsTrigger value="ai" className="flex items-center">
-            <Sparkles className="h-4 w-4 mr-2" />
-            AI Features
-          </TabsTrigger>
-          <TabsTrigger value="recent" className="flex items-center">
-            <Clock className="h-4 w-4 mr-2" />
-            Recent
-          </TabsTrigger>
-        </TabsList>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
+          <div className="overflow-x-auto">
+            <TabsList className="grid w-full grid-cols-4 min-w-[320px] h-auto p-1">
+              <TabsTrigger value="overview" className="flex flex-col sm:flex-row items-center justify-center px-2 py-2 sm:py-3 text-xs sm:text-sm">
+                <Activity className="h-3 w-3 sm:h-4 sm:w-4 mb-1 sm:mb-0 sm:mr-2 flex-shrink-0" />
+                <span className="truncate">Overview</span>
+              </TabsTrigger>
+              <TabsTrigger value="files" className="flex flex-col sm:flex-row items-center justify-center px-2 py-2 sm:py-3 text-xs sm:text-sm">
+                <FolderOpen className="h-3 w-3 sm:h-4 sm:w-4 mb-1 sm:mb-0 sm:mr-2 flex-shrink-0" />
+                <span className="truncate">Files</span>
+              </TabsTrigger>
+              <TabsTrigger value="ai" className="flex flex-col sm:flex-row items-center justify-center px-2 py-2 sm:py-3 text-xs sm:text-sm">
+                <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 mb-1 sm:mb-0 sm:mr-2 flex-shrink-0" />
+                <span className="truncate">AI</span>
+              </TabsTrigger>
+              <TabsTrigger value="recent" className="flex flex-col sm:flex-row items-center justify-center px-2 py-2 sm:py-3 text-xs sm:text-sm">
+                <Clock className="h-3 w-3 sm:h-4 sm:w-4 mb-1 sm:mb-0 sm:mr-2 flex-shrink-0" />
+                <span className="truncate">Recent</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
         <TabsContent value="overview" className="space-y-6">
           {/* Quick Actions */}
@@ -469,6 +479,7 @@ const Dashboard = () => {
           }}
         />
       )}
+      </div>
     </div>
   )
 }

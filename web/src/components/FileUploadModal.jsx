@@ -99,18 +99,11 @@ const FileUploadModal = ({
       // Update file statuses to uploading
       setFiles(prev => prev.map(f => ({ ...f, status: 'uploading' })))
       
+      // Close modal immediately to show processing modal
+      onClose()
+      
       // Call the upload handler
       await onFilesUploaded(files.map(f => f.file))
-      
-      // Update file statuses to success
-      setFiles(prev => prev.map(f => ({ ...f, status: 'success' })))
-      
-      toast.success(`${files.length} file(s) uploaded successfully!`)
-      
-      // Close modal after a short delay
-      setTimeout(() => {
-        onClose()
-      }, 1500)
       
     } catch (error) {
       console.error('Upload error:', error)

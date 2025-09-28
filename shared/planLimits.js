@@ -3,9 +3,9 @@ const PLAN_LIMITS = {
   free: {
     name: 'Free',
     price: 0,
-    filesPerMonth: 5, // Reduced from 10 to 5
-    maxFileSize: 5 * 1024 * 1024, // Reduced from 10MB to 5MB
-    storageLimit: 50 * 1024 * 1024, // Reduced from 100MB to 50MB
+    filesPerMonth: 10,
+    maxFileSize: 10 * 1024 * 1024, // 10MB
+    storageLimit: 100 * 1024 * 1024, // 100MB
     aiOperations: 0, // No AI operations in free version
     apiCalls: 0, // No API access
     batchOperations: 1, // Single file operations only
@@ -25,15 +25,15 @@ const PLAN_LIMITS = {
       advancedTools: false // Advanced tools restricted
     }
   },
-  pro: {
-    name: 'Pro',
+  basic: {
+    name: 'Basic',
     price: 1,
-    filesPerMonth: 1000,
-    maxFileSize: 100 * 1024 * 1024, // 100MB
-    storageLimit: 5 * 1024 * 1024 * 1024, // 5GB
-    aiOperations: 500,
-    apiCalls: 1000,
-    batchOperations: 50,
+    filesPerMonth: 100,
+    maxFileSize: 50 * 1024 * 1024, // 50MB
+    storageLimit: 500 * 1024 * 1024, // 500MB
+    aiOperations: 50,
+    apiCalls: 100,
+    batchOperations: 10,
     features: [
       'basic_pdf_ops',
       'file_organization',
@@ -44,23 +44,26 @@ const PLAN_LIMITS = {
       'ocr_processing',
       'pdf_chat',
       'summaries',
-      'search'
+      'search',
+      'advanced_tools'
     ],
     restrictions: {
-      maxFilesPerBatch: 50,
-      ocrPages: -1, // Unlimited OCR pages
-      ocrFilesPerMonth: -1, // Unlimited OCR files
+      maxFilesPerBatch: 10,
+      ocrPages: 50,
+      ocrFilesPerMonth: 100,
       summaryLength: 'detailed',
-      chatMessages: 500,
-      aiChatAccess: true // AI chat available in pro
+      chatMessages: 50,
+      aiChatAccess: true,
+      ocrAccess: true,
+      advancedTools: true
     }
   },
-  premium: {
-    name: 'Premium',
+  pro: {
+    name: 'Pro',
     price: 10,
     filesPerMonth: -1, // unlimited
-    maxFileSize: 500 * 1024 * 1024, // 500MB
-    storageLimit: 50 * 1024 * 1024 * 1024, // 50GB
+    maxFileSize: 200 * 1024 * 1024, // 200MB
+    storageLimit: -1, // unlimited
     aiOperations: -1, // unlimited
     apiCalls: 10000,
     batchOperations: -1, // unlimited
@@ -70,7 +73,8 @@ const PLAN_LIMITS = {
       'priority_support',
       'advanced_analytics',
       'custom_workflows',
-      'white_label'
+      'white_label',
+      'advanced_settings'
     ],
     restrictions: {
       maxFilesPerBatch: -1, // unlimited
@@ -78,7 +82,10 @@ const PLAN_LIMITS = {
       ocrFilesPerMonth: -1, // unlimited
       summaryLength: 'comprehensive',
       chatMessages: -1, // unlimited
-      aiChatAccess: true // AI chat available in premium
+      aiChatAccess: true,
+      ocrAccess: true,
+      advancedTools: true,
+      advancedSettings: true
     }
   }
 };
@@ -199,8 +206,8 @@ const formatNumber = (num) => {
 
 // Stripe price IDs (to be set in environment variables)
 const STRIPE_PRICE_IDS = {
-  pro: process.env.STRIPE_PRICE_ID_PRO || 'price_pro_monthly',
-  premium: process.env.STRIPE_PRICE_ID_PREMIUM || 'price_premium_monthly'
+  basic: process.env.STRIPE_PRICE_ID_BASIC || 'price_basic_monthly',
+  pro: process.env.STRIPE_PRICE_ID_PRO || 'price_pro_monthly'
 };
 
 // Plan comparison data for frontend
@@ -208,68 +215,62 @@ const PLAN_COMPARISON = [
   {
     feature: 'Files per month',
     free: '10',
-    pro: '1,000',
-    premium: 'Unlimited'
+    basic: '100',
+    pro: 'Unlimited'
   },
   {
     feature: 'Max file size',
     free: '10 MB',
-    pro: '100 MB',
-    premium: '500 MB'
+    basic: '50 MB',
+    pro: '200 MB'
   },
   {
     feature: 'Storage',
     free: '100 MB',
-    pro: '5 GB',
-    premium: '50 GB'
+    basic: '500 MB',
+    pro: 'Unlimited'
   },
   {
-    feature: 'AI Operations',
-    free: '5',
-    pro: '500',
-    premium: 'Unlimited'
-  },
-  {
-    feature: 'API Calls',
+    feature: 'OCR Pages',
     free: 'None',
-    pro: '1,000',
-    premium: '10,000'
+    basic: '50',
+    pro: 'Unlimited'
   },
   {
-    feature: 'Batch Processing',
-    free: 'Single files',
-    pro: 'Up to 50 files',
-    premium: 'Unlimited'
+    feature: 'AI Chat Messages',
+    free: 'None',
+    basic: '50',
+    pro: 'Unlimited'
   },
   {
-    feature: 'OCR Processing',
-    free: '10 files/month (single page/image only)',
-    pro: 'Unlimited',
-    premium: 'Unlimited'
+    feature: 'AI Summary',
+    free: 'None',
+    basic: '50',
+    pro: 'Unlimited'
   },
   {
-    feature: 'AI Chat',
-    free: 'Not Available',
-    pro: '500 messages',
-    premium: 'Unlimited'
+    feature: 'Advanced Tools',
+    free: false,
+    basic: true,
+    pro: true
+  },
+  {
+    feature: 'Advanced Settings',
+    free: false,
+    basic: false,
+    pro: true
   },
   {
     feature: 'Priority Support',
     free: false,
-    pro: false,
-    premium: true
+    basic: false,
+    pro: true
   },
   {
     feature: 'API Access',
     free: false,
-    pro: true,
-    premium: true
-  },
-  {
-    feature: 'Advanced Analytics',
-    free: false,
-    pro: false,
-    premium: true
+    basic: false,
+    pro: true
   }
 ];
 

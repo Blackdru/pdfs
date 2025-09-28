@@ -2,8 +2,15 @@ const express = require('express');
 const { supabaseAdmin } = require('../config/supabase');
 const { authenticateUser } = require('../middleware/auth');
 const { PLAN_LIMITS } = require('../../../shared/planLimits.js');
+const stripeService = require('../services/stripeService');
 
 const router = express.Router();
+
+// Stripe price IDs mapping
+const STRIPE_PRICE_IDS = {
+  pro: process.env.STRIPE_PRICE_ID_PRO || 'price_1234567890abcdef', // Replace with actual price ID
+  premium: process.env.STRIPE_PRICE_ID_PREMIUM || 'price_0987654321fedcba' // Replace with actual price ID
+};
 
 // Get available subscription plans
 router.get('/plans', async (req, res) => {
@@ -221,13 +228,65 @@ router.post('/create', authenticateUser, async (req, res) => {
       return res.json({ message: 'Free plan activated successfully' });
     }
 
-    // For paid plans, you would integrate with Stripe here
-    // For now, return a placeholder response
-    res.json({
-      message: 'Paid plan creation not implemented yet',
-      clientSecret: 'placeholder_client_secret',
-      subscriptionId: 'placeholder_subscription_id'
-    });
+    // For paid plans, integrate with Stripe
+    try {
+      // Get user profile for email
+      const { data: userProfile, error: profileError } = await supabaseAdmin
+        .from('users')
+        .select('email, full_name')
+        .eq('id', req.user.id)
+        .single();
+
+      if (profileError) {
+        return res.status(400).json({ error: 'User profile not found' });
+      }
+
+      // Check if user already has a Stripe customer ID
+      let customerId;
+      const { data: existingSubscription } = await supabaseAdmin
+        .from('subscriptions')
+        .select('stripe_customer_id')
+        .eq('user_id', req.user.id)
+        .single();
+
+      if (existingSubscription?.stripe_customer_id) {
+        customerId = existingSubscription.stripe_customer_id;
+      } else {
+        // Create new Stripe customer
+        const customer = await stripeService.createCustomer(
+          userProfile.email,
+          userProfile.full_name,
+          req.user.id
+        );
+        customerId = customer.id;
+      }
+
+      // Get the price ID for the plan
+      const priceId = STRIPE_PRICE_IDS[plan];
+      if (!priceId) {
+        return res.status(400).json({ error: 'Invalid plan price ID' });
+      }
+
+      // Create Stripe subscription
+      const result = await stripeService.createSubscription(
+        customerId,
+        priceId,
+        req.user.id
+      );
+
+      res.json({
+        success: true,
+        clientSecret: result.clientSecret,
+        subscriptionId: result.subscriptionId
+      });
+
+    } catch (stripeError) {
+      console.error('Stripe error:', stripeError);
+      res.status(500).json({ 
+        error: 'Failed to create subscription with payment provider',
+        details: stripeError.message 
+      });
+    }
   } catch (error) {
     console.error('Error creating subscription:', error);
     res.status(500).json({ error: 'Failed to create subscription' });

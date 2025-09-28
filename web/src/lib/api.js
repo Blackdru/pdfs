@@ -470,6 +470,7 @@ class ApiClient {
     return this.request('/ai/ocr', {
       method: 'POST',
       body: JSON.stringify({ fileId, ...options }),
+      timeout: 90000, // 90 seconds for OCR
     })
   }
 
@@ -484,6 +485,7 @@ class ApiClient {
     return this.request('/ai/smart-summary', {
       method: 'POST',
       body: JSON.stringify({ fileId, ...options }),
+      timeout: 120000, // 2 minutes for AI operations
     })
   }
 
@@ -491,6 +493,7 @@ class ApiClient {
     return this.request('/ai/create-embeddings', {
       method: 'POST',
       body: JSON.stringify({ fileId, ...options }),
+      timeout: 90000, // 90 seconds for embeddings
     })
   }
 

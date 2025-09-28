@@ -116,39 +116,39 @@ const PlanCard = ({ plan, isCurrentPlan = false, onSelectPlan }) => {
           <div className="flex items-center gap-2">
             <Check className="h-4 w-4 text-green-500" />
             <span className="text-sm">
-              {plan.filesPerMonth === -1 ? 'Unlimited' : plan.filesPerMonth.toLocaleString()} files per month
+              {(plan.limits?.filesPerMonth || plan.filesPerMonth) === -1 ? 'Unlimited' : (plan.limits?.filesPerMonth || plan.filesPerMonth || 0).toLocaleString()} files per month
             </span>
           </div>
           
           <div className="flex items-center gap-2">
             <Check className="h-4 w-4 text-green-500" />
             <span className="text-sm">
-              {plan.maxFileSize === -1 ? 'Unlimited' : `${Math.round(plan.maxFileSize / 1024 / 1024)}MB`} max file size
+              {(plan.limits?.maxFileSize || plan.maxFileSize) === -1 ? 'Unlimited' : `${Math.round((plan.limits?.maxFileSize || plan.maxFileSize || 0) / 1024 / 1024)}MB`} max file size
             </span>
           </div>
           
           <div className="flex items-center gap-2">
             <Check className="h-4 w-4 text-green-500" />
             <span className="text-sm">
-              {plan.storageLimit === -1 ? 'Unlimited' : 
-               plan.storageLimit >= 1024 * 1024 * 1024 ? 
-               `${Math.round(plan.storageLimit / 1024 / 1024 / 1024)}GB` : 
-               `${Math.round(plan.storageLimit / 1024 / 1024)}MB`} storage
+              {(plan.limits?.storageLimit || plan.storageLimit) === -1 ? 'Unlimited' : 
+               (plan.limits?.storageLimit || plan.storageLimit || 0) >= 1024 * 1024 * 1024 ? 
+               `${Math.round((plan.limits?.storageLimit || plan.storageLimit || 0) / 1024 / 1024 / 1024)}GB` : 
+               `${Math.round((plan.limits?.storageLimit || plan.storageLimit || 0) / 1024 / 1024)}MB`} storage
             </span>
           </div>
           
           <div className="flex items-center gap-2">
             <Check className="h-4 w-4 text-green-500" />
             <span className="text-sm">
-              {plan.aiOperations === -1 ? 'Unlimited' : plan.aiOperations.toLocaleString()} AI operations
+              {(plan.limits?.aiOperations || plan.aiOperations) === -1 ? 'Unlimited' : (plan.limits?.aiOperations || plan.aiOperations || 0).toLocaleString()} AI operations
             </span>
           </div>
 
-          {plan.apiCalls > 0 && (
+          {(plan.limits?.apiCalls || plan.apiCalls || 0) > 0 && (
             <div className="flex items-center gap-2">
               <Check className="h-4 w-4 text-green-500" />
               <span className="text-sm">
-                {plan.apiCalls === -1 ? 'Unlimited' : plan.apiCalls.toLocaleString()} API calls
+                {(plan.limits?.apiCalls || plan.apiCalls) === -1 ? 'Unlimited' : (plan.limits?.apiCalls || plan.apiCalls || 0).toLocaleString()} API calls
               </span>
             </div>
           )}
@@ -157,7 +157,7 @@ const PlanCard = ({ plan, isCurrentPlan = false, onSelectPlan }) => {
         <div className="pt-2 border-t">
           <p className="text-xs text-muted-foreground mb-2">Features included:</p>
           <div className="space-y-1">
-            {plan.features.slice(0, 4).map((feature, index) => (
+            {(plan.features || []).slice(0, 4).map((feature, index) => (
               <div key={index} className="flex items-center gap-2">
                 <Check className="h-3 w-3 text-green-500" />
                 <span className="text-xs capitalize">
@@ -165,9 +165,9 @@ const PlanCard = ({ plan, isCurrentPlan = false, onSelectPlan }) => {
                 </span>
               </div>
             ))}
-            {plan.features.length > 4 && (
+            {(plan.features || []).length > 4 && (
               <div className="text-xs text-muted-foreground">
-                +{plan.features.length - 4} more features
+                +{(plan.features || []).length - 4} more features
               </div>
             )}
           </div>

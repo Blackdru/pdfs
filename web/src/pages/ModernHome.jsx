@@ -10,7 +10,6 @@ import {
   Image, 
   Zap,
   Shield,
-  Clock,
   Users,
   Star,
   ArrowRight,
@@ -20,18 +19,15 @@ import {
   Upload,
   Eye,
   Lock,
-  Globe,
-  Smartphone,
-  Layers,
-  Palette,
   Rocket,
-  Heart,
-  Award,
-  TrendingUp,
   Play,
   ChevronRight,
-  Target,
-  Activity
+  Brain,
+  MessageSquare,
+  Layers,
+  Award,
+  Heart,
+  Palette
 } from 'lucide-react'
 
 const ModernHome = () => {
@@ -116,16 +112,16 @@ const ModernHome = () => {
       bgGradient: 'bg-gradient-green'
     },
     {
-      icon: Globe,
-      title: 'Universal Access',
-      description: 'Works seamlessly across all devices and platforms',
+      icon: Brain,
+      title: 'AI-Powered',
+      description: 'Advanced AI for smart document processing and analysis',
       color: 'text-purple-400',
       bgGradient: 'bg-gradient-purple'
     },
     {
-      icon: Heart,
-      title: 'User Obsessed',
-      description: 'Designed with love for the ultimate user experience',
+      icon: MessageSquare,
+      title: 'Chat with PDFs',
+      description: 'Ask questions and get instant answers from your documents',
       color: 'text-orange-400',
       bgGradient: 'bg-gradient-orange'
     }
@@ -134,8 +130,8 @@ const ModernHome = () => {
   const stats = [
     { number: '5M+', label: 'Documents Processed', icon: FileText },
     { number: '100K+', label: 'Happy Users', icon: Users },
-    { number: '99.99%', label: 'Uptime', icon: TrendingUp },
-    { number: '24/7', label: 'AI Support', icon: Award }
+    { number: '99.99%', label: 'Uptime', icon: Zap },
+    { number: '24/7', label: 'AI Support', icon: Brain }
   ]
 
   const testimonials = [
@@ -200,11 +196,11 @@ const ModernHome = () => {
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-20">
               {user ? (
                 <Button 
-                  onClick={() => navigate('/dashboard')} 
+                  onClick={() => navigate('/register')} 
                   className="btn-blue text-xl px-12 py-6 h-auto font-semibold"
                 >
                   <Rocket className="mr-3 h-6 w-6" />
-                  Launch Dashboard
+                  Start for Free
                   <ArrowRight className="ml-3 h-6 w-6" />
                 </Button>
               ) : (
@@ -225,28 +221,6 @@ const ModernHome = () => {
                   </Button>
                 </>
               )}
-            </div>
-
-            {/* Hero Demo Cards */}
-            <div className="relative max-w-5xl mx-auto">
-              <div className="dark-card p-12 bg-grey-900 shadow-blue-lg">
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-6">
-                  {features.slice(0, 6).map((feature, index) => (
-                    <div 
-                      key={feature.title}
-                      className={`group flex flex-col items-center p-6 rounded-3xl bg-grey-800 hover:bg-grey-700 transition-all duration-500 hover:shadow-lg hover:-translate-y-2 ${
-                        isVisible ? 'animate-bounce-in' : ''
-                      }`}
-                      style={{ animationDelay: `${index * 150}ms` }}
-                    >
-                      <div className={`p-4 rounded-2xl ${feature.bgColor} ${feature.hoverBg} transition-all duration-300 group-hover:scale-110 mb-4`}>
-                        <feature.icon className={`h-8 w-8 ${feature.color}`} />
-                      </div>
-                      <span className="text-sm font-semibold text-grey-200 text-center">{feature.title}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -331,39 +305,7 @@ const ModernHome = () => {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="layout-dark-section bg-gradient-accent text-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-black"></div>
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-10 right-10 w-40 h-40 bg-grey-700 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-10 left-10 w-56 h-56 bg-grey-800 rounded-full blur-3xl"></div>
-        </div>
-        
-        <div className="layout-dark-container relative">
-          <div className="text-center mb-16">
-            <h2 className="heading-dark-2 mb-6 text-white">Trusted Worldwide</h2>
-            <p className="body-dark-large text-grey-300 max-w-2xl mx-auto">
-              Join millions of users who trust our platform for their document processing needs
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {stats.map((stat, index) => (
-              <div 
-                key={stat.label}
-                className={`text-center group ${isVisible ? 'animate-bounce-in' : ''}`}
-                style={{ animationDelay: `${index * 150}ms` }}
-              >
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-grey-700 rounded-2xl mb-4 group-hover:bg-grey-600 transition-all duration-300">
-                  <stat.icon className="h-8 w-8 text-white" />
-                </div>
-                <div className="text-4xl md:text-5xl font-bold mb-2 text-white group-hover:scale-110 transition-transform duration-300">{stat.number}</div>
-                <div className="text-grey-300 font-semibold">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      
 
       {/* How It Works Section */}
       <section className="layout-dark-section bg-grey-900">
@@ -404,7 +346,7 @@ const ModernHome = () => {
               }
             ].map((step, index) => (
               <div 
-                key={step.step}
+                key={index}
                 className={`text-center relative group ${
                   isVisible ? 'animate-slide-up-fade' : ''
                 }`}
@@ -412,7 +354,7 @@ const ModernHome = () => {
               >
                 <div className="relative mb-8">
                   <div className={`relative inline-flex items-center justify-center w-24 h-24 ${step.color} text-white rounded-3xl text-2xl font-bold shadow-2xl group-hover:scale-110 group-hover:rotate-6 transition-all duration-500`}>
-                    {step.step}
+                    {index + 1}
                     <step.icon className="absolute inset-0 m-auto h-10 w-10 opacity-30" />
                   </div>
                 </div>
@@ -427,41 +369,6 @@ const ModernHome = () => {
                     </div>
                   </div>
                 )}
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials Section */}
-      <section className="layout-dark-section bg-grey-800">
-        <div className="layout-dark-container">
-          <div className="text-center mb-20">
-            <div className="inline-flex items-center px-6 py-3 bg-gradient-orange text-white rounded-full text-sm font-semibold mb-8">
-              <Heart className="h-5 w-5 mr-2" />
-              User Love
-            </div>
-            <h2 className="heading-dark-2 mb-6">What Our Users Say</h2>
-            <p className="body-dark-large text-grey-300 max-w-3xl mx-auto">
-              Don't just take our word for it - hear from the thousands of users who love our platform
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <div 
-                key={testimonial.name}
-                className={`dark-card-hover p-8 text-center group ${
-                  isVisible ? 'animate-slide-up-fade' : ''
-                }`}
-                style={{ animationDelay: `${index * 200}ms` }}
-              >
-                <div className="text-6xl mb-6 group-hover:scale-110 transition-transform duration-300">{testimonial.avatar}</div>
-                <p className="body-dark text-grey-300 mb-6 italic leading-relaxed">"{testimonial.content}"</p>
-                <div>
-                  <div className="font-semibold text-grey-200 mb-1">{testimonial.name}</div>
-                  <div className="text-sm text-grey-400">{testimonial.role} • {testimonial.company}</div>
-                </div>
               </div>
             ))}
           </div>
@@ -511,8 +418,8 @@ const ModernHome = () => {
                   '100MB storage',
                   'Basic PDF tools',
                   '5 OCR pages/month'
-                ].map((feature) => (
-                  <div key={feature} className="flex items-center text-sm">
+                ].map((feature, index) => (
+                  <div key={index} className="flex items-center text-sm">
                     <CheckCircle className="h-5 w-5 text-green-400 mr-3 flex-shrink-0" />
                     <span className="text-grey-300">{feature}</span>
                   </div>
@@ -558,8 +465,8 @@ const ModernHome = () => {
                   '200 OCR pages/month',
                   '1,000 AI messages/month',
                   'Batch processing (20 files)'
-                ].map((feature) => (
-                  <div key={feature} className="flex items-center text-sm">
+                ].map((feature, index) => (
+                  <div key={index} className="flex items-center text-sm">
                     <CheckCircle className="h-5 w-5 text-green-400 mr-3 flex-shrink-0" />
                     <span className="text-grey-300">{feature}</span>
                   </div>
@@ -599,8 +506,8 @@ const ModernHome = () => {
                   'Unlimited OCR',
                   'Unlimited AI messages',
                   'Priority support'
-                ].map((feature) => (
-                  <div key={feature} className="flex items-center text-sm">
+                ].map((feature, index) => (
+                  <div key={index} className="flex items-center text-sm">
                     <CheckCircle className="h-5 w-5 text-green-400 mr-3 flex-shrink-0" />
                     <span className="text-grey-300">{feature}</span>
                   </div>
@@ -617,9 +524,6 @@ const ModernHome = () => {
           </div>
           
           <div className="text-center mt-16">
-            <p className="text-grey-400 mb-6 text-lg">
-              All plans include a 7-day free trial • No setup fees • Cancel anytime
-            </p>
             <Button 
               onClick={() => navigate('/upgrade')}
               className="btn-dark-glass text-grey-300 hover:text-grey-200"
@@ -701,50 +605,6 @@ const ModernHome = () => {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-grey-950 text-grey-300 py-16 border-t border-grey-800">
-        <div className="layout-dark-container">
-          <div className="grid md:grid-cols-4 gap-12">
-            <div className="md:col-span-2">
-              <div className="flex items-center space-x-4 mb-6">
-                <div className="bg-gradient-blue p-3 rounded-2xl">
-                  <FileText className="h-8 w-8 text-white" />
-                </div>
-                <span className="text-2xl font-bold text-grey-100">PDFPet</span>
-              </div>
-              <p className="text-grey-400 mb-6 text-lg leading-relaxed">
-                The world's most intelligent PDF processing platform. 
-                Fast, secure, and beautifully designed for everyone.
-              </p>
-              <div className="text-sm text-grey-500">
-                © 2024 PDFPet. All rights reserved. Made with ❤️ for document lovers.
-              </div>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold mb-6 text-lg text-grey-200">Tools</h4>
-              <ul className="space-y-3 text-grey-400">
-                <li><Link to="/tools" className="hover:text-grey-200 transition-colors duration-200">Merge PDF</Link></li>
-                <li><Link to="/tools" className="hover:text-grey-200 transition-colors duration-200">Split PDF</Link></li>
-                <li><Link to="/tools" className="hover:text-grey-200 transition-colors duration-200">Compress PDF</Link></li>
-                <li><Link to="/tools" className="hover:text-grey-200 transition-colors duration-200">Convert Images</Link></li>
-                <li><Link to="/tools" className="hover:text-grey-200 transition-colors duration-200">AI Assistant</Link></li>
-              </ul>
-            </div>
-            
-            <div>
-              <h4 className="font-semibold mb-6 text-lg text-grey-200">Company</h4>
-              <ul className="space-y-3 text-grey-400">
-                <li><Link to="/about" className="hover:text-grey-200 transition-colors duration-200">About Us</Link></li>
-                <li><Link to="/privacy" className="hover:text-grey-200 transition-colors duration-200">Privacy Policy</Link></li>
-                <li><Link to="/terms" className="hover:text-grey-200 transition-colors duration-200">Terms of Service</Link></li>
-                <li><Link to="/contact" className="hover:text-grey-200 transition-colors duration-200">Contact Support</Link></li>
-                <li><Link to="/blog" className="hover:text-grey-200 transition-colors duration-200">Blog</Link></li>
-              </ul>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
   )
 }

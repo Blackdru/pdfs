@@ -23,16 +23,59 @@ class SubscriptionService {
    */
   async getUserSubscription(userId) {
     try {
+      // First try the RPC function
       const { data, error } = await supabase
         .rpc('get_user_subscription_with_usage', { user_uuid: userId });
 
       if (error) {
-        console.error('Error getting user subscription:', error);
-        throw new Error('Failed to get subscription');
+        console.warn('RPC function failed, trying direct query:', error.message);
+        
+        // Fallback to direct query if RPC fails
+        const { data: directData, error: directError } = await supabase
+          .from('subscriptions')
+          .select('*')
+          .eq('user_id', userId)
+          .eq('status', 'active')
+          .single();
+        
+        if (directError || !directData) {
+          console.log('No subscription found, creating free subscription');
+          await this.createFreeSubscription(userId);
+          return this.getDefaultSubscription(userId);
+        }
+        
+        // Get usage data separately
+        const { data: usageData } = await supabase
+          .from('subscription_usage')
+          .select('*')
+          .eq('user_id', userId)
+          .single();
+        
+        const subscription = {
+          ...directData,
+          files_processed: usageData?.files_processed || 0,
+          storage_used: usageData?.storage_used || 0,
+          ai_operations: usageData?.ai_operations || 0,
+          api_calls: usageData?.api_calls || 0
+        };
+        
+        const planLimits = getPlanLimits(subscription.plan);
+        
+        return {
+          ...subscription,
+          planLimits,
+          usage: {
+            files_processed: subscription.files_processed,
+            storage_used: subscription.storage_used,
+            ai_operations: subscription.ai_operations,
+            api_calls: subscription.api_calls
+          }
+        };
       }
 
       if (!data || data.length === 0) {
         // Create default free subscription if none exists
+        console.log('No subscription data found, creating free subscription');
         await this.createFreeSubscription(userId);
         return this.getDefaultSubscription(userId);
       }
@@ -44,15 +87,17 @@ class SubscriptionService {
         ...subscription,
         planLimits,
         usage: {
-          files_processed: subscription.files_processed,
-          storage_used: subscription.storage_used,
-          ai_operations: subscription.ai_operations,
-          api_calls: subscription.api_calls
+          files_processed: subscription.files_processed || 0,
+          storage_used: subscription.storage_used || 0,
+          ai_operations: subscription.ai_operations || 0,
+          api_calls: subscription.api_calls || 0
         }
       };
     } catch (error) {
       console.error('Error in getUserSubscription:', error);
-      throw error;
+      // Return default free subscription as fallback
+      console.log('Returning default free subscription as fallback');
+      return this.getDefaultSubscription(userId);
     }
   }
 
@@ -61,21 +106,39 @@ class SubscriptionService {
    */
   async createFreeSubscription(userId) {
     try {
+      // Check if subscription already exists
+      const { data: existing } = await supabase
+        .from('subscriptions')
+        .select('id')
+        .eq('user_id', userId)
+        .single();
+      
+      if (existing) {
+        console.log('Subscription already exists for user:', userId);
+        return;
+      }
+      
       const { error } = await supabase
         .from('subscriptions')
         .insert({
           user_id: userId,
           plan: 'free',
-          status: 'active'
+          status: 'active',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         });
 
       if (error) {
         console.error('Error creating free subscription:', error);
-        throw new Error('Failed to create free subscription');
+        // Don't throw error, just log it
+        console.warn('Failed to create free subscription, will use default');
+      } else {
+        console.log('Free subscription created successfully for user:', userId);
       }
     } catch (error) {
       console.error('Error in createFreeSubscription:', error);
-      throw error;
+      // Don't throw error, just log it
+      console.warn('Failed to create free subscription, will use default');
     }
   }
 

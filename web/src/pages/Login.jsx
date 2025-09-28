@@ -52,31 +52,7 @@ const Login = () => {
       <div className={`max-w-lg w-full space-y-10 relative z-10 transition-all duration-1000 ${
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
       }`}>
-        {/* Header */}
-        <div className="text-center">
-          <Link to="/" className="inline-flex items-center justify-center mb-10 group">
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-blue rounded-3xl blur-xl scale-110"></div>
-              <div className="relative bg-gradient-blue p-5 rounded-3xl shadow-blue">
-                <FileText className="h-12 w-12 text-white" />
-              </div>
-            </div>
-            <div className="ml-5">
-              <h1 className="text-4xl font-bold text-gradient-grey font-poppins">
-                PDFPet
-              </h1>
-              <div className="flex items-center justify-center mt-1">
-                <Heart className="h-4 w-4 text-purple-400 mr-2" />
-                <span className="text-sm text-grey-400 font-medium">Your PDF companion</span>
-              </div>
-            </div>
-          </Link>
-          
-          <h2 className="heading-dark-2 mb-4">Welcome back!</h2>
-          <p className="body-dark text-grey-400">
-            Sign in to continue your intelligent PDF processing journey
-          </p>
-        </div>
+       
 
         {/* Login Form */}
         <div className="dark-card p-10 bg-grey-900 shadow-blue-lg">

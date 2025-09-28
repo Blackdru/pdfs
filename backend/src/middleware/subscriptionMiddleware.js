@@ -179,6 +179,36 @@ const requireProPlan = async (req, res, next) => {
 };
 
 /**
+ * Middleware to require Basic plan or higher
+ */
+const requireBasicPlan = async (req, res, next) => {
+  try {
+    const userId = req.user?.id;
+    
+    if (!userId) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    const subscription = await subscriptionService.getUserSubscription(userId);
+    
+    if (!['basic', 'pro', 'premium'].includes(subscription.plan)) {
+      return res.status(403).json({
+        error: 'Basic plan required',
+        message: 'This feature requires a Basic, Pro, or Premium subscription.',
+        currentPlan: subscription.plan,
+        requiredPlan: 'basic'
+      });
+    }
+
+    req.subscription = subscription;
+    next();
+  } catch (error) {
+    console.error('Error checking Basic plan requirement:', error);
+    res.status(500).json({ error: 'Failed to verify plan requirements' });
+  }
+};
+
+/**
  * Middleware to require Premium plan
  */
 const requirePremiumPlan = async (req, res, next) => {
@@ -375,6 +405,7 @@ module.exports = {
   enforceStorageLimit,
   enforceFileSizeLimit,
   requireProPlan,
+  requireBasicPlan,
   requirePremiumPlan,
   requireFeature,
   enforceAILimit,

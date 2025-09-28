@@ -19,10 +19,14 @@ import Profile from './pages/Profile'
 import Billing from './pages/Billing'
 import Upgrade from './pages/Upgrade'
 import Pricing from './pages/Pricing'
+import PrivacyPolicy from './pages/PrivacyPolicy'
+import TermsConditions from './pages/TermsConditions'
+import CancellationRefunds from './pages/CancellationRefunds'
 
 // Components
 import Navbar from './components/Navbar'
 import ModernNavbar from './components/ModernNavbar'
+import Footer from './components/Footer'
 import ProtectedRoute from './components/ProtectedRoute'
 import AdminRoute from './components/AdminRoute'
 
@@ -31,7 +35,12 @@ function App() {
     <ThemeProvider>
       <AuthProvider>
         <SubscriptionProvider>
-          <Router>
+          <Router
+            future={{
+              v7_startTransition: true,
+              v7_relativeSplatPath: true
+            }}
+          >
           <div className="min-h-screen bg-background font-inter">
             <ModernNavbar />
             <main className="modern-scrollbar">
@@ -96,6 +105,9 @@ function App() {
                   } 
                 />
                 <Route path="/pricing" element={<Pricing />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="/terms-conditions" element={<TermsConditions />} />
+                <Route path="/cancellation-refunds" element={<CancellationRefunds />} />
                 <Route 
                   path="/admin" 
                   element={
@@ -106,6 +118,7 @@ function App() {
                 />
               </Routes>
             </main>
+            <Footer />
             <Toaster 
               position="top-right"
               toastOptions={{

@@ -638,7 +638,7 @@ const Tools = () => {
   const usageExceeded = usage && usage.current >= usage.limit && subscription?.plan === 'free'
 
   return (
-    <div className="min-h-screen bg-grey-950 relative overflow-hidden">
+    <div className="min-h-screen bg-page relative overflow-hidden">
       {/* Modern Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-900 rounded-full blur-3xl opacity-20 animate-float"></div>
@@ -675,7 +675,7 @@ const Tools = () => {
                   className={`px-4 sm:px-6 py-2 sm:py-3 rounded-full font-medium transition-all duration-300 text-sm sm:text-base whitespace-nowrap ${
                     selectedCategory === category
                       ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
-                      : 'bg-grey-800 text-grey-300 hover:bg-grey-700 hover:text-grey-200'
+                      : 'bg-grey-800 text-grey-300 hover:bg-accent hover:text-foreground'
                   }`}
                 >
                   {category}
@@ -693,7 +693,7 @@ const Tools = () => {
                 className={`group relative bg-grey-900 rounded-3xl border-2 transition-all duration-500 cursor-pointer hover:scale-105 hover:shadow-2xl ${
                   selectedTool?.id === tool.id
                     ? 'border-blue-500 shadow-2xl shadow-blue-500/20'
-                    : 'border-grey-800 hover:border-grey-700'
+                    : 'border-grey-800 hover:border-border'
                 }`}
               >
                 {/* Popularity Badge */}
@@ -711,15 +711,15 @@ const Tools = () => {
                   {/* Content */}
                   <div className="mb-6">
                     <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-xl font-bold text-grey-100">{tool.title}</h3>
-                      <span className="text-xs bg-grey-800 text-grey-400 px-2 py-1 rounded-full">
+                      <h3 className="text-xl font-bold text-foreground">{tool.title}</h3>
+                      <span className="text-xs bg-elevated text-muted-foreground px-2 py-1 rounded-full">
                         {tool.category}
                       </span>
                     </div>
-                    <p className="text-grey-400 mb-4">{tool.description}</p>
+                    <p className="text-muted-foreground mb-4">{tool.description}</p>
                     
                     {/* Features */}
-                    <div className="flex items-center justify-between text-sm text-grey-500 mb-4">
+                    <div className="flex items-center justify-between text-sm text-secondary mb-4">
                       <div className="flex items-center">
                         <Clock className="h-4 w-4 mr-1" />
                         {tool.processingTime}
@@ -746,20 +746,20 @@ const Tools = () => {
           
           {/* Selected Tool Processing Area */}
           {selectedTool && (
-            <div className="bg-grey-900 rounded-3xl border border-grey-800 p-8 mb-8">
+            <div className="bg-surface rounded-3xl border border-border p-8 mb-8">
               <div className="flex items-center mb-8">
                 <div className={`w-12 h-12 ${selectedTool.iconBg} rounded-xl flex items-center justify-center mr-4`}>
                   <selectedTool.icon className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-grey-100">{selectedTool.title}</h2>
-                  <p className="text-grey-400">{selectedTool.description}</p>
+                  <h2 className="text-2xl font-bold text-foreground">{selectedTool.title}</h2>
+                  <p className="text-muted-foreground">{selectedTool.description}</p>
                 </div>
               </div>
 
               {/* File Upload Button */}
-              <div id="upload-section" className="bg-grey-800 rounded-2xl p-6 mb-6 text-center">
-                <h3 className="text-lg font-semibold text-grey-200 mb-4">
+              <div id="upload-section" className="bg-elevated rounded-2xl p-6 mb-6 text-center">
+                <h3 className="text-lg font-semibold text-card-foreground mb-4">
                   {selectedTool.multipleFiles ? 'Upload Files' : 'Upload File'}
                 </h3>
                 
@@ -771,7 +771,7 @@ const Tools = () => {
                   {selectedTool.multipleFiles ? 'Select Files' : 'Select File'}
                 </Button>
 
-                <p className="text-sm text-grey-400 mt-3">
+                <p className="text-sm text-muted-foreground mt-3">
                   Supports: {selectedTool.acceptedFiles.replace(/\./g, '').toUpperCase()}
                   {selectedTool.multipleFiles && ` • Up to 10 files`}
                 </p>
@@ -779,17 +779,17 @@ const Tools = () => {
                 {/* Uploaded Files Display */}
                 {uploadedFiles.length > 0 && (
                   <div className="mt-6 space-y-3">
-                    <h4 className="text-sm font-medium text-grey-300">
+                    <h4 className="text-sm font-medium text-card-foreground">
                       Selected Files ({uploadedFiles.length})
                     </h4>
                     <div className="space-y-2">
                       {uploadedFiles.map((file, index) => (
-                        <div key={index} className="flex items-center justify-between p-3 bg-grey-700 rounded-lg">
+                        <div key={index} className="flex items-center justify-between p-3 bg-accent rounded-lg">
                           <div className="flex items-center space-x-3">
-                            <FileText className="h-4 w-4 text-grey-400" />
-                            <span className="text-sm text-grey-200 truncate">{file.name}</span>
+                            <FileText className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-sm text-card-foreground truncate">{file.name}</span>
                           </div>
-                          <span className="text-xs text-grey-400">
+                          <span className="text-xs text-muted-foreground">
                             {(file.size / 1024 / 1024).toFixed(2)} MB
                           </span>
                         </div>
@@ -812,10 +812,10 @@ const Tools = () => {
 
               {/* Process Button */}
               {uploadedFiles.length > 0 && (
-                <div className="flex items-center justify-between p-6 bg-grey-800 rounded-2xl">
+                <div className="flex items-center justify-between p-6 bg-elevated rounded-2xl">
                   <div>
-                    <h3 className="text-lg font-semibold text-grey-200 mb-1">Ready to Process</h3>
-                    <p className="text-grey-400">
+                    <h3 className="text-lg font-semibold text-card-foreground mb-1">Ready to Process</h3>
+                    <p className="text-muted-foreground">
                       {uploadedFiles.length} file(s) ready for {selectedTool.title.toLowerCase()}
                     </p>
                   </div>
@@ -843,17 +843,17 @@ const Tools = () => {
 
           {/* OCR Results Display */}
           {ocrResults && (
-            <div className="bg-grey-900 rounded-3xl border border-grey-800 p-8 mb-8">
+            <div className="bg-surface rounded-3xl border border-border p-8 mb-8">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center">
                   <Eye className="h-6 w-6 text-cyan-400 mr-3" />
-                  <h3 className="text-xl font-semibold text-grey-200">OCR Results</h3>
+                  <h3 className="text-xl font-semibold text-card-foreground">OCR Results</h3>
                 </div>
                 <div className="flex items-center space-x-3">
                   <div className="bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">
                     {Math.round((ocrResults.confidence || 0) * 100)}% confidence
                   </div>
-                  <span className="text-sm bg-grey-800 text-grey-400 px-3 py-1 rounded-full">
+                  <span className="text-sm bg-elevated text-muted-foreground px-3 py-1 rounded-full">
                     {ocrResults.detectedLanguage || 'Unknown'}
                   </span>
                 </div>
@@ -861,12 +861,12 @@ const Tools = () => {
               
               <div className="space-y-6">
                 {/* File Info */}
-                <div className="bg-grey-800 rounded-xl p-4">
-                  <h4 className="font-medium text-grey-200 mb-2 flex items-center">
+                <div className="bg-elevated rounded-xl p-4">
+                  <h4 className="font-medium text-card-foreground mb-2 flex items-center">
                     <FileText className="h-4 w-4 mr-2" />
                     {ocrResults.filename}
                   </h4>
-                  <div className="flex items-center space-x-4 text-sm text-grey-400">
+                  <div className="flex items-center space-x-4 text-sm text-muted-foreground">
                     <span>{ocrResults.pageCount || 1} page(s)</span>
                     <span>Language: {ocrResults.detectedLanguage || 'Auto-detected'}</span>
                     <span>Confidence: {Math.round((ocrResults.confidence || 0) * 100)}%</span>
@@ -874,34 +874,34 @@ const Tools = () => {
                 </div>
 
                 {/* Extracted Text */}
-                <div className="bg-grey-800 rounded-xl p-4">
+                <div className="bg-elevated rounded-xl p-4">
                   <div className="flex items-center justify-between mb-3">
-                    <h4 className="font-medium text-grey-200">Extracted Text</h4>
+                    <h4 className="font-medium text-card-foreground">Extracted Text</h4>
                     <Button
                       onClick={() => navigator.clipboard.writeText(ocrResults.text)}
                       size="sm"
                       variant="outline"
-                      className="border-grey-600 text-grey-300 hover:bg-grey-700"
+                      className="border-border text-card-foreground hover:bg-accent"
                     >
                       <Copy className="h-4 w-4 mr-1" />
                       Copy
                     </Button>
                   </div>
-                  <div className="bg-grey-700 rounded-lg p-4 max-h-96 overflow-y-auto">
-                    <pre className="text-grey-200 text-sm whitespace-pre-wrap font-mono leading-relaxed">
+                  <div className="bg-accent rounded-lg p-4 max-h-96 overflow-y-auto">
+                    <pre className="text-card-foreground text-sm whitespace-pre-wrap font-mono leading-relaxed">
                       {ocrResults.text || 'No text extracted'}
                     </pre>
                   </div>
-                  <div className="mt-3 text-xs text-grey-500">
+                  <div className="mt-3 text-xs text-secondary">
                     {ocrResults.text ? `${ocrResults.text.length} characters extracted` : 'No text found'}
                   </div>
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center justify-between p-4 bg-grey-800 rounded-xl">
+                <div className="flex items-center justify-between p-4 bg-elevated rounded-xl">
                   <div>
-                    <h4 className="font-medium text-grey-200 mb-1">Text Extracted Successfully!</h4>
-                    <p className="text-grey-400 text-sm">
+                    <h4 className="font-medium text-card-foreground mb-1">Text Extracted Successfully!</h4>
+                    <p className="text-muted-foreground text-sm">
                       You can now copy the text or use it for further processing.
                     </p>
                   </div>
@@ -927,7 +927,7 @@ const Tools = () => {
                     <Button
                       onClick={() => setOcrResults(null)}
                       variant="outline"
-                      className="border-grey-600 text-grey-300 hover:bg-grey-700"
+                      className="border-border text-card-foreground hover:bg-accent"
                     >
                       Clear Results
                     </Button>
@@ -939,23 +939,23 @@ const Tools = () => {
 
           {/* AI Chat Results Display */}
           {toolResults && toolResults.type === 'ai-chat' && (
-            <div className="bg-grey-900 rounded-3xl border border-grey-800 p-8 mb-8">
+            <div className="bg-surface rounded-3xl border border-border p-8 mb-8">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center">
                   <MessageSquare className="h-6 w-6 text-pink-400 mr-3" />
-                  <h3 className="text-xl font-semibold text-grey-200">AI Chat Initialized</h3>
+                  <h3 className="text-xl font-semibold text-card-foreground">AI Chat Initialized</h3>
                 </div>
                 <div className="bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">
                   Ready
                 </div>
               </div>
               
-              <div className="bg-grey-800 rounded-xl p-6 text-center">
+              <div className="bg-elevated rounded-xl p-6 text-center">
                 <MessageSquare className="h-12 w-12 text-pink-400 mx-auto mb-4" />
-                <h4 className="text-lg font-semibold text-grey-200 mb-2">
+                <h4 className="text-lg font-semibold text-card-foreground mb-2">
                   AI Chat is Ready!
                 </h4>
-                <p className="text-grey-400 mb-4">
+                <p className="text-muted-foreground mb-4">
                   Your document has been processed and is ready for AI-powered conversations.
                   You can now ask questions about the content.
                 </p>
@@ -969,29 +969,29 @@ const Tools = () => {
 
           {/* Tool Results Display */}
           {toolResults && !['ocr', 'ai-chat'].includes(toolResults.type) && (
-            <div className="bg-grey-900 rounded-3xl border border-grey-800 p-8 mb-8">
+            <div className="bg-surface rounded-3xl border border-border p-8 mb-8">
               <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center">
                   <CheckCircle className="h-6 w-6 text-green-400 mr-3" />
-                  <h3 className="text-xl font-semibold text-grey-200">Processing Complete</h3>
+                  <h3 className="text-xl font-semibold text-card-foreground">Processing Complete</h3>
                 </div>
                 <div className="bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">
                   Success
                 </div>
               </div>
               
-              <div className="bg-grey-800 rounded-xl p-6">
+              <div className="bg-elevated rounded-xl p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h4 className="text-lg font-semibold text-grey-200 mb-1">
+                    <h4 className="text-lg font-semibold text-card-foreground mb-1">
                       {toolResults.toolName} Completed
                     </h4>
-                    <p className="text-grey-400">
+                    <p className="text-muted-foreground">
                       Your files have been processed successfully and downloaded.
                     </p>
                   </div>
                   <div className="text-right">
-                    <div className="text-sm text-grey-400">
+                    <div className="text-sm text-muted-foreground">
                       Processed at: {new Date(toolResults.timestamp).toLocaleString()}
                     </div>
                   </div>
@@ -1032,20 +1032,20 @@ const Tools = () => {
       />
 
         {/* Hero Section */}
-        <div className="bg-gradient-to-br from-grey-900 via-grey-800 to-grey-900 border-b border-grey-800">
+        <div className="bg-gradient-to-br from-grey-900 via-grey-800 to-grey-900 border-b border-border">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
             <div className="text-center">
               <div className="inline-flex items-center px-4 py-2 bg-blue-900 text-blue-300 rounded-full text-sm font-medium mb-6">
                 <Sparkles className="h-4 w-4 mr-2" />
                 Professional PDF Tools
               </div>
-              <h1 className="text-4xl md:text-6xl font-bold text-grey-100 mb-6">
+              <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6">
                 Transform Your PDFs
                 <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
                   Like Magic
                 </span>
               </h1>
-              <p className="text-xl text-grey-400 max-w-3xl mx-auto mb-8">
+              <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
                 Choose from our powerful suite of PDF tools to merge, split, compress, and convert your documents with professional-grade quality.
               </p>
               
@@ -1053,15 +1053,15 @@ const Tools = () => {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-2xl mx-auto">
                 <div className="text-center">
                   <div className="text-3xl font-bold text-blue-400 mb-2">1M+</div>
-                  <div className="text-grey-400">Files Processed</div>
+                  <div className="text-muted-foreground">Files Processed</div>
                 </div>
                 <div className="text-center">
                   <div className="text-3xl font-bold text-green-400 mb-2">99.9%</div>
-                  <div className="text-grey-400">Uptime</div>
+                  <div className="text-muted-foreground">Uptime</div>
                 </div>
                 <div className="text-center">
                   <div className="text-3xl font-bold text-purple-400 mb-2">50K+</div>
-                  <div className="text-grey-400">Happy Users</div>
+                  <div className="text-muted-foreground">Happy Users</div>
                 </div>
               </div>
             </div>

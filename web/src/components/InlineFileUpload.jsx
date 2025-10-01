@@ -90,7 +90,7 @@ const InlineFileUpload = ({
       case 'error':
         return <AlertCircle className="h-4 w-4 text-red-400" />
       default:
-        return <File className="h-4 w-4 text-grey-400" />
+        return <File className="h-4 w-4 text-muted-foreground" />
     }
   }
 
@@ -128,7 +128,7 @@ const InlineFileUpload = ({
         }`}
       >
         <input {...getInputProps()} />
-        <Upload className="mx-auto h-12 w-12 text-grey-400 mb-6" />
+        <Upload className="mx-auto h-12 w-12 text-muted-foreground mb-6" />
         {isDragActive ? (
           <div>
             <p className="heading-dark-4 text-blue-300 mb-2">Drop the files here...</p>
@@ -136,10 +136,10 @@ const InlineFileUpload = ({
           </div>
         ) : (
           <div>
-            <p className="heading-dark-4 text-grey-200 mb-3">
+            <p className="heading-dark-4 text-card-foreground mb-3">
               Drag & drop files here, or click to select
             </p>
-            <p className="body-dark-small text-grey-400">
+            <p className="body-dark-small text-muted-foreground">
               {acceptedFiles.includes('.pdf') && 'PDF, '}
               {acceptedFiles.includes('.jpg') && 'JPG, '}
               {acceptedFiles.includes('.png') && 'PNG, '}
@@ -153,18 +153,18 @@ const InlineFileUpload = ({
       {/* File List */}
       {files.length > 0 && (
         <div className="space-y-4">
-          <h4 className="heading-dark-4 text-grey-200">Selected Files ({files.length})</h4>
+          <h4 className="heading-dark-4 text-card-foreground">Selected Files ({files.length})</h4>
           <div className="space-y-3">
             {files.map((fileData) => (
               <div
                 key={fileData.id}
-                className="flex items-center justify-between p-4 border border-grey-800 rounded-2xl bg-grey-800"
+                className="flex items-center justify-between p-4 border border-border rounded-2xl bg-elevated"
               >
                 <div className="flex items-center space-x-4">
                   {getStatusIcon(fileData.status)}
                   <div>
-                    <p className="font-semibold text-grey-200">{fileData.name}</p>
-                    <p className="text-sm text-grey-400">
+                    <p className="font-semibold text-card-foreground">{fileData.name}</p>
+                    <p className="text-sm text-muted-foreground">
                       {formatFileSize(fileData.size)}
                     </p>
                   </div>

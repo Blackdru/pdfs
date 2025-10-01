@@ -55,7 +55,9 @@ const PLAN_LIMITS = {
       chatMessages: 50,
       aiChatAccess: true,
       ocrAccess: true,
-      advancedTools: true
+      advancedTools: true,
+      encryptAccess: true,
+      digitalSignatureAccess: true
     }
   },
   pro: {

@@ -5,27 +5,35 @@ const { authenticateUser } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Configure multer for file uploads
+// Configure multer for file uploads with better error handling
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
     fileSize: 50 * 1024 * 1024, // 50MB limit
+    files: 10, // Max 10 files at once
   },
   fileFilter: (req, file, cb) => {
-    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg', 
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/bmp', 'image/webp', 'image/tiff', 'image/tif',
                          'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
                          'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
     
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
-      cb(new Error('Invalid file type. Only PDF, images, Word, and Excel files are allowed.'));
+      cb(new Error('Invalid file type. Only PDF, images (JPG, PNG, GIF, BMP, WebP, TIFF), Word, and Excel files are allowed.'));
     }
   }
 });
 
+// Middleware to extend timeout for file uploads
+const extendTimeout = (req, res, next) => {
+  req.setTimeout(300000); // 5 minutes
+  res.setTimeout(300000); // 5 minutes
+  next();
+};
+
 // Upload single file
-router.post('/upload', authenticateUser, upload.single('file'), async (req, res) => {
+router.post('/upload', authenticateUser, extendTimeout, upload.single('file'), async (req, res) => {
   try {
     console.log('=== FILE UPLOAD STARTED ===');
     console.log('User:', req.user?.id);
@@ -94,7 +102,7 @@ router.post('/upload', authenticateUser, upload.single('file'), async (req, res)
 });
 
 // Upload multiple files
-router.post('/upload-multiple', authenticateUser, upload.array('files', 10), async (req, res) => {
+router.post('/upload-multiple', authenticateUser, extendTimeout, upload.array('files', 10), async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ error: 'No files provided' });

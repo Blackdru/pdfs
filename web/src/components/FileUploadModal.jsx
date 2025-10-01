@@ -123,7 +123,7 @@ const FileUploadModal = ({
       case 'error':
         return <AlertCircle className="h-4 w-4 text-red-400" />
       default:
-        return <File className="h-4 w-4 text-grey-400" />
+        return <File className="h-4 w-4 text-muted-foreground" />
     }
   }
 
@@ -138,16 +138,16 @@ const FileUploadModal = ({
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-      <Card className="bg-grey-900 border-grey-800 rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-in fade-in duration-300">
-        <CardHeader className="px-8 py-6 border-b border-grey-800">
+    <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-2 sm:p-4 z-50 backdrop-blur-sm">
+      <Card className="bg-surface border-border rounded-3xl shadow-2xl w-full max-w-[95vw] sm:max-w-2xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto animate-in fade-in duration-300">
+        <CardHeader className="px-8 py-6 border-b border-border">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <div className="p-3 bg-blue-600 rounded-xl">
                 <ToolIcon className="h-6 w-6 text-white" />
               </div>
               <div>
-                <CardTitle className="text-xl font-bold text-grey-100">{title}</CardTitle>
+                <CardTitle className="text-xl font-bold text-foreground">{title}</CardTitle>
                 {toolName && (
                   <p className="text-sm text-blue-400 mt-1">for {toolName}</p>
                 )}
@@ -157,14 +157,14 @@ const FileUploadModal = ({
               variant="ghost"
               size="sm"
               onClick={onClose}
-              className="text-grey-400 hover:text-grey-200 hover:bg-grey-800 p-2 rounded-xl"
+              className="text-muted-foreground hover:text-card-foreground hover:bg-elevated p-2 rounded-xl"
               disabled={isUploading}
             >
               <X className="h-5 w-5" />
             </Button>
           </div>
           {description && (
-            <p className="text-sm text-grey-400 mt-3">{description}</p>
+            <p className="text-sm text-muted-foreground mt-3">{description}</p>
           )}
         </CardHeader>
         
@@ -175,7 +175,7 @@ const FileUploadModal = ({
             className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all duration-300 ${
               isDragActive 
                 ? 'border-blue-400 bg-blue-900/20' 
-                : 'border-grey-700 hover:border-grey-600 hover:bg-grey-800/50'
+                : 'border-grey-700 hover:border-border hover:bg-secondary/50'
             }`}
           >
             <input {...getInputProps()} />
@@ -189,17 +189,17 @@ const FileUploadModal = ({
               </div>
             ) : (
               <div>
-                <p className="text-lg font-semibold text-grey-200 mb-2">
+                <p className="text-lg font-semibold text-card-foreground mb-2">
                   Drag & drop files here, or click to select
                 </p>
-                <p className="text-sm text-grey-400 mb-4">
+                <p className="text-sm text-muted-foreground mb-4">
                   {acceptedFiles.includes('.pdf') && 'PDF, '}
                   {acceptedFiles.includes('.jpg') && 'JPG, '}
                   {acceptedFiles.includes('.png') && 'PNG, '}
                   {acceptedFiles.includes('.gif') && 'GIF '}
                   files supported (max 50MB each)
                 </p>
-                <p className="text-xs text-grey-500">
+                <p className="text-xs text-secondary">
                   {multiple ? `Up to ${maxFiles} files` : 'Single file only'}
                 </p>
               </div>
@@ -210,7 +210,7 @@ const FileUploadModal = ({
           {files.length > 0 && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h4 className="text-lg font-semibold text-grey-200">
+                <h4 className="text-lg font-semibold text-card-foreground">
                   Selected Files ({files.length})
                 </h4>
                 {!isUploading && (
@@ -218,7 +218,7 @@ const FileUploadModal = ({
                     variant="outline"
                     size="sm"
                     onClick={() => setFiles([])}
-                    className="text-grey-400 border-grey-600 hover:bg-grey-800"
+                    className="text-muted-foreground border-border hover:bg-elevated"
                   >
                     Clear All
                   </Button>
@@ -229,13 +229,13 @@ const FileUploadModal = ({
                 {files.map((fileData) => (
                   <div
                     key={fileData.id}
-                    className="flex items-center justify-between p-4 border border-grey-800 rounded-xl bg-grey-800/50"
+                    className="flex items-center justify-between p-4 border border-border rounded-xl bg-elevated/50"
                   >
                     <div className="flex items-center space-x-4 flex-1 min-w-0">
                       {getStatusIcon(fileData.status)}
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-grey-200 truncate">{fileData.name}</p>
-                        <p className="text-sm text-grey-400">
+                        <p className="font-medium text-card-foreground truncate">{fileData.name}</p>
+                        <p className="text-sm text-muted-foreground">
                           {formatFileSize(fileData.size)}
                         </p>
                       </div>
@@ -258,8 +258,8 @@ const FileUploadModal = ({
           )}
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-between pt-4 border-t border-grey-800">
-            <div className="text-sm text-grey-400">
+          <div className="flex items-center justify-between pt-4 border-t border-border">
+            <div className="text-sm text-muted-foreground">
               {files.length > 0 && (
                 <span>
                   {files.length} file{files.length !== 1 ? 's' : ''} selected
@@ -273,7 +273,7 @@ const FileUploadModal = ({
                 variant="outline"
                 onClick={onClose}
                 disabled={isUploading}
-                className="border-grey-600 text-grey-300 hover:bg-grey-800"
+                className="border-border text-card-foreground hover:bg-elevated"
               >
                 Cancel
               </Button>

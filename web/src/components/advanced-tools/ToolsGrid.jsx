@@ -11,7 +11,7 @@ const ToolsGrid = ({ tools, selectedTool, onToolSelect }) => {
           className={`group relative bg-grey-900 rounded-3xl border-2 transition-all duration-500 cursor-pointer hover:scale-105 hover:shadow-2xl ${
             selectedTool?.id === tool.id
               ? 'border-purple-500 shadow-2xl shadow-purple-500/20'
-              : 'border-grey-800 hover:border-grey-700'
+              : 'border-grey-800 hover:border-border'
           }`}
         >
           {/* Pro Badge */}
@@ -35,15 +35,15 @@ const ToolsGrid = ({ tools, selectedTool, onToolSelect }) => {
             {/* Content */}
             <div className="mb-6">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-xl font-bold text-grey-100">{tool.title}</h3>
-                <span className="text-xs bg-grey-800 text-grey-400 px-2 py-1 rounded-full">
+                <h3 className="text-xl font-bold text-foreground">{tool.title}</h3>
+                <span className="text-xs bg-elevated text-muted-foreground px-2 py-1 rounded-full">
                   {tool.category}
                 </span>
               </div>
-              <p className="text-grey-400 mb-4">{tool.description}</p>
+              <p className="text-muted-foreground mb-4">{tool.description}</p>
               
               {/* Features */}
-              <div className="flex items-center justify-between text-sm text-grey-500 mb-4">
+              <div className="flex items-center justify-between text-sm text-secondary mb-4">
                 <div className="flex items-center">
                   <Clock className="h-4 w-4 mr-1" />
                   {tool.processingTime}
@@ -57,7 +57,7 @@ const ToolsGrid = ({ tools, selectedTool, onToolSelect }) => {
               {/* Pro Features List */}
               <div className="space-y-1 mb-4">
                 {tool.features.slice(0, 2).map((feature, index) => (
-                  <div key={index} className="flex items-center text-xs text-grey-500">
+                  <div key={index} className="flex items-center text-xs text-secondary">
                     <CheckCircle className="h-3 w-3 mr-2 text-green-400" />
                     {feature}
                   </div>

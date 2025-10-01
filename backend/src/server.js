@@ -96,6 +96,42 @@ app.use('*', (req, res) => {
 app.use((err, req, res, next) => {
   console.error('Error:', err);
   
+  // Handle multer errors
+  if (err.name === 'MulterError') {
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({ 
+        error: 'File too large. Maximum file size is 50MB.' 
+      });
+    }
+    if (err.code === 'LIMIT_FILE_COUNT') {
+      return res.status(400).json({ 
+        error: 'Too many files. Maximum 10 files at once.' 
+      });
+    }
+    if (err.code === 'LIMIT_UNEXPECTED_FILE') {
+      return res.status(400).json({ 
+        error: 'Unexpected field in file upload.' 
+      });
+    }
+    return res.status(400).json({ 
+      error: `File upload error: ${err.message}` 
+    });
+  }
+  
+  // Handle file type errors
+  if (err.message && err.message.includes('Invalid file type')) {
+    return res.status(400).json({ 
+      error: err.message 
+    });
+  }
+  
+  // Handle timeout errors
+  if (err.code === 'ETIMEDOUT' || err.message.includes('timeout')) {
+    return res.status(408).json({ 
+      error: 'Request timeout. Please try again with a smaller file or check your connection.' 
+    });
+  }
+  
   res.status(err.status || 500).json({
     error: process.env.NODE_ENV === 'production' ? 'Internal server error' : err.message,
     ...(process.env.NODE_ENV !== 'production' && { stack: err.stack })
@@ -103,10 +139,15 @@ app.use((err, req, res, next) => {
 });
 
 // Start server
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📊 Environment: ${process.env.NODE_ENV}`);
   console.log(`🔗 Health check: http://localhost:${PORT}/health`);
 });
+
+// Increase timeout for long-running operations (OCR, AI processing)
+server.timeout = 300000; // 5 minutes
+server.keepAliveTimeout = 300000; // 5 minutes
+server.headersTimeout = 310000; // Slightly more than keepAliveTimeout
 
 module.exports = app;

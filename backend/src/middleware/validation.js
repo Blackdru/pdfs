@@ -2,7 +2,21 @@ const Joi = require('joi');
 
 const validateRequest = (schema) => {
   return (req, res, next) => {
-    const { error } = schema.validate(req.body);
+    // Handle both direct schema and schema object with body/params/query
+    let validationSchema = schema;
+    let dataToValidate = req.body;
+    
+    // If schema has a body property, use that for validation
+    if (schema.body) {
+      validationSchema = schema.body;
+      dataToValidate = req.body;
+    }
+    
+    // Validate the data
+    const { error, value } = validationSchema.validate(dataToValidate, {
+      abortEarly: false,
+      stripUnknown: true
+    });
     
     if (error) {
       return res.status(400).json({
@@ -10,6 +24,9 @@ const validateRequest = (schema) => {
         details: error.details.map(detail => detail.message)
       });
     }
+    
+    // Replace req.body with validated and sanitized data
+    req.body = value;
     
     next();
   };

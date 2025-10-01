@@ -46,9 +46,13 @@ const AIAssistant = ({ fileId, fileName, onClose, isMinimized, onToggleMinimize 
       
       // Don't auto-initialize, wait for explicit initialization
       // This prevents race conditions with the main component
+      const fileType = fileName.toLowerCase().match(/\.(pdf|jpg|jpeg|png|gif|bmp|webp|tiff|tif)$/)?.[1] || 'document';
+      const isImage = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'tiff', 'tif'].includes(fileType);
+      const documentType = isImage ? 'image' : fileType === 'pdf' ? 'PDF document' : 'document';
+      
       setMessages([{
         role: 'assistant',
-        content: `Hello! I'm ready to help you with "${fileName}". Your document has been processed and I'm ready to answer questions about it. What would you like to know?`,
+        content: `Hello! I'm ready to help you with your ${documentType} "${fileName}". I can extract text from ${isImage ? 'images' : 'PDFs'} and answer questions about the content. What would you like to know?`,
         timestamp: new Date().toISOString()
       }])
       setIsInitialized(true)
@@ -87,9 +91,13 @@ const AIAssistant = ({ fileId, fileName, onClose, isMinimized, onToggleMinimize 
       
       if (result.success) {
         setIsInitialized(true)
+        const fileType = fileName.toLowerCase().match(/\.(pdf|jpg|jpeg|png|gif|bmp|webp|tiff|tif)$/)?.[1] || 'document';
+        const isImage = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'tiff', 'tif'].includes(fileType);
+        const documentType = isImage ? 'image' : fileType === 'pdf' ? 'PDF document' : 'document';
+        
         setMessages([{
           role: 'assistant',
-          content: `Hello! I'm ready to help you with "${fileName}". I've processed ${result.chunks || 0} text chunks from your document. What would you like to know?`,
+          content: `Hello! I'm ready to help you with your ${documentType} "${fileName}". I've processed ${result.chunks || 0} text chunks from your ${isImage ? 'image' : 'document'}. What would you like to know?`,
           timestamp: new Date().toISOString()
         }])
         toast.success('AI chat initialized successfully!')
@@ -97,9 +105,13 @@ const AIAssistant = ({ fileId, fileName, onClose, isMinimized, onToggleMinimize 
     } catch (error) {
       console.error('Failed to initialize AI chat:', error)
       setAiAvailable(false)
+      const fileType = fileName.toLowerCase().match(/\.(pdf|jpg|jpeg|png|gif|bmp|webp|tiff|tif)$/)?.[1] || 'document';
+      const isImage = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'tiff', 'tif'].includes(fileType);
+      const documentType = isImage ? 'image' : fileType === 'pdf' ? 'PDF document' : 'document';
+      
       setMessages([{
         role: 'assistant',
-        content: 'I encountered an issue initializing AI chat, but I can still help you with basic questions about your document.',
+        content: `I encountered an issue initializing AI chat, but I can still help you with basic questions about your ${documentType}.`,
         timestamp: new Date().toISOString(),
         fallback: true
       }])
@@ -168,16 +180,16 @@ const AIAssistant = ({ fileId, fileName, onClose, isMinimized, onToggleMinimize 
 
   if (!hasAIAccess) {
     return (
-      <Card className="bg-grey-900 border-grey-800 p-6">
+      <Card className="bg-surface border-border p-6">
         <div className="text-center">
           <div className="w-16 h-16 bg-purple-900 rounded-full flex items-center justify-center mx-auto mb-4">
             <Sparkles className="h-8 w-8 text-purple-400" />
           </div>
-          <h3 className="text-xl font-semibold text-grey-200 mb-2">
+          <h3 className="text-xl font-semibold text-card-foreground mb-2">
             AI Chat - Premium Feature
           </h3>
-          <p className="text-grey-400 mb-4">
-            Upgrade to Pro or Premium to chat with your documents using AI.
+          <p className="text-muted-foreground mb-4">
+            Upgrade to Pro or Premium to chat with your documents and images using AI.
           </p>
           <Button className="bg-purple-600 hover:bg-purple-700 text-white">
             <Sparkles className="h-4 w-4 mr-2" />
@@ -202,16 +214,17 @@ const AIAssistant = ({ fileId, fileName, onClose, isMinimized, onToggleMinimize 
   }
 
   return (
-    <Card className="bg-grey-900 border-grey-800 flex flex-col h-[80vh] md:h-[70vh] w-full max-w-full md:max-w-2xl lg:max-w-4xl">
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4">
+      <Card className="bg-surface border-border flex flex-col h-[95vh] sm:h-[85vh] w-full max-w-[95vw] sm:max-w-2xl lg:max-w-3xl">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-grey-800">
+      <div className="flex items-center justify-between p-4 border-b border-border">
         <div className="flex items-center space-x-3">
           <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
             <Bot className="h-4 w-4 text-white" />
           </div>
           <div>
-            <h3 className="font-semibold text-grey-200">AI Assistant</h3>
-            <p className="text-xs text-grey-400 truncate max-w-32">{fileName}</p>
+            <h3 className="font-semibold text-card-foreground">AI Assistant</h3>
+            <p className="text-xs text-muted-foreground truncate max-w-32">{fileName}</p>
           </div>
         </div>
         <div className="flex items-center space-x-2">
@@ -230,7 +243,7 @@ const AIAssistant = ({ fileId, fileName, onClose, isMinimized, onToggleMinimize 
             variant="ghost"
             size="sm"
             onClick={onToggleMinimize}
-            className="text-grey-400 hover:text-grey-200"
+            className="text-muted-foreground hover:text-card-foreground"
           >
             <Minimize2 className="h-4 w-4" />
           </Button>
@@ -238,7 +251,7 @@ const AIAssistant = ({ fileId, fileName, onClose, isMinimized, onToggleMinimize 
             variant="ghost"
             size="sm"
             onClick={onClose}
-            className="text-grey-400 hover:text-grey-200"
+            className="text-muted-foreground hover:text-card-foreground"
           >
             <X className="h-4 w-4" />
           </Button>
@@ -251,7 +264,7 @@ const AIAssistant = ({ fileId, fileName, onClose, isMinimized, onToggleMinimize 
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
               <Loader2 className="h-8 w-8 animate-spin text-blue-400 mx-auto mb-2" />
-              <p className="text-grey-400">Initializing AI chat...</p>
+              <p className="text-muted-foreground">Initializing AI chat...</p>
             </div>
           </div>
         ) : (
@@ -296,7 +309,7 @@ const AIAssistant = ({ fileId, fileName, onClose, isMinimized, onToggleMinimize 
             ))}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-grey-800 text-grey-200 px-4 py-2 rounded-lg">
+                <div className="bg-elevated text-card-foreground px-4 py-2 rounded-lg">
                   <div className="flex items-center space-x-2">
                     <Bot className="h-4 w-4" />
                     <div className="flex space-x-1">
@@ -314,7 +327,7 @@ const AIAssistant = ({ fileId, fileName, onClose, isMinimized, onToggleMinimize 
       </div>
 
       {/* Input */}
-      <div className="p-4 border-t border-grey-800">
+      <div className="p-4 border-t border-border">
         <div className="flex space-x-2">
           <Input
             value={inputMessage}
@@ -322,7 +335,7 @@ const AIAssistant = ({ fileId, fileName, onClose, isMinimized, onToggleMinimize 
             onKeyPress={handleKeyPress}
             placeholder="Ask about your document..."
             disabled={isLoading || !isInitialized}
-            className="flex-1 bg-grey-800 border-grey-700 text-grey-200 placeholder-grey-400"
+            className="flex-1 bg-elevated border-border text-card-foreground placeholder-grey-400"
           />
           <Button
             onClick={sendMessage}
@@ -336,7 +349,7 @@ const AIAssistant = ({ fileId, fileName, onClose, isMinimized, onToggleMinimize 
             )}
           </Button>
         </div>
-        <div className="flex items-center justify-between mt-2 text-xs text-grey-500">
+        <div className="flex items-center justify-between mt-2 text-xs text-secondary">
           <span>Press Enter to send</span>
           {sessionId && (
             <span className="flex items-center">
@@ -346,7 +359,8 @@ const AIAssistant = ({ fileId, fileName, onClose, isMinimized, onToggleMinimize 
           )}
         </div>
       </div>
-    </Card>
+      </Card>
+    </div>
   )
 }
 

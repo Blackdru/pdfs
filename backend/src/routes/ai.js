@@ -28,7 +28,14 @@ router.post('/ocr',
     console.log('Request body:', req.body);
     console.log('User:', req.user?.id);
     
-    const { fileId, language = 'eng+tel', enhanceImage = true } = req.body;
+    const { 
+      fileId, 
+      language = 'auto', 
+      enhanceImage = true, 
+      aiEnhanced = true, 
+      extractOriginal = false,
+      confidenceThreshold = 0.6 
+    } = req.body;
 
     if (!fileId) {
       console.log('ERROR: No fileId provided');
@@ -131,100 +138,34 @@ router.post('/ocr',
       // Convert file buffer for OCR processing
       const buffer = Buffer.from(await fileBuffer.arrayBuffer());
 
-      // Process with OCR
-      console.log('Step 6: Processing file with OCR...');
+      // Process with Enhanced AI OCR
+      console.log('Step 6: Processing file with Enhanced AI OCR...');
       console.log('File type:', file.type);
+      console.log('AI Enhanced:', aiEnhanced);
+      console.log('Extract Original:', extractOriginal);
       
       // Determine if this is a PDF or image file
       const isPDF = file.type === 'application/pdf' || file.filename.toLowerCase().endsWith('.pdf');
+      const isImage = file.type.startsWith('image/') || /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(file.filename);
       
-      // For ID cards and documents, try comprehensive language combinations
-      let ocrResult;
-      const languagesToTry = [
-        'eng+tel', // English + Telugu (primary for Indian ID cards)
-        'tel+eng', // Telugu + English (different order)
-        'eng+hin+tel', // English + Hindi + Telugu
-        'tel', // Telugu only
-        'eng+hin', // English + Hindi
-        'hin+eng', // Hindi + English
-        'eng', // English only
-        language // User specified (if different)
-      ].filter((lang, index, arr) => arr.indexOf(lang) === index); // Remove duplicates
+      console.log('File type detection:', { isPDF, isImage, mimeType: file.type, filename: file.filename });
       
-      let bestResult = null;
-      let bestConfidence = 0;
-      let allResults = [];
-      
-      console.log(`Trying ${languagesToTry.length} language combinations for ${isPDF ? 'PDF' : 'image'} OCR`);
-      
-      for (let i = 0; i < languagesToTry.length; i++) {
-        const lang = languagesToTry[i];
-        try {
-          console.log(`[${i + 1}/${languagesToTry.length}] Trying OCR with language: ${lang}`);
-          
-          let result;
-          if (isPDF) {
-            // Use PDF OCR method
-            result = await ocrService.extractTextFromPDF(buffer, {
-              language: lang,
-              enhanceImage,
-              maxPages: 10 // Limit pages for performance
-            });
-          } else {
-            // Use image OCR method
-            result = await ocrService.extractTextFromImage(buffer, {
-              language: lang,
-              enhanceImage
-            });
-          }
-          
-          console.log(`Language ${lang}: confidence=${result.confidence}, textLength=${result.text.length}, pages=${result.pageCount}`);
-          
-          allResults.push({
-            language: lang,
-            confidence: result.confidence,
-            textLength: result.text.length,
-            pageCount: result.pageCount,
-            text: result.text.substring(0, 100) + '...'
-          });
-          
-          if (result.confidence > bestConfidence) {
-            bestResult = result;
-            bestConfidence = result.confidence;
-            bestResult.detectedLanguage = lang;
-          }
-          
-          // Lower threshold for documents - accept if we get reasonable confidence
-          if (result.confidence > 0.3 && result.text.length > 10) {
-            console.log(`Acceptable result found with ${lang}, confidence: ${result.confidence}`);
-            ocrResult = result;
-            ocrResult.detectedLanguage = lang;
-            break;
-          }
-        } catch (langError) {
-          console.warn(`OCR failed for language ${lang}:`, langError.message);
-          allResults.push({
-            language: lang,
-            error: langError.message
-          });
-          continue;
-        }
-      }
-      
-      // Use best result if no acceptable result found
-      if (!ocrResult && bestResult) {
-        console.log('Using best result from all attempts');
-        ocrResult = bestResult;
-      }
-      
-      if (!ocrResult) {
-        console.error('All OCR attempts failed. Results summary:', allResults);
-        throw new Error('OCR failed for all language combinations and image enhancements');
-      }
+      // Use the new AI-enhanced OCR method
+      const ocrResult = await ocrService.extractTextWithAI(buffer, {
+        enhanceWithAI: aiEnhanced,
+        extractOriginal: extractOriginal,
+        language: language,
+        fileType: isPDF ? 'pdf' : 'image',
+        confidenceThreshold: confidenceThreshold
+      });
       
       console.log(`Final OCR result: language=${ocrResult.detectedLanguage}, confidence=${ocrResult.confidence}, textLength=${ocrResult.text.length}`);
+      console.log('AI Enhanced:', ocrResult.aiEnhanced);
       console.log('OCR text preview:', ocrResult.text.substring(0, 200));
-      console.log('All attempts summary:', allResults);
+      
+      if (ocrResult.enhancedText && ocrResult.enhancedText !== ocrResult.originalText) {
+        console.log('Enhanced text preview:', ocrResult.enhancedText.substring(0, 200));
+      }
 
       // Update file record with OCR results
       console.log('Step 7: Updating file record with OCR results...');
@@ -532,13 +473,18 @@ router.post('/smart-summary',
         }
 
         const buffer = Buffer.from(await fileBuffer.arrayBuffer());
+        
+        // Determine file type for OCR processing
         const isPDF = file.type === 'application/pdf' || file.filename.toLowerCase().endsWith('.pdf');
+        const isImage = file.type.startsWith('image/') || /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(file.filename);
         
         console.log('Step 4: Running OCR on', isPDF ? 'PDF' : 'image', 'file...');
         
         // Run OCR with multiple language attempts
         const languagesToTry = ['eng+tel', 'eng', 'tel'];
         let ocrResult = null;
+        
+        console.log('Processing file type:', { isPDF, isImage, mimeType: file.type });
         
         for (const language of languagesToTry) {
           try {
@@ -550,7 +496,14 @@ router.post('/smart-summary',
                 enhanceImage: true,
                 maxPages: 10
               });
+            } else if (isImage) {
+              ocrResult = await ocrService.extractTextFromImage(buffer, {
+                language: language,
+                enhanceImage: true
+              });
             } else {
+              // For other file types, try image OCR as fallback
+              console.log('Unknown file type, attempting image OCR...');
               ocrResult = await ocrService.extractTextFromImage(buffer, {
                 language: language,
                 enhanceImage: true
@@ -1255,6 +1208,176 @@ router.get('/test', authenticateUser, (req, res) => {
 // Simple test endpoint without authentication
 router.get('/ping', (req, res) => {
   res.json({ message: 'AI routes are accessible', timestamp: new Date().toISOString() });
+});
+
+// Enhanced text with AI endpoint
+router.post('/enhance-text', 
+  authenticateUser, 
+  requireFeature('ai_features'),
+  async (req, res) => {
+  try {
+    console.log('=== ENHANCE TEXT ENDPOINT CALLED ===');
+    console.log('Request body:', req.body);
+    console.log('User:', req.user?.id);
+    
+    const { fileId, text, enhanceWithAI = true, extractOriginal = false } = req.body;
+
+    if (!text) {
+      return res.status(400).json({ error: 'Text is required for enhancement' });
+    }
+
+    if (!aiService.isEnabled()) {
+      return res.status(503).json({ error: 'AI features are not enabled' });
+    }
+
+    console.log('Step 1: Enhancing text with AI...');
+    console.log('Text length:', text.length);
+    console.log('Extract original:', extractOriginal);
+
+    let enhancedText = text;
+    
+    if (enhanceWithAI && !extractOriginal) {
+      try {
+        enhancedText = await aiService.enhanceTextWithAI(text);
+        console.log('Text enhanced successfully, new length:', enhancedText.length);
+      } catch (enhanceError) {
+        console.error('AI enhancement failed:', enhanceError);
+        // Fall back to original text
+        enhancedText = text;
+      }
+    }
+
+    // Update file record if fileId provided
+    if (fileId) {
+      try {
+        const { error: updateError } = await supabaseAdmin
+          .from('files')
+          .update({
+            metadata: {
+              ai_enhanced: enhanceWithAI && !extractOriginal,
+              enhanced_at: new Date().toISOString()
+            }
+          })
+          .eq('id', fileId)
+          .eq('user_id', req.user.id);
+
+        if (updateError) {
+          console.warn('Could not update file metadata:', updateError);
+        }
+      } catch (updateError) {
+        console.warn('Error updating file metadata:', updateError);
+      }
+    }
+
+    res.json({
+      message: 'Text enhancement completed',
+      originalText: text,
+      enhancedText: enhancedText,
+      aiEnhanced: enhanceWithAI && !extractOriginal,
+      extractOriginal: extractOriginal
+    });
+
+  } catch (error) {
+    console.error('Text enhancement error:', error);
+    res.status(500).json({ error: error.message || 'Text enhancement failed' });
+  }
+});
+
+// Translate text endpoint
+router.post('/translate-text', 
+  authenticateUser, 
+  requireFeature('ai_features'),
+  async (req, res) => {
+  try {
+    console.log('=== TRANSLATE TEXT ENDPOINT CALLED ===');
+    console.log('Request body:', req.body);
+    console.log('User:', req.user?.id);
+    
+    const { fileId, text, targetLanguage } = req.body;
+
+    if (!text) {
+      return res.status(400).json({ error: 'Text is required for translation' });
+    }
+
+    if (!targetLanguage) {
+      return res.status(400).json({ error: 'Target language is required' });
+    }
+
+    if (!aiService.isEnabled()) {
+      return res.status(503).json({ error: 'AI features are not enabled' });
+    }
+
+    console.log('Step 1: Translating text...');
+    console.log('Text length:', text.length);
+    console.log('Target language:', targetLanguage);
+
+    const translatedText = await aiService.translateText(text, targetLanguage);
+    console.log('Translation completed, new length:', translatedText.length);
+
+    // Update file record if fileId provided
+    if (fileId) {
+      try {
+        const { error: updateError } = await supabaseAdmin
+          .from('files')
+          .update({
+            metadata: {
+              translated: true,
+              target_language: targetLanguage,
+              translated_at: new Date().toISOString()
+            }
+          })
+          .eq('id', fileId)
+          .eq('user_id', req.user.id);
+
+        if (updateError) {
+          console.warn('Could not update file metadata:', updateError);
+        }
+      } catch (updateError) {
+        console.warn('Error updating file metadata:', updateError);
+      }
+    }
+
+    res.json({
+      message: 'Text translation completed',
+      originalText: text,
+      translatedText: translatedText,
+      targetLanguage: targetLanguage
+    });
+
+  } catch (error) {
+    console.error('Text translation error:', error);
+    res.status(500).json({ error: error.message || 'Text translation failed' });
+  }
+});
+
+// Auto-detect language endpoint
+router.post('/detect-language', 
+  authenticateUser, 
+  requireFeature('ai_features'),
+  async (req, res) => {
+  try {
+    console.log('=== DETECT LANGUAGE ENDPOINT CALLED ===');
+    const { text } = req.body;
+
+    if (!text) {
+      return res.status(400).json({ error: 'Text is required for language detection' });
+    }
+
+    console.log('Detecting language for text length:', text.length);
+
+    const detectedLanguage = await ocrService.detectLanguage(text);
+    console.log('Detected language:', detectedLanguage);
+
+    res.json({
+      message: 'Language detection completed',
+      detectedLanguage: detectedLanguage,
+      confidence: 0.85 // Placeholder confidence
+    });
+
+  } catch (error) {
+    console.error('Language detection error:', error);
+    res.status(500).json({ error: error.message || 'Language detection failed' });
+  }
 });
 
 // Simple OCR test endpoint

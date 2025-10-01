@@ -68,11 +68,25 @@ const Dashboard = () => {
         api.getUserStats()
       ])
       
-      setFiles(filesResponse.files)
-      setStats(statsResponse.stats)
+      setFiles(filesResponse.files || [])
+      setStats(statsResponse.stats || {
+        totalFiles: 0,
+        totalStorage: 0,
+        recentActivity: 0,
+        storageLimit: 1024 * 1024 * 1024 * 5,
+        filesLimit: 1000
+      })
     } catch (error) {
       toast.error('Failed to load dashboard data')
       console.error('Dashboard load error:', error)
+      // Set default stats on error
+      setStats({
+        totalFiles: 0,
+        totalStorage: 0,
+        recentActivity: 0,
+        storageLimit: 1024 * 1024 * 1024 * 5,
+        filesLimit: 1000
+      })
     } finally {
       setLoading(false)
     }
@@ -97,15 +111,15 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-grey-950 px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
+    <div className="min-h-screen bg-page px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="flex flex-col space-y-4 sm:space-y-6 mb-6 sm:mb-8">
           <div className="text-center sm:text-left">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2 text-grey-100 break-words">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2 text-foreground break-words">
               Welcome back, {user?.user_metadata?.name || user?.email?.split('@')[0] || 'User'}
             </h1>
-            <p className="text-sm sm:text-base text-grey-400">
+            <p className="text-sm sm:text-base text-muted-foreground">
               Manage your PDF files with AI-powered tools
             </p>
           </div>
@@ -471,7 +485,8 @@ const Dashboard = () => {
       {/* AI Assistant */}
       {showAIAssistant && selectedFile && (
         <AIAssistant
-          file={selectedFile}
+          fileId={selectedFile.id}
+          fileName={selectedFile.filename}
           isOpen={showAIAssistant}
           onClose={() => {
             setShowAIAssistant(false)

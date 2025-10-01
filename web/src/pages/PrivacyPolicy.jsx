@@ -3,7 +3,7 @@ import { Card } from '../components/ui/card'
 
 const PrivacyPolicy = () => {
   return (
-    <div className="min-h-screen bg-grey-950 py-12">
+    <div className="min-h-screen bg-page py-12">
       <div className="layout-dark-container">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
@@ -11,23 +11,23 @@ const PrivacyPolicy = () => {
             <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
               <Shield className="h-8 w-8 text-white" />
             </div>
-            <h1 className="text-4xl font-bold text-grey-200 mb-4">Privacy Policy</h1>
-            <p className="text-grey-400 text-lg">
+            <h1 className="text-4xl font-bold text-card-foreground mb-4">Privacy Policy</h1>
+            <p className="text-muted-foreground text-lg">
               Your privacy is our priority. Learn how we protect and handle your data.
             </p>
-            <p className="text-grey-500 text-sm mt-2">
+            <p className="text-secondary text-sm mt-2">
               Last updated: {new Date().toLocaleDateString()}
             </p>
           </div>
 
           {/* Content */}
           <div className="space-y-8">
-            <Card className="bg-grey-900 border-grey-800 p-8">
+            <Card className="bg-surface border-border p-8">
               <div className="flex items-center mb-6">
                 <Database className="h-6 w-6 text-blue-400 mr-3" />
-                <h2 className="text-2xl font-semibold text-grey-200">Information We Collect</h2>
+                <h2 className="text-2xl font-semibold text-card-foreground">Information We Collect</h2>
               </div>
-              <div className="space-y-4 text-grey-400">
+              <div className="space-y-4 text-muted-foreground">
                 <p>
                   We collect information you provide directly to us, such as when you create an account, 
                   upload documents, or contact us for support.
@@ -42,12 +42,12 @@ const PrivacyPolicy = () => {
               </div>
             </Card>
 
-            <Card className="bg-grey-900 border-grey-800 p-8">
+            <Card className="bg-surface border-border p-8">
               <div className="flex items-center mb-6">
                 <Eye className="h-6 w-6 text-green-400 mr-3" />
-                <h2 className="text-2xl font-semibold text-grey-200">How We Use Your Information</h2>
+                <h2 className="text-2xl font-semibold text-card-foreground">How We Use Your Information</h2>
               </div>
-              <div className="space-y-4 text-grey-400">
+              <div className="space-y-4 text-muted-foreground">
                 <p>
                   We use the information we collect to provide, maintain, and improve our services:
                 </p>
@@ -62,12 +62,12 @@ const PrivacyPolicy = () => {
               </div>
             </Card>
 
-            <Card className="bg-grey-900 border-grey-800 p-8">
+            <Card className="bg-surface border-border p-8">
               <div className="flex items-center mb-6">
                 <Lock className="h-6 w-6 text-purple-400 mr-3" />
-                <h2 className="text-2xl font-semibold text-grey-200">Data Security</h2>
+                <h2 className="text-2xl font-semibold text-card-foreground">Data Security</h2>
               </div>
-              <div className="space-y-4 text-grey-400">
+              <div className="space-y-4 text-muted-foreground">
                 <p>
                   We implement industry-standard security measures to protect your data:
                 </p>
@@ -82,12 +82,12 @@ const PrivacyPolicy = () => {
               </div>
             </Card>
 
-            <Card className="bg-grey-900 border-grey-800 p-8">
+            <Card className="bg-surface border-border p-8">
               <div className="flex items-center mb-6">
                 <Globe className="h-6 w-6 text-orange-400 mr-3" />
-                <h2 className="text-2xl font-semibold text-grey-200">Data Sharing</h2>
+                <h2 className="text-2xl font-semibold text-card-foreground">Data Sharing</h2>
               </div>
-              <div className="space-y-4 text-grey-400">
+              <div className="space-y-4 text-muted-foreground">
                 <p>
                   We do not sell, trade, or rent your personal information. We may share data only in these limited circumstances:
                 </p>
@@ -101,12 +101,12 @@ const PrivacyPolicy = () => {
               </div>
             </Card>
 
-            <Card className="bg-grey-900 border-grey-800 p-8">
+            <Card className="bg-surface border-border p-8">
               <div className="flex items-center mb-6">
                 <UserCheck className="h-6 w-6 text-yellow-400 mr-3" />
-                <h2 className="text-2xl font-semibold text-grey-200">Your Rights</h2>
+                <h2 className="text-2xl font-semibold text-card-foreground">Your Rights</h2>
               </div>
-              <div className="space-y-4 text-grey-400">
+              <div className="space-y-4 text-muted-foreground">
                 <p>
                   You have the following rights regarding your personal data:
                 </p>
@@ -127,9 +127,9 @@ const PrivacyPolicy = () => {
               </div>
             </Card>
 
-            <Card className="bg-grey-900 border-grey-800 p-8">
-              <h2 className="text-2xl font-semibold text-grey-200 mb-6">Contact Us</h2>
-              <div className="text-grey-400">
+            <Card className="bg-surface border-border p-8">
+              <h2 className="text-2xl font-semibold text-card-foreground mb-6">Contact Us</h2>
+              <div className="text-muted-foreground">
                 <p className="mb-4">
                   If you have any questions about this Privacy Policy, please contact us:
                 </p>

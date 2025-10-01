@@ -116,18 +116,18 @@ const Profile = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-grey-950 flex items-center justify-center">
+      <div className="min-h-screen bg-page flex items-center justify-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400"></div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-grey-950 mobile-spacing-dark">
+    <div className="min-h-screen bg-page mobile-spacing-dark">
       <div className="layout-dark-container py-12">
         <div className="text-center mb-12">
           <h1 className="heading-dark-1 text-gradient-hero">Profile Settings</h1>
-          <p className="body-dark-large text-grey-300 mt-4">
+          <p className="body-dark-large text-card-foreground mt-4">
             Manage your account settings and view your activity
           </p>
         </div>
@@ -153,8 +153,8 @@ const Profile = () => {
           <div className="grid gap-6">
             <Card className="dark-card">
               <CardHeader>
-                <CardTitle className="heading-dark-4 text-grey-100">Personal Information</CardTitle>
-                <CardDescription className="text-grey-400">
+                <CardTitle className="heading-dark-4 text-foreground">Personal Information</CardTitle>
+                <CardDescription className="text-muted-foreground">
                   Update your personal details and account information
                 </CardDescription>
               </CardHeader>
@@ -162,11 +162,11 @@ const Profile = () => {
                 <form onSubmit={handleSaveProfile} className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label htmlFor="name" className="block text-sm font-medium mb-2 text-grey-300">
+                      <label htmlFor="name" className="block text-sm font-medium mb-2 text-card-foreground">
                         Full Name
                       </label>
                       <div className="relative">
-                        <User className="absolute left-3 top-3 h-4 w-4 text-grey-400" />
+                        <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                         <Input
                           id="name"
                           name="name"
@@ -180,11 +180,11 @@ const Profile = () => {
                     </div>
 
                     <div>
-                      <label htmlFor="email" className="block text-sm font-medium mb-2 text-grey-300">
+                      <label htmlFor="email" className="block text-sm font-medium mb-2 text-card-foreground">
                         Email Address
                       </label>
                       <div className="relative">
-                        <Mail className="absolute left-3 top-3 h-4 w-4 text-grey-400" />
+                        <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                         <Input
                           id="email"
                           name="email"
@@ -213,7 +213,7 @@ const Profile = () => {
                 <CardTitle className="text-red-400">
                   Danger Zone
                 </CardTitle>
-                <CardDescription className="text-grey-400">
+                <CardDescription className="text-muted-foreground">
                   Permanently delete your account and all associated data
                 </CardDescription>
               </CardHeader>
@@ -226,7 +226,7 @@ const Profile = () => {
                   <Trash2 className="mr-2 h-4 w-4" />
                   Delete Account
                 </Button>
-                <p className="text-sm text-grey-400 mt-2">
+                <p className="text-sm text-muted-foreground mt-2">
                   This action cannot be undone. All your files and data will be permanently deleted.
                 </p>
               </CardContent>
@@ -240,12 +240,12 @@ const Profile = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <Card className="dark-card">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-grey-200">Total Files</CardTitle>
-                  <Files className="h-4 w-4 text-grey-400" />
+                  <CardTitle className="text-sm font-medium text-card-foreground">Total Files</CardTitle>
+                  <Files className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-blue-400">{stats.totalFiles}</div>
-                  <p className="text-xs text-grey-400">
+                  <p className="text-xs text-muted-foreground">
                     {stats.filesLimit - stats.totalFiles} remaining
                   </p>
                 </CardContent>
@@ -253,12 +253,12 @@ const Profile = () => {
 
               <Card className="dark-card">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-grey-200">Storage Used</CardTitle>
-                  <HardDrive className="h-4 w-4 text-grey-400" />
+                  <CardTitle className="text-sm font-medium text-card-foreground">Storage Used</CardTitle>
+                  <HardDrive className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-green-400">{formatFileSize(stats.totalStorage)}</div>
-                  <p className="text-xs text-grey-400">
+                  <p className="text-xs text-muted-foreground">
                     of {formatFileSize(stats.storageLimit)} used
                   </p>
                 </CardContent>
@@ -266,12 +266,12 @@ const Profile = () => {
 
               <Card className="dark-card">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-grey-200">Recent Activity</CardTitle>
-                  <Activity className="h-4 w-4 text-grey-400" />
+                  <CardTitle className="text-sm font-medium text-card-foreground">Recent Activity</CardTitle>
+                  <Activity className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold text-purple-400">{stats.recentActivity}</div>
-                  <p className="text-xs text-grey-400">
+                  <p className="text-xs text-muted-foreground">
                     operations this month
                   </p>
                 </CardContent>
@@ -284,17 +284,17 @@ const Profile = () => {
         <TabsContent value="history">
           <Card className="dark-card">
             <CardHeader>
-              <CardTitle className="heading-dark-4 text-grey-100">Recent Activity</CardTitle>
-              <CardDescription className="text-grey-400">
+              <CardTitle className="heading-dark-4 text-foreground">Recent Activity</CardTitle>
+              <CardDescription className="text-muted-foreground">
                 Your recent file operations and activities
               </CardDescription>
             </CardHeader>
             <CardContent>
               {history.length === 0 ? (
                 <div className="text-center py-8">
-                  <Activity className="mx-auto h-12 w-12 text-grey-400 mb-4" />
-                  <h3 className="text-lg font-medium mb-2 text-grey-200">No activity yet</h3>
-                  <p className="text-grey-400">
+                  <Activity className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-medium mb-2 text-card-foreground">No activity yet</h3>
+                  <p className="text-muted-foreground">
                     Your file operations will appear here
                   </p>
                 </div>
@@ -303,20 +303,20 @@ const Profile = () => {
                   {history.map((item) => (
                     <div
                       key={item.id}
-                      className="flex items-center justify-between p-4 border border-grey-800 rounded-xl bg-grey-800"
+                      className="flex items-center justify-between p-4 border border-border rounded-xl bg-elevated"
                     >
                       <div className="flex items-center space-x-4">
                         <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
                         <div>
-                          <p className="font-medium capitalize text-grey-200">
+                          <p className="font-medium capitalize text-card-foreground">
                             {item.action} operation
                           </p>
-                          <p className="text-sm text-grey-400">
+                          <p className="text-sm text-muted-foreground">
                             {item.files?.filename || 'File operation'}
                           </p>
                         </div>
                       </div>
-                      <p className="text-sm text-grey-400">
+                      <p className="text-sm text-muted-foreground">
                         {formatDate(item.created_at)}
                       </p>
                     </div>

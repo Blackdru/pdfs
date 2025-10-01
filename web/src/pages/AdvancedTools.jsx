@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useSubscription } from '../contexts/SubscriptionContext'
 import { useSubscriptionAccess } from '../hooks/useSubscriptionAccess'
@@ -12,9 +12,10 @@ import UpgradeModal from '../components/UpgradeModal'
 import ToolsGrid from '../components/advanced-tools/ToolsGrid'
 import ToolProcessor from '../components/advanced-tools/ToolProcessor'
 import ResultsDisplay from '../components/advanced-tools/ResultsDisplay'
+import EnhancedOCRModal from '../components/EnhancedOCRModal'
 import { proTools, PROCESSING_STEPS_CONFIG } from '../components/advanced-tools/toolsConfig'
 import toast from 'react-hot-toast'
-import { Crown, Sparkles, AlertCircle } from 'lucide-react'
+import { AlertCircle, FileText } from 'lucide-react'
 
 const AdvancedTools = () => {
   const { user, session } = useAuth()
@@ -23,15 +24,18 @@ const AdvancedTools = () => {
     checkAccess, 
     showUpgradeModal, 
     upgradeModalData, 
-    closeUpgradeModal 
+    closeUpgradeModal,
+    filterToolsByAccess 
   } = useSubscriptionAccess()
   
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
   const [selectedTool, setSelectedTool] = useState(null)
   const [uploadedFiles, setUploadedFiles] = useState([])
   const [isProcessing, setIsProcessing] = useState(false)
+  const [processedFiles, setProcessedFiles] = useState([])
   const [ocrResults, setOcrResults] = useState(null)
   const [toolResults, setToolResults] = useState(null)
+  const [clearFileUpload, setClearFileUpload] = useState(false)
   const [showUploadModal, setShowUploadModal] = useState(false)
   const [chatSessions, setChatSessions] = useState({})
   const [currentMessage, setCurrentMessage] = useState('')
@@ -43,6 +47,10 @@ const AdvancedTools = () => {
   const [processingStage, setProcessingStage] = useState('Initializing...')
   const [processingSteps, setProcessingSteps] = useState([])
   const [currentStep, setCurrentStep] = useState(0)
+  const [showEnhancedOCRModal, setShowEnhancedOCRModal] = useState(false)
+  const [enhancedOCRResult, setEnhancedOCRResult] = useState(null)
+  const [currentFileId, setCurrentFileId] = useState(null)
+  const [toolSettings, setToolSettings] = useState({})
 
   const categories = ['All', 'AI-Powered', 'Professional', 'Security']
   const [selectedCategory, setSelectedCategory] = useState('All')
@@ -66,7 +74,13 @@ const AdvancedTools = () => {
   }
 
   const initializeProcessingSteps = (toolId) => {
-    const steps = PROCESSING_STEPS_CONFIG[toolId] || []
+    const steps = PROCESSING_STEPS_CONFIG[toolId] || [
+      { name: 'Uploading', icon: 'Upload' },
+      { name: 'Processing', icon: 'FileText' },
+      { name: 'Finalizing', icon: 'CheckCircle' },
+      { name: 'Complete', icon: 'Download' }
+    ]
+
     setProcessingSteps(steps)
     setCurrentStep(0)
     setProcessingProgress(0)
@@ -74,17 +88,32 @@ const AdvancedTools = () => {
   }
 
   const handleToolSelect = (tool) => {
+    console.log('Advanced tool selected:', tool.id, 'Current plan:', subscription?.plan)
+    
+    // Check if user has access to this advanced tool
     const hasToolAccess = checkAccess(tool.id, tool.title, tool.description)
-    if (!hasToolAccess) return
+    console.log('Advanced tool access check result:', hasToolAccess)
+    
+    if (!hasToolAccess) {
+      console.log('Access denied for advanced tool, showing upgrade modal')
+      return // Access denied, upgrade modal will be shown
+    }
 
+    console.log('Access granted for advanced tool, proceeding with tool selection')
     setSelectedTool(tool)
     setUploadedFiles([])
+    setProcessedFiles([])
     setOcrResults(null)
     setToolResults(null)
     setIsProcessing(false)
+    setClearFileUpload(true)
+    // Clear chat sessions and settings when switching tools
     setChatSessions({})
     setCurrentMessage('')
+    setToolSettings({})
+    setTimeout(() => setClearFileUpload(false), 100)
     
+    // Scroll to upload section after tool selection
     setTimeout(() => {
       const uploadSection = document.getElementById('upload-section')
       if (uploadSection) {
@@ -96,18 +125,19 @@ const AdvancedTools = () => {
   const handleFilesUploaded = async (files) => {
     setOcrResults(null)
     setToolResults(null)
+    setProcessedFiles([])
     
     const validFiles = validateFilesForTool(files, selectedTool)
-    if (validFiles.length === 0) return
+    if (validFiles.length === 0) {
+      return
+    }
     
     setUploadedFiles(validFiles)
     
-    if (validFiles.length >= (selectedTool?.minFiles || 1)) {
-      setIsProcessing(true)
-      initializeProcessingSteps(selectedTool.id)
-      updateProgress(5, 'Preparing files for processing...', 0)
-      await handleAutoProcess(validFiles)
-    }
+    // Don't auto-process, let user configure settings first
+    // if (validFiles.length >= (selectedTool?.minFiles || 1)) {
+    //   await handleAutoProcess(validFiles)
+    // }
   }
 
   const validateFilesForTool = (files, tool) => {
@@ -139,11 +169,9 @@ const AdvancedTools = () => {
   const handleAutoProcess = async (files, toolSettings = {}) => {
     if (!selectedTool || files.length === 0) return
 
-    if (usage && usage.current >= usage.limit && subscription?.plan !== 'premium') {
-      toast.error('You have reached your monthly processing limit. Please upgrade to continue.')
-      setIsProcessing(false)
-      return
-    }
+    console.log('=== Processing Started ===')
+    console.log('Tool:', selectedTool.id)
+    console.log('Settings received:', toolSettings)
     
     try {
       let uploadedFileIds = []
@@ -171,28 +199,30 @@ const AdvancedTools = () => {
       
       switch (selectedTool.id) {
         case 'advanced-ocr':
-          result = await handleAdvancedOCR(uploadedFileIds[0])
+          updateProgress(30, 'Starting OCR processing...', 1)
+          result = await handleAdvancedOCR(uploadedFileIds[0], toolSettings)
+          updateProgress(100, 'OCR processing completed!', 4)
           break
         case 'ai-chat':
           result = await handleAIChat(uploadedFileIds[0], files)
           break
         case 'smart-summary':
-          result = await handleSmartSummary(uploadedFileIds[0], toolSettings || {})
+          result = await handleSmartSummary(uploadedFileIds[0], toolSettings)
           break
         case 'pro-merge':
           result = await api.mergePDFs(uploadedFileIds, `${outputName}.pdf`)
           break
         case 'precision-split':
-          result = await handlePrecisionSplit(uploadedFileIds[0], outputName)
+          result = await handlePrecisionSplit(uploadedFileIds[0], toolSettings)
           break
         case 'smart-compress':
-          result = await handleSmartCompress(uploadedFileIds)
+          result = await handleSmartCompress(uploadedFileIds, toolSettings)
           break
         case 'encrypt-pro':
-          result = await handleEncryptPro(uploadedFileIds)
+          result = await handleEncryptPro(uploadedFileIds, toolSettings)
           break
-        case 'digital-sign':
-          result = await handleDigitalSign(uploadedFileIds[0])
+        case 'images-to-pdf':
+          result = await handleImagesToPDF(uploadedFileIds, toolSettings)
           break
         default:
           throw new Error('Tool not implemented yet')
@@ -205,10 +235,15 @@ const AdvancedTools = () => {
         toolName: selectedTool.title
       })
 
+      // Handle file downloads
       if (result.file) {
-        const blob = await api.downloadFile(result.file.id)
-        downloadBlob(blob, result.file.filename)
-        toast.success('Processing completed! File downloaded.')
+        try {
+          const blob = await api.downloadFile(result.file.id)
+          downloadBlob(blob, result.file.filename)
+          toast.success('Processing completed! File downloaded.')
+        } catch (downloadError) {
+          toast.error('File processed but download failed. Please try again.')
+        }
       } else if (result.files && result.files.length > 0) {
         let downloadCount = 0
         for (const file of result.files) {
@@ -222,6 +257,8 @@ const AdvancedTools = () => {
         }
         if (downloadCount > 0) {
           toast.success(`Processing completed! ${downloadCount} file(s) downloaded.`)
+        } else {
+          toast.error('Files processed but downloads failed. Please try again.')
         }
       } else {
         toast.success('Processing completed successfully!')
@@ -231,74 +268,141 @@ const AdvancedTools = () => {
       
     } catch (error) {
       console.error('Processing error:', error)
-      toast.error(`Processing failed: ${error.message}`)
+      
+      if (error.message.includes('No token provided') || error.message.includes('Unauthorized')) {
+        toast.error('Please sign in to use this feature')
+      } else if (error.message.includes('File not found')) {
+        toast.error('File upload failed. Please try again.')
+      } else if (error.message.includes('Network error')) {
+        toast.error('Network error. Please check your connection and try again.')
+      } else if (error.message.includes('404')) {
+        toast.error('Service temporarily unavailable. Please try again later.')
+      } else {
+        toast.error(`Processing failed: ${error.message}`)
+      }
     } finally {
       setIsProcessing(false)
     }
   }
 
-  const handleAdvancedOCR = async (fileId) => {
-    toast.loading('Processing with AI-enhanced OCR...', { id: 'ocr-processing' })
+  // Individual tool handlers
+  const handleAdvancedOCR = async (fileId, settings = {}) => {
+    console.log('Starting Advanced OCR processing for file ID:', fileId)
+    toast.loading('Checking server connection...', { id: 'ocr-processing' })
     
     try {
-      const result = await api.post('/ai/ocr', {
-        fileId: fileId,
-        language: 'eng+tel+spa+fra+deu',
-        enhanceImage: true,
-        aiEnhanced: true
-      })
+      // Check server health first
+      const isHealthy = await api.healthCheck()
+      if (!isHealthy) {
+        throw new Error('Server is not responding. Please try again later.')
+      }
+      
+      toast.loading('Processing with AI-enhanced OCR...', { id: 'ocr-processing' })
+      
+      // Use requestWithRetry for better reliability
+      const result = await api.requestWithRetry('/ai/ocr', {
+        method: 'POST',
+        body: JSON.stringify({
+          fileId: fileId,
+          language: settings.ocrLanguage || 'auto',
+          enhanceImage: settings.enhanceImage !== false,
+          aiEnhanced: settings.enhanceWithAI !== false,
+          extractOriginal: settings.extractOriginal || false,
+          confidenceThreshold: settings.confidenceThreshold || 0.6
+        }),
+        timeout: 150000, // 2.5 minutes for OCR
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }, 1) // Retry once on failure
       
       toast.dismiss('ocr-processing')
-      toast.success('Advanced OCR processing completed!')
+      toast.success('Advanced OCR processing completed! Text extracted with AI enhancement.')
       
-      setOcrResults({
-        text: result.result.text,
-        confidence: result.result.confidence,
-        filename: result.fileInfo.filename,
-        pageCount: result.result.pageCount,
-        detectedLanguage: result.result.detectedLanguage,
-        entities: result.result.entities || [],
-        summary: result.result.summary || ''
-      })
+      // Store the result and show the Enhanced OCR Modal
+      setEnhancedOCRResult(result.result)
+      setCurrentFileId(fileId)
+      setShowEnhancedOCRModal(true)
       
       setUploadedFiles([])
       setIsProcessing(false)
       return result
     } catch (ocrError) {
+      console.error('Advanced OCR error:', ocrError)
       toast.dismiss('ocr-processing')
+      
+      // Provide more specific error messages
+      if (ocrError.message.includes('timeout')) {
+        toast.error('OCR processing timed out. The file may be too large or complex. Please try with a smaller file.')
+      } else if (ocrError.message.includes('Network error')) {
+        toast.error('Network connection issue. Please check your internet connection and try again.')
+      } else if (ocrError.message.includes('File not found')) {
+        toast.error('File upload failed. Please try uploading the file again.')
+      } else {
+        toast.error(`OCR processing failed: ${ocrError.message}`)
+      }
+      
       throw ocrError
     }
   }
 
+  const handleOCRResultUpdate = (updatedResult) => {
+    setEnhancedOCRResult(updatedResult)
+  }
+
   const handleAIChat = async (fileId, files) => {
-    if (initializingAIChat) return { initialized: false }
+    if (initializingAIChat) {
+      console.log('AI Chat initialization already in progress, skipping...')
+      return { initialized: false, message: 'Already initializing' }
+    }
     
     setInitializingAIChat(true)
     
     try {
+      console.log('Starting AI Chat initialization for file ID:', fileId)
       toast.loading('Preparing document for AI chat...', { id: 'ai-chat-init' })
       
       try {
-        const result = await api.post('/ai/create-embeddings', { fileId })
+        const result = await api.post('/ai/create-embeddings', { 
+          fileId: fileId 
+        })
+        
+        console.log('Embeddings created successfully:', result)
         toast.dismiss('ai-chat-init')
-        toast.success('AI Chat initialized!')
+        toast.success('AI Chat initialized! You can now chat with your document.')
+        
       } catch (embeddingError) {
-        if (embeddingError.message.includes('No text content found')) {
-          toast.dismiss('ai-chat-init')
-          toast.loading('Extracting text from document...', { id: 'ai-chat-ocr' })
+        console.log('Embeddings failed, checking if OCR is needed:', embeddingError?.message || String(embeddingError))
+        
+        const errorMsg = embeddingError?.message || String(embeddingError)
+        if (errorMsg.includes('No text content found') || 
+            errorMsg.includes('Please run OCR')) {
           
-          const ocrResult = await api.post('/ai/ocr', {
-            fileId: fileId,
-            language: 'eng+tel',
-            enhanceImage: true
+          toast.dismiss('ai-chat-init')
+          toast.loading('Extracting text from document (this may take a few minutes)...', { id: 'ai-chat-ocr' })
+          
+          const ocrResult = await api.request('/ai/ocr', {
+            method: 'POST',
+            body: JSON.stringify({
+              fileId: fileId,
+              language: 'eng+tel',
+              enhanceImage: true
+            }),
+            timeout: 180000 // 3 minutes for OCR
           })
           
+          console.log('OCR completed for AI chat:', ocrResult)
           toast.dismiss('ai-chat-ocr')
+          
           await new Promise(resolve => setTimeout(resolve, 1000))
           
           toast.loading('Creating AI embeddings...', { id: 'ai-chat-embeddings' })
-          await api.post('/ai/create-embeddings', { fileId })
           
+          const embeddingResult = await api.post('/ai/create-embeddings', { 
+            fileId: fileId 
+          })
+          
+          console.log('Embeddings created after OCR:', embeddingResult)
           toast.dismiss('ai-chat-embeddings')
           toast.success('AI Chat initialized! Text extracted and processed successfully.')
         } else {
@@ -319,6 +423,7 @@ const AdvancedTools = () => {
       return { initialized: true }
       
     } catch (error) {
+      console.error('AI Chat initialization error:', error)
       toast.dismiss('ai-chat-init')
       toast.dismiss('ai-chat-ocr')
       toast.dismiss('ai-chat-embeddings')
@@ -328,38 +433,26 @@ const AdvancedTools = () => {
     }
   }
 
-  const handleSmartSummary = async (fileId, toolSettings = {}) => {
+  const handleSmartSummary = async (fileId, settings = {}) => {
+    console.log('Starting smart summary for fileId:', fileId)
+    
     updateProgress(30, 'Analyzing document text...', 1)
+    updateProgress(50, 'Generating AI summary...', 2)
     
     try {
-      const result = await api.requestWithRetry('/ai/smart-summary', {
-        method: 'POST',
-        body: JSON.stringify({
-          fileId,
-          includeKeyPoints: toolSettings.includeKeyPoints !== false,
-          includeSentiment: toolSettings.includeSentiment !== false,
-          includeEntities: toolSettings.includeEntities !== false,
-          analysisDepth: toolSettings.analysisDepth || 'comprehensive',
-          summaryLength: toolSettings.summaryLength || 'medium'
-        }),
-        timeout: 120000
-      }, 2)
+      const result = await api.smartSummary(fileId, {
+        includeKeyPoints: settings.includeKeyPoints !== false,
+        includeSentiment: settings.includeSentiment !== false,
+        includeEntities: settings.includeEntities !== false,
+        analysisDepth: settings.analysisDepth || 'comprehensive',
+        summaryLength: settings.summaryLength || 'medium'
+      })
       
       updateProgress(70, 'Performing sentiment analysis...', 3)
       updateProgress(85, 'Extracting entities...', 4)
-      
       updateProgress(100, 'Smart summary completed!', 5)
       
-      // Extract the actual summary data from nested result structure
-      const summaryData = result.result?.result || result.result
-      
-      console.log('Setting toolResults with data:', {
-        type: 'smart-summary',
-        result: summaryData,
-        timestamp: new Date().toISOString(),
-        fileId: fileId,
-        filename: result.fileInfo?.filename || 'document'
-      })
+      const summaryData = result.result
       
       setToolResults({
         type: 'smart-summary',
@@ -375,12 +468,13 @@ const AdvancedTools = () => {
       return result
       
     } catch (error) {
+      console.error('Smart summary error:', error)
       updateProgress(0, 'Failed to generate summary', 0)
       throw new Error(`Smart summary failed: ${error.message}`)
     }
   }
 
-  const handlePrecisionSplit = async (fileId, outputName) => {
+  const handlePrecisionSplit = async (fileId, settings = {}) => {
     const splitResponse = await fetch(`${API_BASE_URL}/pdf/split`, {
       method: 'POST',
       headers: {
@@ -389,7 +483,10 @@ const AdvancedTools = () => {
       },
       body: JSON.stringify({ 
         fileId: fileId, 
-        outputName: `${outputName}.pdf` 
+        outputName: `split-${Date.now()}.pdf`,
+        splitMethod: settings.splitMethod || 'pages',
+        pageRanges: settings.pageRanges || '',
+        namingPattern: settings.namingPattern || 'document_part_{n}'
       })
     })
     
@@ -399,7 +496,7 @@ const AdvancedTools = () => {
     }
     
     const splitBlob = await splitResponse.blob()
-    downloadBlob(splitBlob, `${outputName}_split.zip`)
+    downloadBlob(splitBlob, `split_${Date.now()}.zip`)
     toast.success('PDF split successfully! Files downloaded as ZIP.')
     
     setUploadedFiles([])
@@ -407,11 +504,15 @@ const AdvancedTools = () => {
     return { success: true }
   }
 
-  const handleSmartCompress = async (fileIds) => {
+  const handleSmartCompress = async (fileIds, settings = {}) => {
     const compressedFiles = []
+    const compressionLevel = settings.compressionLevel || 'balanced'
+    const qualityMap = { light: 0.9, balanced: 0.75, aggressive: 0.5, maximum: 0.25 }
+    const quality = qualityMap[compressionLevel] || 0.75
+    
     for (const fileId of fileIds) {
       try {
-        const compressed = await api.compressPDF(fileId, 0.5, `compressed-${fileId}.pdf`)
+        const compressed = await api.compressPDF(fileId, quality, `compressed-${fileId}.pdf`)
         compressedFiles.push(compressed.file)
       } catch (error) {
         if (error.message.includes('already optimized')) {
@@ -432,78 +533,115 @@ const AdvancedTools = () => {
     return { files: compressedFiles }
   }
 
-  const handleEncryptPro = async (fileIds) => {
+  const handleEncryptPro = async (fileIds, settings = {}) => {
     const encryptedFiles = []
     
     for (const fileId of fileIds) {
-      const password = `SecurePDF_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`
+      const password = settings.passwordType === 'custom' && settings.customPassword 
+        ? settings.customPassword 
+        : `SecurePDF_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`
       
-      try {
-        const result = await api.passwordProtectPDF(
-          fileId,
-          password,
-          {
-            printing: true,
-            copying: false,
-            editing: false,
-            annotating: false,
+      const response = await fetch(`${API_BASE_URL}/pdf/advanced/password-protect`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
+        },
+        body: JSON.stringify({
+          fileId: fileId,
+          password: password,
+          permissions: {
+            printing: settings.allowPrinting !== false,
+            copying: settings.allowCopying || false,
+            editing: settings.allowEditing || false,
+            annotating: settings.allowAnnotations || false,
             fillingForms: true,
             extracting: false,
             assembling: false,
             printingHighRes: false
           },
-          `encrypted_${Date.now()}.pdf`
-        )
-        
-        encryptedFiles.push(result.file)
-        
+          outputName: `encrypted_${Date.now()}.pdf`,
+          encryptionLevel: settings.encryptionLevel || '256-bit'
+        })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Encryption failed')
+      }
+
+      const result = await response.json()
+      encryptedFiles.push(result.file)
+      
+      if (settings.passwordType !== 'custom') {
         toast.success(`File encrypted! Password: ${password}`, { duration: 10000 })
-        
         try {
           await navigator.clipboard.writeText(password)
           toast.success('Password copied to clipboard!')
         } catch (clipboardError) {
           console.warn('Could not copy to clipboard:', clipboardError)
         }
-      } catch (error) {
-        toast.error(`Encryption failed for file: ${error.message}`)
       }
     }
 
-    if (encryptedFiles.length > 0) {
-      toast.success(`${encryptedFiles.length} file(s) encrypted successfully with AES-256!`)
-    }
+    toast.success(`${encryptedFiles.length} file(s) encrypted successfully!`)
     return { files: encryptedFiles }
   }
 
-  const handleDigitalSign = async (fileId) => {
-    const signerName = user?.user_metadata?.full_name || user?.email || 'Digital Signer'
+  const handleImagesToPDF = async (fileIds, settings = {}) => {
+    updateProgress(30, 'Processing images...', 1)
     
-    try {
-      const result = await api.digitalSignPDF(
-        fileId,
-        {
-          name: signerName,
-          reason: 'Document approval and authentication',
-          location: 'Digital Platform',
-          contactInfo: user?.email || 'contact@example.com'
-        },
-        {
-          x: 100,
-          y: 100,
-          width: 200,
-          height: 100,
-          page: 1
-        },
-        `signed_${Date.now()}.pdf`
-      )
-      
-      toast.success('Document digitally signed with advanced certificate!')
-      return { file: result.file }
-    } catch (error) {
-      toast.error(`Digital signing failed: ${error.message}`)
-      throw error
+    // Prepare options object with all settings - ensure all values are properly set
+    const options = {
+      pageSize: settings.pageSize || 'A4',
+      orientation: settings.orientation || 'auto',
+      margin: typeof settings.margin === 'number' ? settings.margin : 20,
+      imageQuality: typeof settings.imageQuality === 'number' ? settings.imageQuality : 0.9,
+      fitToPage: settings.fitToPage !== false,
+      centerImages: settings.centerImages !== false,
+      addPageNumbers: settings.addPageNumbers === true,
+      addTimestamp: settings.addTimestamp === true,
+      backgroundColor: settings.backgroundColor || '#FFFFFF',
+      compression: settings.compression || 'jpeg'
     }
+    
+    // Add custom size if specified
+    if (settings.pageSize === 'Custom' && settings.customWidth && settings.customHeight) {
+      options.customSize = {
+        width: parseFloat(settings.customWidth),
+        height: parseFloat(settings.customHeight)
+      }
+    }
+    
+    console.log('Images to PDF - Settings received:', settings)
+    console.log('Images to PDF - Options being sent:', options)
+    
+    const response = await fetch(`${API_BASE_URL}/pdf/advanced/advanced-images-to-pdf`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session?.access_token}`
+      },
+      body: JSON.stringify({
+        fileIds: fileIds,
+        outputName: `images_to_pdf_${Date.now()}.pdf`,
+        options: options
+      })
+    })
+
+    updateProgress(70, 'Creating PDF...', 2)
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      throw new Error(errorData.error || 'Images to PDF conversion failed')
+    }
+
+    updateProgress(90, 'Finalizing...', 3)
+    const result = await response.json()
+    updateProgress(100, 'Complete!', 4)
+    
+    toast.success(`${fileIds.length} image(s) converted to PDF successfully!`)
+    return { file: result.file }
   }
 
   const sendChatMessage = async (fileId) => {
@@ -552,15 +690,25 @@ const AdvancedTools = () => {
   const canProcess = uploadedFiles.length >= (selectedTool?.minFiles || 1)
   const usageExceeded = usage && usage.current >= usage.limit && subscription?.plan !== 'premium'
 
+  // Check if user has access to advanced tools page
   useEffect(() => {
-    if (subscription?.plan === 'free' || !subscription?.plan) {
+    if (!subscription) return // Wait for subscription to load
+    
+    console.log('AdvancedTools: Checking page access, current plan:', subscription.plan)
+    
+    if (subscription.plan === 'free') {
+      console.log('AdvancedTools: Free user detected, checking access')
+      
       const hasAccess = checkAccess('advanced-tools', 'Advanced PDF Tools', 'Professional-grade PDF processing with AI-powered tools')
-      if (!hasAccess) return
+      
+      if (!hasAccess) {
+        console.log('AdvancedTools: Access denied, upgrade modal should be shown')
+      }
     }
-  }, [subscription?.plan, checkAccess])
+  }, [subscription, checkAccess])
 
   return (
-    <div className="min-h-screen bg-grey-950 relative overflow-hidden">
+    <div className="min-h-screen bg-page relative overflow-hidden">
       {/* Premium Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-900 rounded-full blur-3xl opacity-30 animate-float"></div>
@@ -569,48 +717,6 @@ const AdvancedTools = () => {
       </div>
 
       <div className="relative z-10">
-        {/* Premium Hero Section */}
-        <div className="bg-gradient-to-br from-grey-900 via-grey-800 to-grey-900 border-b border-grey-800">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-            <div className="text-center">
-              <div className="inline-flex items-center px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full text-sm font-medium mb-6">
-                <Crown className="h-4 w-4 mr-2" />
-                Professional PDF Suite
-                <Sparkles className="h-4 w-4 ml-2" />
-              </div>
-              <h1 className="text-4xl md:text-6xl font-bold text-grey-100 mb-6">
-                Advanced PDF Tools
-                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-400">
-                  Powered by AI
-                </span>
-              </h1>
-              <p className="text-xl text-grey-400 max-w-3xl mx-auto mb-8">
-                Unlock professional-grade PDF processing with AI-powered tools, advanced security features, and enterprise-level capabilities.
-              </p>
-              
-              {/* Premium Stats */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-8 max-w-3xl mx-auto">
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-purple-400 mb-2">99.9%</div>
-                  <div className="text-grey-400">OCR Accuracy</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-pink-400 mb-2">10x</div>
-                  <div className="text-grey-400">Faster Processing</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-blue-400 mb-2">256-bit</div>
-                  <div className="text-grey-400">Encryption</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-3xl font-bold text-green-400 mb-2">24/7</div>
-                  <div className="text-grey-400">Support</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
         {/* Usage Warning */}
         {usageExceeded && (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
@@ -628,23 +734,21 @@ const AdvancedTools = () => {
         )}
 
         {/* Category Filter */}
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
-          <div className="overflow-x-auto pb-2 mb-6 sm:mb-8 lg:mb-12">
-            <div className="flex justify-center gap-2 sm:gap-3 min-w-max px-2">
-              {categories.map((category) => (
-                <button
-                  key={category}
-                  onClick={() => setSelectedCategory(category)}
-                  className={`px-3 sm:px-4 lg:px-6 py-2 sm:py-3 rounded-full font-medium transition-all duration-300 text-xs sm:text-sm lg:text-base whitespace-nowrap ${
-                    selectedCategory === category
-                      ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-600/30'
-                      : 'bg-grey-800 text-grey-300 hover:bg-grey-700 hover:text-grey-200'
-                  }`}
-                >
-                  {category}
-                </button>
-              ))}
-            </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+          <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-8 sm:mb-12">
+            {categories.map((category) => (
+              <button
+                key={category}
+                onClick={() => setSelectedCategory(category)}
+                className={`px-4 sm:px-6 py-2 sm:py-3 rounded-full font-medium transition-all duration-300 text-sm sm:text-base ${
+                  selectedCategory === category
+                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-600/30'
+                    : 'bg-grey-800 text-grey-300 hover:bg-accent hover:text-foreground'
+                }`}
+              >
+                {category}
+              </button>
+            ))}
           </div>
 
           {/* Tools Grid */}
@@ -654,7 +758,7 @@ const AdvancedTools = () => {
             onToolSelect={handleToolSelect}
           />
 
-          {/* Selected Tool Processing Area */}
+          {/* Tool Processor */}
           {selectedTool && (
             <ToolProcessor
               selectedTool={selectedTool}
@@ -666,10 +770,12 @@ const AdvancedTools = () => {
               onProcess={handleAutoProcess}
               showUploadModal={showUploadModal}
               setShowUploadModal={setShowUploadModal}
+              toolSettings={toolSettings}
+              setToolSettings={setToolSettings}
             />
           )}
 
-          {/* Results Section */}
+          {/* Results Display */}
           <ResultsDisplay
             ocrResults={ocrResults}
             toolResults={toolResults}
@@ -681,58 +787,64 @@ const AdvancedTools = () => {
             onClearChat={() => setChatSessions({})}
             onSendMessage={sendChatMessage}
           />
+
+          {/* Modals */}
+          {showUploadModal && (
+            <FileUploadModal
+              isOpen={showUploadModal}
+              onClose={() => setShowUploadModal(false)}
+              onFilesUploaded={handleFilesUploaded}
+              acceptedFiles={selectedTool?.acceptedFiles}
+              multiple={selectedTool?.multipleFiles}
+              clearTrigger={clearFileUpload}
+            />
+          )}
+
+          {isProcessing && (
+            <ProcessingModal
+              isOpen={isProcessing}
+              title={selectedTool ? `Processing ${selectedTool.title}` : 'Processing'}
+              fileName={uploadedFiles.length > 0 ? uploadedFiles[0].name : 'Document'}
+              progress={processingProgress}
+              stage={processingStage}
+              steps={processingSteps}
+              currentStep={currentStep}
+              icon={selectedTool ? selectedTool.icon : FileText}
+            />
+          )}
+
+          {showAIAssistant && currentFileForAI && (
+            <AIAssistant
+              isOpen={showAIAssistant}
+              onClose={() => setShowAIAssistant(false)}
+              fileId={currentFileForAI.id}
+              fileName={currentFileForAI.name}
+              isMinimized={aiAssistantMinimized}
+              onMinimize={() => setAiAssistantMinimized(!aiAssistantMinimized)}
+            />
+          )}
+
+          {showUpgradeModal && (
+            <UpgradeModal
+              isOpen={showUpgradeModal}
+              onClose={closeUpgradeModal}
+              feature={upgradeModalData?.feature}
+              description={upgradeModalData?.description}
+            />
+          )}
+
+          {showEnhancedOCRModal && enhancedOCRResult && (
+            <EnhancedOCRModal
+              isOpen={showEnhancedOCRModal}
+              onClose={() => setShowEnhancedOCRModal(false)}
+              result={enhancedOCRResult}
+              fileName={enhancedOCRResult?.filename || 'Document'}
+              fileId={currentFileId}
+              onResultUpdate={handleOCRResultUpdate}
+            />
+          )}
         </div>
       </div>
-
-      {/* Processing Modal */}
-      <ProcessingModal 
-        isOpen={isProcessing}
-        title={selectedTool ? `${selectedTool.title}` : 'Processing'}
-        fileName={uploadedFiles.map(f => f.name).join(', ')}
-        progress={processingProgress}
-        stage={processingStage}
-        icon={selectedTool ? selectedTool.icon : null}
-        description={selectedTool ? selectedTool.description : 'Processing your files with professional-grade tools'}
-        steps={processingSteps}
-        currentStep={currentStep}
-        estimatedTime={useMemo(() => selectedTool ? parseInt(selectedTool.processingTime.replace(/[^\d]/g, '')) : 60, [selectedTool?.processingTime])}
-      />
-
-      {/* File Upload Modal */}
-      <FileUploadModal
-        isOpen={showUploadModal}
-        onClose={() => setShowUploadModal(false)}
-        onFilesUploaded={handleFilesUploaded}
-        acceptedFiles={selectedTool?.acceptedFiles || '.pdf'}
-        multiple={selectedTool?.multipleFiles || false}
-        maxFiles={selectedTool?.multipleFiles ? 10 : 1}
-        title={`Upload Files for ${selectedTool?.title || 'Processing'}`}
-        description={selectedTool?.description || 'Select files to upload and process'}
-        toolName={selectedTool?.title || ''}
-        toolIcon={selectedTool?.icon}
-      />
-        
-      {/* AI Assistant */}
-      {showAIAssistant && currentFileForAI && (
-        <div className="fixed bottom-4 right-4 z-50">
-          <AIAssistant
-            fileId={currentFileForAI.id}
-            fileName={currentFileForAI.name}
-            onClose={() => setShowAIAssistant(false)}
-            isMinimized={aiAssistantMinimized}
-            onToggleMinimize={() => setAiAssistantMinimized(!aiAssistantMinimized)}
-          />
-        </div>
-      )}
-
-      {/* Upgrade Modal */}
-      <UpgradeModal
-        isOpen={showUpgradeModal}
-        onClose={closeUpgradeModal}
-        requiredPlan={upgradeModalData.requiredPlan}
-        toolName={upgradeModalData.toolName}
-        toolDescription={upgradeModalData.toolDescription}
-      />
     </div>
   )
 }

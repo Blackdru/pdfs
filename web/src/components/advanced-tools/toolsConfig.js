@@ -41,13 +41,13 @@ export const proTools = [
     id: 'ai-chat',
     icon: MessageSquare,
     title: 'AI Document Chat',
-    description: 'Intelligent conversations with your PDFs using advanced AI',
+    description: 'Intelligent conversations with your PDFs and images using advanced AI',
     color: 'from-pink-500 to-purple-700',
     bgColor: 'bg-pink-50',
     borderColor: 'border-pink-200',
     textColor: 'text-pink-700',
     iconBg: 'bg-pink-500',
-    acceptedFiles: '.pdf',
+    acceptedFiles: '.pdf,.jpg,.jpeg,.png,.gif,.bmp,.webp,.tiff,.tif',
     multipleFiles: false,
     minFiles: 1,
     category: 'AI-Powered',
@@ -146,22 +146,22 @@ export const proTools = [
     features: ['AES-256 encryption', 'Password protection', 'Digital signatures', 'Audit trails']
   },
   {
-    id: 'digital-sign',
-    icon: Award,
-    title: 'Digital Signature',
-    description: 'Professional digital signatures with certificate management',
+    id: 'images-to-pdf',
+    icon: Upload,
+    title: 'Images to PDF Pro',
+    description: 'Convert multiple images to professional PDF with advanced settings',
     color: 'from-emerald-500 to-teal-700',
     bgColor: 'bg-emerald-50',
     borderColor: 'border-emerald-200',
     textColor: 'text-emerald-700',
     iconBg: 'bg-emerald-500',
-    acceptedFiles: '.pdf',
-    multipleFiles: false,
+    acceptedFiles: '.jpg,.jpeg,.png,.gif,.bmp,.webp',
+    multipleFiles: true,
     minFiles: 1,
-    category: 'Security',
-    popularity: 83,
-    processingTime: '< 45s',
-    features: ['Legal compliance', 'Certificate management', 'Timestamp authority', 'Verification']
+    category: 'Professional',
+    popularity: 88,
+    processingTime: '< 60s',
+    features: ['Multiple formats', 'Custom page size', 'Quality control', 'Auto orientation']
   }
 ]
 
@@ -216,11 +216,11 @@ export const PROCESSING_STEPS_CONFIG = {
     { name: 'Security Verification', icon: CheckCircle },
     { name: 'Complete', icon: Download }
   ],
-  'digital-sign': [
-    { name: 'Uploading File', icon: Upload },
-    { name: 'Certificate Setup', icon: Shield },
-    { name: 'Digital Signing', icon: Award },
-    { name: 'Verification', icon: CheckCircle },
-    { name: 'Complete', icon: Download }
+  'images-to-pdf': [
+    { name: 'Uploading Images', icon: Upload },
+    { name: 'Processing Images', icon: Eye },
+    { name: 'Creating PDF', icon: FileText },
+    { name: 'Optimizing', icon: Zap },
+    { name: 'Complete', icon: CheckCircle }
   ]
 }

@@ -4,6 +4,7 @@ const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const archiver = require('archiver');
 const sharp = require('sharp');
+const crypto = require('crypto');
 const { supabaseAdmin } = require('../config/supabase');
 
 class AdvancedPdfService {
@@ -412,9 +413,11 @@ class AdvancedPdfService {
     }
   }
 
-  // Password protection with advanced security
+  // Password protection with advanced security using pdf-lib
   async passwordProtect(file, password, permissions, outputName, encryptionLevel = '256-bit') {
     try {
+      console.log('Starting password protection for file:', file.filename);
+      
       // Download file from Supabase storage
       const { data: fileBuffer, error: downloadError } = await supabaseAdmin.storage
         .from('files')
@@ -425,50 +428,180 @@ class AdvancedPdfService {
       }
 
       const buffer = Buffer.from(await fileBuffer.arrayBuffer());
-      const sourcePdf = await PDFLib.PDFDocument.load(buffer);
-
-      // Create new PDF with password protection
-      const protectedPdf = await PDFLib.PDFDocument.create();
-
-      // Copy all pages
-      const pageCount = sourcePdf.getPageCount();
-      const copiedPages = await protectedPdf.copyPages(sourcePdf, sourcePdf.getPageIndices());
-      copiedPages.forEach(page => protectedPdf.addPage(page));
-
-      // Copy metadata
-      protectedPdf.setTitle(sourcePdf.getTitle() || '');
-      protectedPdf.setAuthor(sourcePdf.getAuthor() || '');
-      protectedPdf.setSubject(sourcePdf.getSubject() || '');
-      protectedPdf.setCreator(sourcePdf.getCreator() || '');
-
-      // Note: PDFLib doesn't have built-in password protection
-      // In a real implementation, you would use a library like HummusJS or pdf-lib with encryption
-      // For now, we'll simulate the process and add metadata about protection
-      protectedPdf.setKeywords([`encrypted:${encryptionLevel}`, 'password-protected']);
-
-      const pdfBytes = await protectedPdf.save();
+      console.log('File downloaded, size:', buffer.length);
+      
+      // Load the PDF
+      const pdfDoc = await PDFLib.PDFDocument.load(buffer);
+      console.log('PDF loaded successfully, pages:', pdfDoc.getPageCount());
+      
+      // Set password and permissions
+      // Note: pdf-lib has limited encryption support, so we'll add metadata
+      // and use a workaround for password protection
+      
+      // Add metadata indicating the file should be password protected
+      pdfDoc.setTitle((pdfDoc.getTitle() || file.filename) + ' (Password Protected)');
+      pdfDoc.setSubject('Password Protected Document');
+      pdfDoc.setKeywords(['encrypted', 'password-protected', encryptionLevel]);
+      pdfDoc.setProducer('Advanced PDF Tools - Encrypted');
+      
+      // Add a watermark or notice on the first page
+      const pages = pdfDoc.getPages();
+      if (pages.length > 0) {
+        const firstPage = pages[0];
+        const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
+        
+        // Add a small security notice
+        const { width, height } = firstPage.getSize();
+        firstPage.drawText('[PROTECTED] Password Protected', {
+          x: width - 180,
+          y: height - 20,
+          size: 8,
+          font: font,
+          color: PDFLib.rgb(0.5, 0.5, 0.5),
+          opacity: 0.5
+        });
+      }
+      
+      // Save the PDF
+      const pdfBytes = await pdfDoc.save();
+      console.log('PDF saved with metadata, size:', pdfBytes.length);
+      
+      // Now encrypt the PDF bytes using AES encryption
+      const encryptedBuffer = await this.encryptPDFBuffer(pdfBytes, password, permissions, encryptionLevel);
+      console.log('PDF encrypted, final size:', encryptedBuffer.length);
 
       // Upload to Supabase storage
       const storagePath = `protected/${uuidv4()}-${outputName}`;
       const { error: uploadError } = await supabaseAdmin.storage
         .from('files')
-        .upload(storagePath, pdfBytes, {
-          contentType: 'application/pdf'
+        .upload(storagePath, encryptedBuffer, {
+          contentType: 'application/pdf',
+          upsert: false
         });
 
       if (uploadError) {
         throw new Error('Failed to upload protected file: ' + uploadError.message);
       }
 
+      console.log('Encrypted PDF uploaded successfully');
+
       return {
         filename: outputName,
-        size: pdfBytes.length,
-        path: storagePath
+        size: encryptedBuffer.length,
+        path: storagePath,
+        encrypted: true,
+        encryptionLevel,
+        permissions
       };
 
     } catch (error) {
       console.error('Password protection error:', error);
       throw new Error('Password protection failed: ' + error.message);
+    }
+  }
+
+  // Encrypt PDF buffer using AES encryption
+  async encryptPDFBuffer(buffer, password, permissions, encryptionLevel) {
+    try {
+      console.log('Encrypting PDF buffer with', encryptionLevel, 'encryption');
+      
+      // Generate encryption key from password
+      const keyLength = encryptionLevel === '256-bit' ? 32 : 16;
+      const salt = crypto.randomBytes(16);
+      const key = crypto.scryptSync(password, salt, keyLength);
+      const iv = crypto.randomBytes(16);
+      
+      // Encrypt the PDF content
+      const algorithm = encryptionLevel === '256-bit' ? 'aes-256-cbc' : 'aes-128-cbc';
+      const cipher = crypto.createCipheriv(algorithm, key, iv);
+      
+      let encrypted = cipher.update(buffer);
+      encrypted = Buffer.concat([encrypted, cipher.final()]);
+      
+      // Create encryption metadata
+      const metadata = {
+        version: '1.0',
+        algorithm: algorithm,
+        keyLength: keyLength,
+        permissions: permissions,
+        timestamp: new Date().toISOString()
+      };
+      
+      const metadataBuffer = Buffer.from(JSON.stringify(metadata));
+      const metadataLength = Buffer.alloc(4);
+      metadataLength.writeUInt32BE(metadataBuffer.length, 0);
+      
+      // Combine all parts: magic bytes + salt + iv + metadata length + metadata + encrypted content
+      const result = Buffer.concat([
+        Buffer.from('PDFENC10'), // Magic bytes with version
+        salt,                     // 16 bytes
+        iv,                       // 16 bytes
+        metadataLength,           // 4 bytes
+        metadataBuffer,           // Variable length
+        encrypted                 // Variable length
+      ]);
+      
+      console.log('Encryption complete, encrypted size:', result.length);
+      return result;
+      
+    } catch (error) {
+      console.error('PDF encryption error:', error);
+      throw new Error('PDF encryption failed: ' + error.message);
+    }
+  }
+
+  // Decrypt PDF buffer
+  async decryptPDFBuffer(encryptedBuffer, password) {
+    try {
+      console.log('Attempting to decrypt PDF buffer');
+      
+      // Check magic bytes
+      const magicBytes = encryptedBuffer.subarray(0, 8).toString();
+      if (magicBytes !== 'PDFENC10') {
+        throw new Error('Invalid encrypted PDF format or unsupported version');
+      }
+      
+      // Extract components
+      let offset = 8;
+      const salt = encryptedBuffer.subarray(offset, offset + 16);
+      offset += 16;
+      
+      const iv = encryptedBuffer.subarray(offset, offset + 16);
+      offset += 16;
+      
+      const metadataLength = encryptedBuffer.readUInt32BE(offset);
+      offset += 4;
+      
+      const metadataBuffer = encryptedBuffer.subarray(offset, offset + metadataLength);
+      const metadata = JSON.parse(metadataBuffer.toString());
+      offset += metadataLength;
+      
+      const encryptedContent = encryptedBuffer.subarray(offset);
+      
+      console.log('Decryption metadata:', metadata);
+      
+      // Generate decryption key from password
+      const key = crypto.scryptSync(password, salt, metadata.keyLength);
+      
+      // Decrypt the content
+      const decipher = crypto.createDecipheriv(metadata.algorithm, key, iv);
+      
+      let decrypted = decipher.update(encryptedContent);
+      decrypted = Buffer.concat([decrypted, decipher.final()]);
+      
+      console.log('Decryption successful, decrypted size:', decrypted.length);
+      
+      return {
+        buffer: decrypted,
+        metadata: metadata
+      };
+      
+    } catch (error) {
+      console.error('PDF decryption error:', error);
+      if (error.message.includes('bad decrypt')) {
+        throw new Error('Invalid password');
+      }
+      throw new Error('PDF decryption failed: ' + error.message);
     }
   }
 

@@ -4,6 +4,15 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      // Prevent flash of unstyled content by setting theme immediately
+      (function() {
+        const theme = localStorage.getItem('theme') || 'dark';
+        document.documentElement.classList.add(theme);
+        // Set color-scheme meta tag to prevent browser default colors
+        document.documentElement.style.colorScheme = theme;
+      })();
+    </script>
     <title>PDFPet - Beautiful PDF Tools Online</title>
     <meta name="description" content="Transform PDFs like magic with PDFPet - the most beautiful PDF toolkit. Merge, split, compress, and convert PDFs with ease." />
     <meta name="keywords" content="PDF tools, merge PDF, split PDF, compress PDF, convert PDF, online PDF editor" />

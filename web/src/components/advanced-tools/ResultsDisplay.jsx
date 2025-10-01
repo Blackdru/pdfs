@@ -193,9 +193,9 @@ const ResultsDisplay = ({
     <div className="space-y-8 mb-8">
       {/* Smart Summary Results */}
       {toolResults && toolResults.type === 'smart-summary' && (
-        <div className="bg-grey-900 rounded-3xl border border-grey-800 p-8">
+        <div className="bg-surface rounded-3xl border border-border p-8">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-semibold text-grey-200 flex items-center">
+            <h3 className="text-xl font-semibold text-card-foreground flex items-center">
               <Sparkles className="h-5 w-5 mr-2" />
               AI Summary Complete
             </h3>
@@ -207,7 +207,7 @@ const ResultsDisplay = ({
                 onClick={onClearToolResults}
                 size="sm"
                 variant="outline"
-                className="border-grey-600 text-grey-300 hover:bg-grey-700"
+                className="border-border text-card-foreground hover:bg-accent"
               >
                 <X className="h-4 w-4" />
               </Button>
@@ -215,12 +215,12 @@ const ResultsDisplay = ({
           </div>
           
           <div className="text-center space-y-6">
-            <div className="p-8 bg-grey-800 rounded-xl">
+            <div className="p-8 bg-elevated rounded-xl">
               <Sparkles className="h-16 w-16 text-yellow-400 mx-auto mb-4" />
-              <h4 className="text-2xl font-bold text-grey-200 mb-2">
+              <h4 className="text-2xl font-bold text-card-foreground mb-2">
                 AI Summary Generated Successfully!
               </h4>
-              <p className="text-grey-400 mb-6">
+              <p className="text-muted-foreground mb-6">
                 Your document has been analyzed with AI insights, key points extraction, and sentiment analysis.
               </p>
               
@@ -232,7 +232,7 @@ const ResultsDisplay = ({
                 View Report
               </Button>
               
-              <p className="text-xs text-grey-500 mt-4">
+              <p className="text-xs text-secondary mt-4">
                 Click to open your comprehensive AI summary report in a new window
               </p>
             </div>
@@ -243,9 +243,9 @@ const ResultsDisplay = ({
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         {/* OCR Results */}
         {ocrResults && (
-          <div className="bg-grey-900 rounded-3xl border border-grey-800 p-8">
+          <div className="bg-surface rounded-3xl border border-border p-8">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-semibold text-grey-200 flex items-center">
+              <h3 className="text-xl font-semibold text-card-foreground flex items-center">
                 <Eye className="h-5 w-5 mr-2" />
                 OCR Results
               </h3>
@@ -257,7 +257,7 @@ const ResultsDisplay = ({
                   onClick={onClearOCR}
                   size="sm"
                   variant="outline"
-                  className="border-grey-600 text-grey-300 hover:bg-grey-700"
+                  className="border-border text-card-foreground hover:bg-accent"
                 >
                   <X className="h-4 w-4" />
                 </Button>
@@ -265,22 +265,22 @@ const ResultsDisplay = ({
             </div>
             
             <div className="space-y-4">
-              <div className="p-4 bg-grey-800 rounded-xl">
-                <h4 className="font-medium text-grey-200 mb-2">{ocrResults.filename}</h4>
+              <div className="p-4 bg-elevated rounded-xl">
+                <h4 className="font-medium text-card-foreground mb-2">{ocrResults.filename}</h4>
                 <textarea
                   value={ocrResults.text}
                   readOnly
-                  className="w-full bg-grey-700 border border-grey-600 text-grey-200 rounded-lg p-3 h-32 resize-none"
+                  className="w-full bg-accent border border-border text-card-foreground rounded-lg p-3 h-32 resize-none"
                 />
                 <div className="flex justify-between items-center mt-3">
-                  <span className="text-xs text-grey-400">
+                  <span className="text-xs text-muted-foreground">
                     {ocrResults.pageCount || 0} pages • {ocrResults.detectedLanguage || 'Multiple languages'}
                   </span>
                   <Button
                     onClick={() => navigator.clipboard.writeText(ocrResults.text)}
                     size="sm"
                     variant="outline"
-                    className="border-grey-600 text-grey-300 hover:bg-grey-700"
+                    className="border-border text-card-foreground hover:bg-accent"
                   >
                     <Copy className="h-4 w-4 mr-1" />
                     Copy
@@ -289,8 +289,8 @@ const ResultsDisplay = ({
               </div>
               
               {ocrResults.entities && ocrResults.entities.length > 0 && (
-                <div className="p-4 bg-grey-800 rounded-xl">
-                  <h4 className="font-medium text-grey-200 mb-2">Detected Entities</h4>
+                <div className="p-4 bg-elevated rounded-xl">
+                  <h4 className="font-medium text-card-foreground mb-2">Detected Entities</h4>
                   <div className="flex flex-wrap gap-2">
                     {ocrResults.entities.map((entity, index) => (
                       <span key={index} className="bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
@@ -306,9 +306,9 @@ const ResultsDisplay = ({
 
         {/* AI Chat */}
         {Object.keys(chatSessions).length > 0 && (
-          <div className="bg-grey-900 rounded-3xl border border-grey-800 p-8">
+          <div className="bg-surface rounded-3xl border border-border p-8">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-semibold text-grey-200 flex items-center">
+              <h3 className="text-xl font-semibold text-card-foreground flex items-center">
                 <MessageSquare className="h-5 w-5 mr-2" />
                 AI Chat
               </h3>
@@ -316,7 +316,7 @@ const ResultsDisplay = ({
                 onClick={onClearChat}
                 size="sm"
                 variant="outline"
-                className="border-grey-600 text-grey-300 hover:bg-grey-700"
+                className="border-border text-card-foreground hover:bg-accent"
               >
                 <X className="h-4 w-4 mr-1" />
                 Close Chat
@@ -326,15 +326,15 @@ const ResultsDisplay = ({
             {Object.entries(chatSessions).map(([fileId, session]) => (
               <div key={fileId} className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h4 className="font-medium text-grey-200">{session.filename}</h4>
+                  <h4 className="font-medium text-card-foreground">{session.filename}</h4>
                   <div className="bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">
                     Active
                   </div>
                 </div>
                 
-                <div className="h-48 overflow-y-auto bg-grey-800 rounded-xl p-4 space-y-3">
+                <div className="h-48 overflow-y-auto bg-elevated rounded-xl p-4 space-y-3">
                   {session.messages.length === 0 ? (
-                    <div className="text-center text-grey-400 py-8">
+                    <div className="text-center text-muted-foreground py-8">
                       <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
                       <p>Start a conversation with your document!</p>
                     </div>
@@ -368,7 +368,7 @@ const ResultsDisplay = ({
                     value={currentMessage}
                     onChange={(e) => setCurrentMessage(e.target.value)}
                     placeholder="Ask about this document..."
-                    className="flex-1 bg-grey-800 border border-grey-600 text-grey-200 rounded-lg px-3 py-2"
+                    className="flex-1 bg-elevated border border-border text-card-foreground rounded-lg px-3 py-2"
                     onKeyPress={(e) => e.key === 'Enter' && onSendMessage(fileId)}
                   />
                   <Button
@@ -386,23 +386,23 @@ const ResultsDisplay = ({
 
       {/* AI Chat Results Display */}
       {toolResults && toolResults.type === 'ai-chat' && (
-        <div className="bg-grey-900 rounded-3xl border border-grey-800 p-8 mb-8">
+        <div className="bg-surface rounded-3xl border border-border p-8 mb-8">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center">
               <MessageSquare className="h-6 w-6 text-pink-400 mr-3" />
-              <h3 className="text-xl font-semibold text-grey-200">AI Chat Initialized</h3>
+              <h3 className="text-xl font-semibold text-card-foreground">AI Chat Initialized</h3>
             </div>
             <div className="bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">
               Ready
             </div>
           </div>
           
-          <div className="bg-grey-800 rounded-xl p-6 text-center">
+          <div className="bg-elevated rounded-xl p-6 text-center">
             <MessageSquare className="h-12 w-12 text-pink-400 mx-auto mb-4" />
-            <h4 className="text-lg font-semibold text-grey-200 mb-2">
+            <h4 className="text-lg font-semibold text-card-foreground mb-2">
               AI Chat is Ready!
             </h4>
-            <p className="text-grey-400 mb-4">
+            <p className="text-muted-foreground mb-4">
               Your document has been processed and is ready for AI-powered conversations.
               You can now ask questions about the content.
             </p>
@@ -416,29 +416,29 @@ const ResultsDisplay = ({
 
       {/* Tool Results Display */}
       {toolResults && !['smart-summary', 'ai-chat'].includes(toolResults.type) && (
-        <div className="bg-grey-900 rounded-3xl border border-grey-800 p-8 mb-8">
+        <div className="bg-surface rounded-3xl border border-border p-8 mb-8">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center">
               <CheckCircle className="h-6 w-6 text-green-400 mr-3" />
-              <h3 className="text-xl font-semibold text-grey-200">Processing Complete</h3>
+              <h3 className="text-xl font-semibold text-card-foreground">Processing Complete</h3>
             </div>
             <div className="bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">
               Success
             </div>
           </div>
           
-          <div className="bg-grey-800 rounded-xl p-6">
+          <div className="bg-elevated rounded-xl p-6">
             <div className="flex items-center justify-between">
               <div>
-                <h4 className="text-lg font-semibold text-grey-200 mb-1">
+                <h4 className="text-lg font-semibold text-card-foreground mb-1">
                   {toolResults.toolName} Completed
                 </h4>
-                <p className="text-grey-400">
+                <p className="text-muted-foreground">
                   Your files have been processed successfully and downloaded.
                 </p>
               </div>
               <div className="text-right">
-                <div className="text-sm text-grey-400">
+                <div className="text-sm text-muted-foreground">
                   Processed at: {new Date(toolResults.timestamp).toLocaleString()}
                 </div>
               </div>

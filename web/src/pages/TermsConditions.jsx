@@ -3,7 +3,7 @@ import { Card } from '../components/ui/card'
 
 const TermsConditions = () => {
   return (
-    <div className="min-h-screen bg-grey-950 py-12">
+    <div className="min-h-screen bg-page py-12">
       <div className="layout-dark-container">
         <div className="max-w-4xl mx-auto">
           {/* Header */}
@@ -11,23 +11,23 @@ const TermsConditions = () => {
             <div className="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center mx-auto mb-6">
               <FileText className="h-8 w-8 text-white" />
             </div>
-            <h1 className="text-4xl font-bold text-grey-200 mb-4">Terms & Conditions</h1>
-            <p className="text-grey-400 text-lg">
+            <h1 className="text-4xl font-bold text-card-foreground mb-4">Terms & Conditions</h1>
+            <p className="text-muted-foreground text-lg">
               Please read these terms carefully before using our services.
             </p>
-            <p className="text-grey-500 text-sm mt-2">
+            <p className="text-secondary text-sm mt-2">
               Last updated: {new Date().toLocaleDateString()}
             </p>
           </div>
 
           {/* Content */}
           <div className="space-y-8">
-            <Card className="bg-grey-900 border-grey-800 p-8">
+            <Card className="bg-surface border-border p-8">
               <div className="flex items-center mb-6">
                 <Users className="h-6 w-6 text-blue-400 mr-3" />
-                <h2 className="text-2xl font-semibold text-grey-200">Acceptance of Terms</h2>
+                <h2 className="text-2xl font-semibold text-card-foreground">Acceptance of Terms</h2>
               </div>
-              <div className="space-y-4 text-grey-400">
+              <div className="space-y-4 text-muted-foreground">
                 <p>
                   By accessing and using PDFPet ("the Service"), you accept and agree to be bound by the terms 
                   and provision of this agreement. If you do not agree to abide by the above, please do not use this service.
@@ -38,12 +38,12 @@ const TermsConditions = () => {
               </div>
             </Card>
 
-            <Card className="bg-grey-900 border-grey-800 p-8">
+            <Card className="bg-surface border-border p-8">
               <div className="flex items-center mb-6">
                 <Shield className="h-6 w-6 text-green-400 mr-3" />
-                <h2 className="text-2xl font-semibold text-grey-200">Use License</h2>
+                <h2 className="text-2xl font-semibold text-card-foreground">Use License</h2>
               </div>
-              <div className="space-y-4 text-grey-400">
+              <div className="space-y-4 text-muted-foreground">
                 <p>
                   Permission is granted to temporarily use PDFPet for personal and commercial document processing. 
                   This is the grant of a license, not a transfer of title, and under this license you may not:
@@ -59,12 +59,12 @@ const TermsConditions = () => {
               </div>
             </Card>
 
-            <Card className="bg-grey-900 border-grey-800 p-8">
+            <Card className="bg-surface border-border p-8">
               <div className="flex items-center mb-6">
                 <CreditCard className="h-6 w-6 text-purple-400 mr-3" />
-                <h2 className="text-2xl font-semibold text-grey-200">Subscription and Billing</h2>
+                <h2 className="text-2xl font-semibold text-card-foreground">Subscription and Billing</h2>
               </div>
-              <div className="space-y-4 text-grey-400">
+              <div className="space-y-4 text-muted-foreground">
                 <p>
                   PDFPet offers both free and paid subscription plans:
                 </p>
@@ -82,12 +82,12 @@ const TermsConditions = () => {
               </div>
             </Card>
 
-            <Card className="bg-grey-900 border-grey-800 p-8">
+            <Card className="bg-surface border-border p-8">
               <div className="flex items-center mb-6">
                 <AlertTriangle className="h-6 w-6 text-orange-400 mr-3" />
-                <h2 className="text-2xl font-semibold text-grey-200">Prohibited Uses</h2>
+                <h2 className="text-2xl font-semibold text-card-foreground">Prohibited Uses</h2>
               </div>
-              <div className="space-y-4 text-grey-400">
+              <div className="space-y-4 text-muted-foreground">
                 <p>
                   You may not use our service:
                 </p>
@@ -105,12 +105,12 @@ const TermsConditions = () => {
               </div>
             </Card>
 
-            <Card className="bg-grey-900 border-grey-800 p-8">
+            <Card className="bg-surface border-border p-8">
               <div className="flex items-center mb-6">
                 <Scale className="h-6 w-6 text-yellow-400 mr-3" />
-                <h2 className="text-2xl font-semibold text-grey-200">Disclaimer</h2>
+                <h2 className="text-2xl font-semibold text-card-foreground">Disclaimer</h2>
               </div>
-              <div className="space-y-4 text-grey-400">
+              <div className="space-y-4 text-muted-foreground">
                 <p>
                   The information on this website is provided on an "as is" basis. To the fullest extent permitted by law, 
                   this Company:
@@ -121,18 +121,18 @@ const TermsConditions = () => {
                   <li>Excludes all liability for damages arising out of or in connection with your use of this website</li>
                   <li>Makes no warranties about the availability or functionality of the service</li>
                 </ul>
-                <p className="mt-4 font-semibold text-grey-300">
+                <p className="mt-4 font-semibold text-card-foreground">
                   You use this service at your own risk. Always verify important information from AI-generated summaries.
                 </p>
               </div>
             </Card>
 
-            <Card className="bg-grey-900 border-grey-800 p-8">
+            <Card className="bg-surface border-border p-8">
               <div className="flex items-center mb-6">
                 <FileText className="h-6 w-6 text-red-400 mr-3" />
-                <h2 className="text-2xl font-semibold text-grey-200">Termination</h2>
+                <h2 className="text-2xl font-semibold text-card-foreground">Termination</h2>
               </div>
-              <div className="space-y-4 text-grey-400">
+              <div className="space-y-4 text-muted-foreground">
                 <p>
                   We may terminate or suspend your account and bar access to the service immediately, without prior notice 
                   or liability, under our sole discretion, for any reason whatsoever and without limitation, including but 
@@ -148,9 +148,9 @@ const TermsConditions = () => {
               </div>
             </Card>
 
-            <Card className="bg-grey-900 border-grey-800 p-8">
-              <h2 className="text-2xl font-semibold text-grey-200 mb-6">Changes to Terms</h2>
-              <div className="text-grey-400 space-y-4">
+            <Card className="bg-surface border-border p-8">
+              <h2 className="text-2xl font-semibold text-card-foreground mb-6">Changes to Terms</h2>
+              <div className="text-muted-foreground space-y-4">
                 <p>
                   We reserve the right, at our sole discretion, to modify or replace these Terms at any time. 
                   If a revision is material, we will provide at least 30 days notice prior to any new terms taking effect.
@@ -162,9 +162,9 @@ const TermsConditions = () => {
               </div>
             </Card>
 
-            <Card className="bg-grey-900 border-grey-800 p-8">
-              <h2 className="text-2xl font-semibold text-grey-200 mb-6">Contact Information</h2>
-              <div className="text-grey-400">
+            <Card className="bg-surface border-border p-8">
+              <h2 className="text-2xl font-semibold text-card-foreground mb-6">Contact Information</h2>
+              <div className="text-muted-foreground">
                 <p className="mb-4">
                   If you have any questions about these Terms & Conditions, please contact us:
                 </p>

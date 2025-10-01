@@ -34,6 +34,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from './ui/dropdown-menu'
+import ThemeToggle from './ThemeToggle'
 
 const ModernNavbar = () => {
   const { user, signOut } = useAuth()
@@ -73,8 +74,8 @@ const ModernNavbar = () => {
       <nav 
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
           isScrolled 
-            ? 'bg-grey-900 border-b border-grey-800 shadow-lg' 
-            : 'bg-grey-950'
+            ? 'bg-card border-b border-border shadow-lg' 
+            : 'bg-background'
         }`}
       >
         <div className="layout-dark-container">
@@ -91,7 +92,7 @@ const ModernNavbar = () => {
                 <span className="text-3xl font-bold text-gradient-grey font-poppins">
                   PDFPet
                 </span>
-                <span className="text-xs text-grey-500 -mt-1 font-semibold hidden sm:block">
+                <span className="text-xs text-secondary -mt-1 font-semibold hidden sm:block">
                   ✨ AI-Powered Document Magic
                 </span>
               </div>
@@ -132,36 +133,39 @@ const ModernNavbar = () => {
 
             {/* Right Side Actions */}
             <div className="flex items-center space-x-4">
+              {/* Theme Toggle */}
+              <ThemeToggle />
+              
               {user ? (
                 /* User Menu */
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="h-12 px-4 rounded-2xl hover:bg-grey-800 flex items-center space-x-3">
+                    <Button variant="ghost" className="h-12 px-4 rounded-2xl hover:bg-elevated flex items-center space-x-3">
                       <div className="h-10 w-10 rounded-2xl bg-gradient-blue flex items-center justify-center shadow-blue">
                         <User className="h-5 w-5 text-white" />
                       </div>
                       <div className="hidden sm:block text-left">
-                        <div className="text-sm font-semibold text-grey-200">
+                        <div className="text-sm font-semibold text-card-foreground">
                           {user.user_metadata?.name || 'User'}
                         </div>
-                        <div className="text-xs text-grey-500">
+                        <div className="text-xs text-secondary">
                           {user.user_metadata?.role === 'admin' ? 'Administrator' : 'Member'}
                         </div>
                       </div>
-                      <ChevronDown className="h-4 w-4 text-grey-500" />
+                      <ChevronDown className="h-4 w-4 text-secondary" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="dropdown-dark w-72">
-                    <div className="p-4 border-b border-grey-800">
+                    <div className="p-4 border-b border-border">
                       <div className="flex items-center space-x-4">
                         <div className="h-12 w-12 rounded-2xl bg-gradient-blue flex items-center justify-center shadow-blue">
                           <User className="h-6 w-6 text-white" />
                         </div>
                         <div>
-                          <p className="text-sm font-semibold text-grey-200">
+                          <p className="text-sm font-semibold text-card-foreground">
                             {user.user_metadata?.name || user.email}
                           </p>
-                          <p className="text-xs text-grey-500">{user.email}</p>
+                          <p className="text-xs text-secondary">{user.email}</p>
                         </div>
                       </div>
                     </div>
@@ -177,7 +181,7 @@ const ModernNavbar = () => {
                         onClick={() => navigate('/profile')}
                         className="dropdown-item-dark"
                       >
-                        <Settings className="mr-4 h-5 w-5 text-grey-400" />
+                        <Settings className="mr-4 h-5 w-5 text-muted-foreground" />
                         <span className="font-semibold">Profile Settings</span>
                       </DropdownMenuItem>
                       <DropdownMenuItem 
@@ -241,7 +245,7 @@ const ModernNavbar = () => {
                   variant="ghost"
                   size="icon"
                   onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                  className="h-12 w-12 rounded-2xl hover:bg-grey-800"
+                  className="h-12 w-12 rounded-2xl hover:bg-elevated"
                 >
                   {isMobileMenuOpen ? (
                     <X className="h-5 w-5" />
@@ -257,7 +261,7 @@ const ModernNavbar = () => {
 
       {/* Mobile Menu */}
       {isMobileMenuOpen && (
-        <div className="fixed top-20 left-0 right-0 z-40 bg-grey-900 border-b border-grey-800 shadow-lg md:hidden animate-slide-down-fade">
+        <div className="fixed top-20 left-0 right-0 z-40 border-b border-border shadow-lg md:hidden animate-slide-down-fade" style={{ backgroundColor: 'rgb(15, 23, 42)' }}>
           <div className="layout-dark-container py-8">
             <div className="space-y-3 mb-8">
               {user && navItems.map((item) => (
@@ -268,7 +272,7 @@ const ModernNavbar = () => {
                   className={`flex items-center space-x-4 px-6 py-4 rounded-2xl font-semibold transition-all duration-300 ${
                     isActivePath(item.path)
                       ? 'text-blue-300 bg-blue-950 shadow-sm'
-                      : 'text-grey-400 hover:text-grey-200 hover:bg-grey-800'
+                      : 'text-grey-400 hover:text-foreground hover:bg-secondary'
                   }`}
                 >
                   <item.icon className="h-6 w-6" />
@@ -288,7 +292,7 @@ const ModernNavbar = () => {
                   className={`flex items-center space-x-4 px-6 py-4 rounded-2xl font-semibold transition-all duration-300 ${
                     isActivePath(item.path)
                       ? 'text-blue-300 bg-blue-950 shadow-sm'
-                      : 'text-grey-400 hover:text-grey-200 hover:bg-grey-800'
+                      : 'text-grey-400 hover:text-foreground hover:bg-secondary'
                   }`}
                 >
                   <item.icon className="h-6 w-6" />

@@ -159,14 +159,14 @@ const ModernHome = () => {
   ]
 
   return (
-    <div className="min-h-screen bg-grey-950 relative overflow-hidden">
+    <div className="min-h-screen bg-page relative overflow-hidden">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-blue-900 rounded-full blur-3xl animate-float"></div>
         <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-green-900 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-purple-950 rounded-full blur-3xl animate-float" style={{ animationDelay: '4s' }}></div>
         <div className="absolute top-20 left-20 w-64 h-64 bg-orange-950 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute bottom-20 right-20 w-80 h-80 bg-grey-800 rounded-full blur-3xl animate-float" style={{ animationDelay: '3s' }}></div>
+        <div className="absolute bottom-20 right-20 w-80 h-80 bg-elevated rounded-full blur-3xl animate-float" style={{ animationDelay: '3s' }}></div>
       </div>
 
       {/* Hero Section */}
@@ -175,7 +175,7 @@ const ModernHome = () => {
           <div className={`text-center max-w-6xl mx-auto transition-all duration-1000 ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
           }`}>
-            <div className="inline-flex items-center px-8 py-4 glass-card-dark text-grey-300 rounded-full text-sm font-semibold mb-12 border border-grey-700">
+            <div className="inline-flex items-center px-8 py-4 glass-card-dark text-card-foreground rounded-full text-sm font-semibold mb-12 border border-border">
               <Sparkles className="h-5 w-5 mr-3 text-blue-400" />
               ✨ Next-Generation AI-Powered PDF Suite
               <ChevronRight className="h-4 w-4 ml-2" />
@@ -188,7 +188,7 @@ const ModernHome = () => {
               </span>
             </h1>
             
-            <p className="body-dark-large text-grey-300 mb-16 max-w-4xl mx-auto leading-relaxed">
+            <p className="body-dark-large text-card-foreground mb-16 max-w-4xl mx-auto leading-relaxed">
               Experience the future of document processing with our revolutionary AI-powered platform. 
               Merge, split, compress, and transform your PDFs with unprecedented speed, intelligence, and beauty.
             </p>
@@ -227,7 +227,7 @@ const ModernHome = () => {
       </section>
 
       {/* Features Section */}
-      <section className="layout-dark-section bg-grey-900">
+      <section className="layout-dark-section bg-surface">
         <div className="layout-dark-container">
           <div className="text-center mb-20">
             <div className="inline-flex items-center px-6 py-3 bg-gradient-blue text-white rounded-full text-sm font-semibold mb-8">
@@ -235,7 +235,7 @@ const ModernHome = () => {
               Powerful Features
             </div>
             <h2 className="heading-dark-2 mb-6">Revolutionary PDF Tools</h2>
-            <p className="body-dark-large text-grey-300 max-w-3xl mx-auto">
+            <p className="body-dark-large text-card-foreground max-w-3xl mx-auto">
               Discover a complete suite of intelligent tools designed to make document processing effortless and enjoyable
             </p>
           </div>
@@ -258,8 +258,8 @@ const ModernHome = () => {
                       <feature.icon className={`h-8 w-8 ${feature.color}`} />
                     </div>
                     <div className="flex-1">
-                      <h3 className="heading-dark-4 mb-3 group-hover:text-grey-100 transition-colors">{feature.title}</h3>
-                      <p className="body-dark text-grey-400 group-hover:text-grey-300 transition-colors leading-relaxed">{feature.description}</p>
+                      <h3 className="heading-dark-4 mb-3 group-hover:text-foreground transition-colors">{feature.title}</h3>
+                      <p className="body-dark text-muted-foreground group-hover:text-card-foreground transition-colors leading-relaxed">{feature.description}</p>
                     </div>
                   </div>
                 </div>
@@ -270,7 +270,7 @@ const ModernHome = () => {
       </section>
 
       {/* Benefits Section */}
-      <section className="layout-dark-section bg-grey-800 relative">
+      <section className="layout-dark-section bg-elevated relative">
         <div className="layout-dark-container relative">
           <div className="text-center mb-20">
             <div className="inline-flex items-center px-6 py-3 bg-gradient-green text-white rounded-full text-sm font-semibold mb-8">
@@ -278,7 +278,7 @@ const ModernHome = () => {
               Why Choose Us
             </div>
             <h2 className="heading-dark-2 mb-6">Built for Excellence</h2>
-            <p className="body-dark-large text-grey-300 max-w-3xl mx-auto">
+            <p className="body-dark-large text-card-foreground max-w-3xl mx-auto">
               Experience the perfect blend of cutting-edge technology and intuitive design
             </p>
           </div>
@@ -297,8 +297,8 @@ const ModernHome = () => {
                     <benefit.icon className="h-10 w-10 text-white" />
                   </div>
                 </div>
-                <h3 className="heading-dark-4 mb-4 group-hover:text-grey-100 transition-colors">{benefit.title}</h3>
-                <p className="body-dark text-grey-400 group-hover:text-grey-300 transition-colors">{benefit.description}</p>
+                <h3 className="heading-dark-4 mb-4 group-hover:text-foreground transition-colors">{benefit.title}</h3>
+                <p className="body-dark text-muted-foreground group-hover:text-card-foreground transition-colors">{benefit.description}</p>
               </div>
             ))}
           </div>
@@ -308,7 +308,7 @@ const ModernHome = () => {
       
 
       {/* How It Works Section */}
-      <section className="layout-dark-section bg-grey-900">
+      <section className="layout-dark-section bg-surface">
         <div className="layout-dark-container">
           <div className="text-center mb-20">
             <div className="inline-flex items-center px-6 py-3 bg-gradient-purple text-white rounded-full text-sm font-semibold mb-8">
@@ -316,7 +316,7 @@ const ModernHome = () => {
               Simple Process
             </div>
             <h2 className="heading-dark-2 mb-6">Three Steps to Magic</h2>
-            <p className="body-dark-large text-grey-300 max-w-3xl mx-auto">
+            <p className="body-dark-large text-card-foreground max-w-3xl mx-auto">
               Transform your documents in just three simple steps with our intuitive interface
             </p>
           </div>
@@ -359,8 +359,8 @@ const ModernHome = () => {
                   </div>
                 </div>
                 
-                <h3 className="heading-dark-4 mb-4 group-hover:text-grey-100 transition-colors">{step.title}</h3>
-                <p className="body-dark text-grey-400 group-hover:text-grey-300 transition-colors leading-relaxed">{step.description}</p>
+                <h3 className="heading-dark-4 mb-4 group-hover:text-foreground transition-colors">{step.title}</h3>
+                <p className="body-dark text-muted-foreground group-hover:text-card-foreground transition-colors leading-relaxed">{step.description}</p>
                 
                 {index < 2 && (
                   <div className="hidden md:block absolute top-12 left-full w-full z-10">
@@ -376,7 +376,7 @@ const ModernHome = () => {
       </section>
 
       {/* Pricing Section */}
-      <section className="layout-dark-section bg-grey-900 relative overflow-hidden">
+      <section className="layout-dark-section bg-surface relative overflow-hidden">
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <div className="absolute top-20 right-20 w-80 h-80 bg-blue-950 rounded-full blur-3xl"></div>
           <div className="absolute bottom-20 left-20 w-80 h-80 bg-green-950 rounded-full blur-3xl"></div>
@@ -389,7 +389,7 @@ const ModernHome = () => {
               Transparent Pricing
             </div>
             <h2 className="heading-dark-2 mb-6">Choose Your Perfect Plan</h2>
-            <p className="body-dark-large text-grey-300 max-w-3xl mx-auto">
+            <p className="body-dark-large text-card-foreground max-w-3xl mx-auto">
               Start free and scale as you grow. All plans include our core features with no hidden fees or surprises.
             </p>
           </div>
@@ -400,15 +400,15 @@ const ModernHome = () => {
               isVisible ? 'animate-scale-fade' : ''
             }`} style={{ animationDelay: '100ms' }}>
               <div className="mb-8">
-                <div className="inline-flex items-center justify-center w-20 h-20 bg-grey-700 rounded-3xl mb-6">
-                  <Star className="h-10 w-10 text-grey-400" />
+                <div className="inline-flex items-center justify-center w-20 h-20 bg-accent rounded-3xl mb-6">
+                  <Star className="h-10 w-10 text-muted-foreground" />
                 </div>
                 <h3 className="heading-dark-3 mb-3">Starter</h3>
                 <div className="mb-4">
-                  <span className="text-5xl font-bold text-grey-200">$0</span>
-                  <span className="text-grey-400 text-lg">/month</span>
+                  <span className="text-5xl font-bold text-card-foreground">$0</span>
+                  <span className="text-muted-foreground text-lg">/month</span>
                 </div>
-                <p className="text-grey-400">Perfect for getting started</p>
+                <p className="text-muted-foreground">Perfect for getting started</p>
               </div>
               
               <div className="space-y-4 mb-10">
@@ -421,7 +421,7 @@ const ModernHome = () => {
                 ].map((feature, index) => (
                   <div key={index} className="flex items-center text-sm">
                     <CheckCircle className="h-5 w-5 text-green-400 mr-3 flex-shrink-0" />
-                    <span className="text-grey-300">{feature}</span>
+                    <span className="text-card-foreground">{feature}</span>
                   </div>
                 ))}
               </div>
@@ -450,10 +450,10 @@ const ModernHome = () => {
                 </div>
                 <h3 className="heading-dark-3 mb-3">Professional</h3>
                 <div className="mb-4">
-                  <span className="text-5xl font-bold text-grey-200">$1</span>
-                  <span className="text-grey-400 text-lg">/month</span>
+                  <span className="text-5xl font-bold text-card-foreground">$1</span>
+                  <span className="text-muted-foreground text-lg">/month</span>
                 </div>
-                <p className="text-grey-400">For power users and professionals</p>
+                <p className="text-muted-foreground">For power users and professionals</p>
               </div>
               
               <div className="space-y-4 mb-10">
@@ -468,7 +468,7 @@ const ModernHome = () => {
                 ].map((feature, index) => (
                   <div key={index} className="flex items-center text-sm">
                     <CheckCircle className="h-5 w-5 text-green-400 mr-3 flex-shrink-0" />
-                    <span className="text-grey-300">{feature}</span>
+                    <span className="text-card-foreground">{feature}</span>
                   </div>
                 ))}
               </div>
@@ -491,10 +491,10 @@ const ModernHome = () => {
                 </div>
                 <h3 className="heading-dark-3 mb-3">Enterprise</h3>
                 <div className="mb-4">
-                  <span className="text-5xl font-bold text-grey-200">$10</span>
-                  <span className="text-grey-400 text-lg">/month</span>
+                  <span className="text-5xl font-bold text-card-foreground">$10</span>
+                  <span className="text-muted-foreground text-lg">/month</span>
                 </div>
-                <p className="text-grey-400">For teams and enterprises</p>
+                <p className="text-muted-foreground">For teams and enterprises</p>
               </div>
               
               <div className="space-y-4 mb-10">
@@ -509,7 +509,7 @@ const ModernHome = () => {
                 ].map((feature, index) => (
                   <div key={index} className="flex items-center text-sm">
                     <CheckCircle className="h-5 w-5 text-green-400 mr-3 flex-shrink-0" />
-                    <span className="text-grey-300">{feature}</span>
+                    <span className="text-card-foreground">{feature}</span>
                   </div>
                 ))}
               </div>
@@ -526,7 +526,7 @@ const ModernHome = () => {
           <div className="text-center mt-16">
             <Button 
               onClick={() => navigate('/upgrade')}
-              className="btn-dark-glass text-grey-300 hover:text-grey-200"
+              className="btn-dark-glass text-card-foreground hover:text-card-foreground"
             >
               View detailed comparison →
             </Button>
@@ -538,9 +538,9 @@ const ModernHome = () => {
       <section className="layout-dark-section bg-gradient-accent text-white relative overflow-hidden">
         <div className="absolute inset-0 bg-black"></div>
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-10 right-10 w-40 h-40 bg-grey-700 rounded-full blur-3xl animate-float"></div>
-          <div className="absolute bottom-10 left-10 w-56 h-56 bg-grey-800 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-grey-700 rounded-full blur-2xl animate-float" style={{ animationDelay: '1s' }}></div>
+          <div className="absolute top-10 right-10 w-40 h-40 bg-accent rounded-full blur-3xl animate-float"></div>
+          <div className="absolute bottom-10 left-10 w-56 h-56 bg-elevated rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-accent rounded-full blur-2xl animate-float" style={{ animationDelay: '1s' }}></div>
         </div>
         
         <div className="layout-dark-container text-center relative">
@@ -548,7 +548,7 @@ const ModernHome = () => {
             <h2 className="heading-dark-2 mb-8 text-white">
               Ready to Transform Your Workflow?
             </h2>
-            <p className="body-dark-large mb-12 text-grey-300 leading-relaxed">
+            <p className="body-dark-large mb-12 text-card-foreground leading-relaxed">
               Join millions of users who have revolutionized their document processing. 
               Start your free journey today and experience the magic of intelligent PDF tools.
             </p>
@@ -575,7 +575,7 @@ const ModernHome = () => {
                   </Button>
                   <Button 
                     onClick={() => navigate('/login')}
-                    className="btn-dark-glass text-white border-grey-600 hover:bg-grey-700 text-xl px-12 py-6 h-auto font-semibold"
+                    className="btn-dark-glass text-white border-border hover:bg-accent text-xl px-12 py-6 h-auto font-semibold"
                   >
                     Sign In
                   </Button>
@@ -583,7 +583,7 @@ const ModernHome = () => {
               )}
             </div>
             
-            <div className="flex flex-wrap items-center justify-center gap-8 text-sm text-grey-300">
+            <div className="flex flex-wrap items-center justify-center gap-8 text-sm text-card-foreground">
               <div className="flex items-center">
                 <CheckCircle className="h-5 w-5 mr-2" />
                 No credit card required

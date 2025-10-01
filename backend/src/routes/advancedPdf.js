@@ -1,8 +1,9 @@
 const express = require('express');
 const { supabase, supabaseAdmin } = require('../config/supabase');
 const { authenticateUser } = require('../middleware/auth');
-const { requireProPlan, trackUsage } = require('../middleware/subscriptionMiddleware');
+const { requireProPlan, requireBasicPlan, trackUsage } = require('../middleware/subscriptionMiddleware');
 const advancedPdfService = require('../services/advancedPdfService');
+const ocrService = require('../services/ocrService');
 const { validateRequest } = require('../middleware/validation');
 const Joi = require('joi');
 
@@ -862,6 +863,194 @@ router.post('/annotate',
     } catch (error) {
       console.error('PDF annotation error:', error);
       res.status(500).json({ error: error.message || 'PDF annotation failed' });
+    }
+  }
+);
+
+// Enhanced OCR with AI processing
+router.post('/enhanced-ocr',
+  authenticateUser,
+  requireBasicPlan,
+  trackUsage('ocr_operation', 1),
+  validateRequest({
+    body: Joi.object({
+      fileId: Joi.string().uuid().required(),
+      options: Joi.object({
+        enhanceWithAI: Joi.boolean().default(false),
+        extractOriginal: Joi.boolean().default(false),
+        language: Joi.string().default('auto'),
+        translateTo: Joi.string().optional()
+      }).default({})
+    })
+  }),
+  async (req, res) => {
+    try {
+      const { fileId, options } = req.body;
+
+      // Get file metadata
+      const { data: file, error: fileError } = await supabaseAdmin
+        .from('files')
+        .select('*')
+        .eq('id', fileId)
+        .eq('user_id', req.user.id)
+        .single();
+
+      if (fileError || !file) {
+        return res.status(404).json({ error: 'File not found' });
+      }
+
+      // Validate file type
+      const supportedTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp', 'image/bmp'];
+      if (!supportedTypes.includes(file.type)) {
+        return res.status(400).json({ 
+          error: 'Unsupported file type. Please upload a PDF or image file.',
+          supportedTypes
+        });
+      }
+
+      // Download file from Supabase storage
+      const { data: fileBuffer, error: downloadError } = await supabaseAdmin.storage
+        .from('files')
+        .download(file.path);
+
+      if (downloadError) {
+        throw new Error(`Failed to download file: ${downloadError.message}`);
+      }
+
+      const buffer = Buffer.from(await fileBuffer.arrayBuffer());
+      const fileType = file.type.startsWith('image/') ? 'image' : 'pdf';
+
+      // Perform enhanced OCR with AI
+      const ocrResult = await ocrService.extractTextWithAI(buffer, {
+        ...options,
+        fileType
+      });
+
+      // Translate if requested
+      let translatedText = null;
+      if (options.translateTo && ocrResult.text) {
+        try {
+          translatedText = await ocrService.translateText(ocrResult.text, options.translateTo);
+        } catch (translateError) {
+          console.warn('Translation failed:', translateError.message);
+        }
+      }
+
+      // Save OCR results to database
+      const { data: ocrRecord, error: saveError } = await supabaseAdmin
+        .from('ocr_results')
+        .insert([{
+          user_id: req.user.id,
+          file_id: fileId,
+          extracted_text: ocrResult.text,
+          original_text: ocrResult.originalText,
+          enhanced_text: ocrResult.enhancedText,
+          translated_text: translatedText,
+          detected_language: ocrResult.detectedLanguage,
+          confidence: ocrResult.confidence,
+          page_count: ocrResult.pageCount,
+          ai_enhanced: ocrResult.aiEnhanced,
+          processing_options: ocrResult.processingOptions,
+          metadata: {
+            method: ocrResult.method || 'enhanced',
+            image_version: ocrResult.imageVersion,
+            translate_to: options.translateTo,
+            created_at: new Date().toISOString()
+          }
+        }])
+        .select()
+        .single();
+
+      if (saveError) {
+        console.warn('Failed to save OCR results:', saveError.message);
+      }
+
+      // Log operation
+      await supabaseAdmin
+        .from('history')
+        .insert([{
+          user_id: req.user.id,
+          file_id: fileId,
+          action: 'enhanced_ocr',
+          metadata: { 
+            options,
+            detected_language: ocrResult.detectedLanguage,
+            confidence: ocrResult.confidence,
+            ai_enhanced: ocrResult.aiEnhanced,
+            translated: !!translatedText
+          }
+        }]);
+
+      res.json({
+        message: 'Enhanced OCR completed successfully',
+        result: {
+          text: ocrResult.text,
+          originalText: ocrResult.originalText,
+          enhancedText: ocrResult.enhancedText,
+          translatedText: translatedText,
+          detectedLanguage: ocrResult.detectedLanguage,
+          confidence: ocrResult.confidence,
+          pageCount: ocrResult.pageCount,
+          pages: ocrResult.pages,
+          aiEnhanced: ocrResult.aiEnhanced,
+          processingOptions: ocrResult.processingOptions,
+          ocrId: ocrRecord?.id
+        }
+      });
+
+    } catch (error) {
+      console.error('Enhanced OCR error:', error);
+      res.status(500).json({ error: error.message || 'Enhanced OCR failed' });
+    }
+  }
+);
+
+// Get OCR results
+router.get('/ocr-results/:fileId',
+  authenticateUser,
+  async (req, res) => {
+    try {
+      const { fileId } = req.params;
+
+      // Get OCR results
+      const { data: ocrResults, error: ocrError } = await supabaseAdmin
+        .from('ocr_results')
+        .select('*')
+        .eq('file_id', fileId)
+        .eq('user_id', req.user.id)
+        .order('created_at', { ascending: false });
+
+      if (ocrError) {
+        throw new Error('Failed to fetch OCR results: ' + ocrError.message);
+      }
+
+      res.json({
+        message: 'OCR results retrieved successfully',
+        results: ocrResults
+      });
+
+    } catch (error) {
+      console.error('Get OCR results error:', error);
+      res.status(500).json({ error: error.message || 'Failed to get OCR results' });
+    }
+  }
+);
+
+// Get supported OCR languages
+router.get('/ocr-languages',
+  authenticateUser,
+  async (req, res) => {
+    try {
+      const languages = ocrService.getSupportedLanguages();
+      
+      res.json({
+        message: 'Supported OCR languages retrieved successfully',
+        languages
+      });
+
+    } catch (error) {
+      console.error('Get OCR languages error:', error);
+      res.status(500).json({ error: error.message || 'Failed to get OCR languages' });
     }
   }
 );

@@ -41,7 +41,7 @@ const Login = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center py-16 px-4 sm:px-6 lg:px-8 bg-grey-950 relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center py-16 px-4 sm:px-6 lg:px-8 bg-page relative overflow-hidden">
       {/* Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-96 h-96 bg-blue-950 rounded-full blur-3xl animate-float"></div>
@@ -55,10 +55,10 @@ const Login = () => {
        
 
         {/* Login Form */}
-        <div className="dark-card p-10 bg-grey-900 shadow-blue-lg">
+        <div className="dark-card p-10 bg-surface shadow-blue-lg">
           <div className="space-y-2 pb-8">
             <h3 className="heading-dark-4 text-center">Sign in to your account</h3>
-            <p className="body-dark-small text-grey-400 text-center">
+            <p className="body-dark-small text-muted-foreground text-center">
               Enter your credentials to access your dashboard
             </p>
           </div>
@@ -66,11 +66,11 @@ const Login = () => {
           <div className="space-y-8">
             <form onSubmit={handleSubmit} className="space-y-8">
               <div className="space-y-3">
-                <label htmlFor="email" className="block text-sm font-semibold text-grey-300">
+                <label htmlFor="email" className="block text-sm font-semibold text-card-foreground">
                   Email address
                 </label>
                 <div className="relative">
-                  <Mail className="absolute left-4 top-4 h-5 w-5 text-grey-500" />
+                  <Mail className="absolute left-4 top-4 h-5 w-5 text-secondary" />
                   <input
                     id="email"
                     type="email"
@@ -84,11 +84,11 @@ const Login = () => {
               </div>
 
               <div className="space-y-3">
-                <label htmlFor="password" className="block text-sm font-semibold text-grey-300">
+                <label htmlFor="password" className="block text-sm font-semibold text-card-foreground">
                   Password
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-4 top-4 h-5 w-5 text-grey-500" />
+                  <Lock className="absolute left-4 top-4 h-5 w-5 text-secondary" />
                   <input
                     id="password"
                     type="password"
@@ -123,10 +123,10 @@ const Login = () => {
 
             <div className="relative">
               <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-grey-800" />
+                <span className="w-full border-t border-border" />
               </div>
               <div className="relative flex justify-center text-sm uppercase">
-                <span className="bg-grey-900 px-4 text-grey-500 font-semibold">
+                <span className="bg-surface px-4 text-secondary font-semibold">
                   Or continue with
                 </span>
               </div>
@@ -149,7 +149,7 @@ const Login = () => {
                 Forgot your password?
               </Link>
               
-              <p className="body-dark-small text-grey-400">
+              <p className="body-dark-small text-muted-foreground">
                 Don't have an account?{' '}
                 <Link 
                   to="/register" 
@@ -163,14 +163,14 @@ const Login = () => {
         </div>
 
         {/* Security Badge */}
-        <div className="flex items-center justify-center space-x-3 text-grey-400">
+        <div className="flex items-center justify-center space-x-3 text-muted-foreground">
           <Shield className="h-5 w-5 text-green-400" />
           <span className="text-sm font-medium">Bank-level security & encryption</span>
         </div>
 
         {/* Footer */}
         <div className="text-center">
-          <p className="text-xs text-grey-500 leading-relaxed">
+          <p className="text-xs text-secondary leading-relaxed">
             By signing in, you agree to our{' '}
             <Link to="/terms" className="underline hover:text-blue-400 transition-colors duration-200">Terms of Service</Link>
             {' '}and{' '}

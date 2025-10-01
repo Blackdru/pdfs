@@ -132,7 +132,7 @@ const ModernDashboard = () => {
   const usagePercentage = usage ? (usage.current / usage.limit) * 100 : 0
 
   return (
-    <div className="min-h-screen bg-grey-950 mobile-spacing-dark relative overflow-hidden">
+    <div className="min-h-screen bg-page mobile-spacing-dark relative overflow-hidden">
       {/* Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-950 rounded-full blur-3xl animate-float"></div>
@@ -148,7 +148,7 @@ const ModernDashboard = () => {
                 Welcome back, <span className="text-gradient-blue">{user?.user_metadata?.name || 'User'}</span>! 
                 <span className="inline-block ml-2">👋</span>
               </h1>
-              <p className="body-dark text-grey-400">
+              <p className="body-dark text-muted-foreground">
                 Manage your documents and unleash the power of intelligent PDF processing
               </p>
             </div>
@@ -176,8 +176,8 @@ const ModernDashboard = () => {
           <div className="dark-card-hover p-8 group">
             <div className="flex items-center justify-between">
               <div>
-                <p className="body-dark-small text-grey-500 mb-2">Total Files</p>
-                <p className="text-3xl font-bold text-grey-200 group-hover:text-blue-400 transition-colors duration-300">{stats.totalFiles}</p>
+                <p className="body-dark-small text-secondary mb-2">Total Files</p>
+                <p className="text-3xl font-bold text-card-foreground group-hover:text-blue-400 transition-colors duration-300">{stats.totalFiles}</p>
               </div>
               <div className="p-4 bg-blue-900 rounded-2xl group-hover:bg-blue-800 transition-all duration-300 group-hover:scale-110">
                 <FileText className="h-7 w-7 text-blue-400" />
@@ -188,8 +188,8 @@ const ModernDashboard = () => {
           <div className="dark-card-hover p-8 group">
             <div className="flex items-center justify-between">
               <div>
-                <p className="body-dark-small text-grey-500 mb-2">This Month</p>
-                <p className="text-3xl font-bold text-grey-200 group-hover:text-green-400 transition-colors duration-300">{stats.filesThisMonth}</p>
+                <p className="body-dark-small text-secondary mb-2">This Month</p>
+                <p className="text-3xl font-bold text-card-foreground group-hover:text-green-400 transition-colors duration-300">{stats.filesThisMonth}</p>
               </div>
               <div className="p-4 bg-green-900 rounded-2xl group-hover:bg-green-800 transition-all duration-300 group-hover:scale-110">
                 <TrendingUp className="h-7 w-7 text-green-400" />
@@ -200,8 +200,8 @@ const ModernDashboard = () => {
           <div className="dark-card-hover p-8 group">
             <div className="flex items-center justify-between">
               <div>
-                <p className="body-dark-small text-grey-500 mb-2">Storage Used</p>
-                <p className="text-3xl font-bold text-grey-200 group-hover:text-purple-400 transition-colors duration-300">{stats.storageUsed} MB</p>
+                <p className="body-dark-small text-secondary mb-2">Storage Used</p>
+                <p className="text-3xl font-bold text-card-foreground group-hover:text-purple-400 transition-colors duration-300">{stats.storageUsed} MB</p>
               </div>
               <div className="p-4 bg-purple-900 rounded-2xl group-hover:bg-purple-800 transition-all duration-300 group-hover:scale-110">
                 <BarChart3 className="h-7 w-7 text-purple-400" />
@@ -212,8 +212,8 @@ const ModernDashboard = () => {
           <div className="dark-card-hover p-8 group">
             <div className="flex items-center justify-between">
               <div>
-                <p className="body-dark-small text-grey-500 mb-2">Tools Used</p>
-                <p className="text-3xl font-bold text-grey-200 group-hover:text-orange-400 transition-colors duration-300">{stats.toolsUsed}</p>
+                <p className="body-dark-small text-secondary mb-2">Tools Used</p>
+                <p className="text-3xl font-bold text-card-foreground group-hover:text-orange-400 transition-colors duration-300">{stats.toolsUsed}</p>
               </div>
               <div className="p-4 bg-orange-900 rounded-2xl group-hover:bg-orange-800 transition-all duration-300 group-hover:scale-110">
                 <Activity className="h-7 w-7 text-orange-400" />
@@ -234,7 +234,7 @@ const ModernDashboard = () => {
                   </div>
                   <div>
                     <h2 className="heading-dark-3">Quick Actions</h2>
-                    <p className="body-dark-small text-grey-500">Start processing your documents</p>
+                    <p className="body-dark-small text-secondary">Start processing your documents</p>
                   </div>
                 </div>
                 <Link 
@@ -251,13 +251,13 @@ const ModernDashboard = () => {
                   <Link
                     key={action.title}
                     to={action.path}
-                    className="group p-6 rounded-3xl border border-grey-800 hover:border-grey-700 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-grey-800"
+                    className="group p-6 rounded-3xl border border-border hover:border-border hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-elevated"
                   >
                     <div className={`inline-flex items-center justify-center w-16 h-16 ${action.bgColor} rounded-2xl mb-4 group-hover:scale-110 transition-all duration-300`}>
                       <action.icon className={`h-8 w-8 ${action.color}`} />
                     </div>
-                    <h3 className="font-semibold text-grey-200 mb-2">{action.title}</h3>
-                    <p className="text-sm text-grey-500">{action.description}</p>
+                    <h3 className="font-semibold text-card-foreground mb-2">{action.title}</h3>
+                    <p className="text-sm text-secondary">{action.description}</p>
                   </Link>
                 ))}
               </div>
@@ -272,7 +272,7 @@ const ModernDashboard = () => {
                   </div>
                   <div>
                     <h2 className="heading-dark-3">Recent Files</h2>
-                    <p className="body-dark-small text-grey-500">Your latest processed documents</p>
+                    <p className="body-dark-small text-secondary">Your latest processed documents</p>
                   </div>
                 </div>
                 <Link 
@@ -287,21 +287,21 @@ const ModernDashboard = () => {
               {recentFiles.length > 0 ? (
                 <div className="space-y-4">
                   {recentFiles.map((file, index) => (
-                    <div key={file.id} className="flex items-center justify-between p-4 rounded-2xl hover:bg-grey-800 transition-all duration-200 group">
+                    <div key={file.id} className="flex items-center justify-between p-4 rounded-2xl hover:bg-elevated transition-all duration-200 group">
                       <div className="flex items-center space-x-4">
                         <div className="p-3 bg-purple-900 rounded-2xl group-hover:bg-purple-800 transition-colors duration-200">
                           <FileText className="h-6 w-6 text-purple-400" />
                         </div>
                         <div>
-                          <p className="font-semibold text-grey-200 group-hover:text-grey-100 transition-colors duration-200">{file.name}</p>
-                          <p className="text-sm text-grey-500">{file.size} • {file.date}</p>
+                          <p className="font-semibold text-card-foreground group-hover:text-foreground transition-colors duration-200">{file.name}</p>
+                          <p className="text-sm text-secondary">{file.size} • {file.date}</p>
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <Button variant="ghost" size="sm" className="p-3 rounded-xl hover:bg-grey-700">
+                        <Button variant="ghost" size="sm" className="p-3 rounded-xl hover:bg-accent">
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" className="p-3 rounded-xl hover:bg-grey-700">
+                        <Button variant="ghost" size="sm" className="p-3 rounded-xl hover:bg-accent">
                           <Download className="h-4 w-4" />
                         </Button>
                       </div>
@@ -310,10 +310,10 @@ const ModernDashboard = () => {
                 </div>
               ) : (
                 <div className="text-center py-12">
-                  <div className="p-6 bg-grey-800 rounded-3xl inline-block mb-6">
-                    <FileText className="h-12 w-12 text-grey-500 mx-auto" />
+                  <div className="p-6 bg-elevated rounded-3xl inline-block mb-6">
+                    <FileText className="h-12 w-12 text-secondary mx-auto" />
                   </div>
-                  <p className="body-dark text-grey-400 mb-6">No recent files yet</p>
+                  <p className="body-dark text-muted-foreground mb-6">No recent files yet</p>
                   <Button onClick={() => navigate('/tools')} className="btn-blue">
                     <Upload className="h-5 w-5 mr-2" />
                     Upload Your First File
@@ -334,15 +334,15 @@ const ModernDashboard = () => {
                   </div>
                   <div>
                     <h3 className="heading-dark-4">Usage This Month</h3>
-                    <p className="body-dark-small text-grey-500">Track your progress</p>
+                    <p className="body-dark-small text-secondary">Track your progress</p>
                   </div>
                 </div>
                 
                 <div className="space-y-6">
                   <div>
                     <div className="flex justify-between text-sm mb-3">
-                      <span className="text-grey-400 font-medium">Files Processed</span>
-                      <span className="font-semibold text-grey-200">{usage.current}/{usage.limit}</span>
+                      <span className="text-muted-foreground font-medium">Files Processed</span>
+                      <span className="font-semibold text-card-foreground">{usage.current}/{usage.limit}</span>
                     </div>
                     <div className="progress-dark">
                       <div 
@@ -353,8 +353,8 @@ const ModernDashboard = () => {
                   </div>
                   
                   {subscription?.plan === 'free' && (
-                    <div className="pt-6 border-t border-grey-800">
-                      <p className="body-dark-small text-grey-400 mb-4">
+                    <div className="pt-6 border-t border-border">
+                      <p className="body-dark-small text-muted-foreground mb-4">
                         Upgrade for unlimited processing and premium features
                       </p>
                       <Button 
@@ -378,7 +378,7 @@ const ModernDashboard = () => {
                 </div>
                 <div>
                   <h3 className="heading-dark-4">Pro Features</h3>
-                  <p className="body-dark-small text-grey-500">Unlock advanced tools</p>
+                  <p className="body-dark-small text-secondary">Unlock advanced tools</p>
                 </div>
               </div>
               
@@ -387,21 +387,21 @@ const ModernDashboard = () => {
                   <Link
                     key={feature.title}
                     to={feature.path}
-                    className="flex items-center p-4 rounded-2xl hover:bg-grey-800 transition-all duration-300 group"
+                    className="flex items-center p-4 rounded-2xl hover:bg-elevated transition-all duration-300 group"
                   >
                     <div className={`p-3 ${feature.bgColor} rounded-2xl mr-4 group-hover:scale-110 transition-transform duration-300`}>
                       <feature.icon className={`h-5 w-5 ${feature.color}`} />
                     </div>
                     <div className="flex-1">
-                      <p className="font-semibold text-grey-200 group-hover:text-grey-100 transition-colors duration-200">{feature.title}</p>
-                      <p className="text-sm text-grey-500">{feature.description}</p>
+                      <p className="font-semibold text-card-foreground group-hover:text-foreground transition-colors duration-200">{feature.title}</p>
+                      <p className="text-sm text-secondary">{feature.description}</p>
                     </div>
-                    <ArrowRight className="h-4 w-4 text-grey-600 group-hover:text-grey-400 group-hover:translate-x-1 transition-all duration-200" />
+                    <ArrowRight className="h-4 w-4 text-grey-600 group-hover:text-muted-foreground group-hover:translate-x-1 transition-all duration-200" />
                   </Link>
                 ))}
               </div>
               
-              <div className="mt-6 pt-6 border-t border-grey-800">
+              <div className="mt-6 pt-6 border-t border-border">
                 <Button 
                   onClick={() => navigate('/advanced-tools')} 
                   className="w-full btn-orange"

@@ -6,7 +6,7 @@ const FileManagerPage = () => {
   const { user } = useAuth()
 
   return (
-    <div className="min-h-screen bg-grey-950 mobile-spacing-dark relative overflow-hidden">
+    <div className="min-h-screen bg-page mobile-spacing-dark relative overflow-hidden">
       {/* Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-950 rounded-full blur-3xl animate-float"></div>

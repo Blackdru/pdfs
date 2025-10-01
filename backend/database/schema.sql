@@ -30,6 +30,7 @@ CREATE TABLE IF NOT EXISTS files (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
     filename VARCHAR(255) NOT NULL,
+    original_name VARCHAR(255),
     path VARCHAR(500) NOT NULL,
     type VARCHAR(100) NOT NULL,
     size BIGINT NOT NULL DEFAULT 0,
@@ -187,6 +188,7 @@ CREATE INDEX IF NOT EXISTS idx_files_user_id ON files(user_id);
 CREATE INDEX IF NOT EXISTS idx_files_created_at ON files(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_files_type ON files(type);
 CREATE INDEX IF NOT EXISTS idx_files_folder ON files(folder_id);
+CREATE INDEX IF NOT EXISTS idx_files_original_name ON files(original_name);
 CREATE INDEX IF NOT EXISTS idx_files_tags ON files USING GIN(tags);
 CREATE INDEX IF NOT EXISTS idx_files_extracted_text ON files USING GIN(to_tsvector('english', extracted_text));
 CREATE INDEX IF NOT EXISTS idx_history_user_id ON history(user_id);

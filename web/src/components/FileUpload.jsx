@@ -21,6 +21,8 @@ const FileUpload = ({ onClose, onSuccess, onUploadSuccess, multiple = true }) =>
     'image/gif',
     'image/bmp',
     'image/webp',
+    'image/tiff',
+    'image/tif',
     'application/msword',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     'application/vnd.ms-excel',
@@ -66,6 +68,7 @@ const FileUpload = ({ onClose, onSuccess, onUploadSuccess, multiple = true }) =>
       'image/gif': ['.gif'],
       'image/bmp': ['.bmp'],
       'image/webp': ['.webp'],
+      'image/tiff': ['.tiff', '.tif'],
       'application/msword': ['.doc'],
       'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
       'application/vnd.ms-excel': ['.xls'],
@@ -90,9 +93,21 @@ const FileUpload = ({ onClose, onSuccess, onUploadSuccess, multiple = true }) =>
     setUploading(true)
     setUploadProgress(0)
 
+    // Calculate total size for better progress estimation
+    const totalSize = validFiles.reduce((sum, f) => sum + f.size, 0)
+    const estimatedTimeSeconds = Math.ceil(totalSize / (1024 * 1024)) * 2 // Rough estimate: 2 seconds per MB
+    
+    if (totalSize > 30 * 1024 * 1024) { // > 30MB
+      toast.loading(`Uploading large files... This may take ${Math.ceil(estimatedTimeSeconds / 60)} minute(s)`, {
+        duration: 5000,
+        id: 'large-upload-warning'
+      })
+    }
+
     try {
       let uploadedCount = 0
       const uploadedFiles = []
+      const startTime = Date.now()
       
       for (const fileData of validFiles) {
         try {
@@ -101,7 +116,7 @@ const FileUpload = ({ onClose, onSuccess, onUploadSuccess, multiple = true }) =>
             f.id === fileData.id ? { ...f, status: 'uploading' } : f
           ))
 
-          // Upload individual file
+          // Upload individual file with timeout handling
           const result = await api.uploadFile(fileData.file)
           
           // Update file status to success
@@ -129,14 +144,19 @@ const FileUpload = ({ onClose, onSuccess, onUploadSuccess, multiple = true }) =>
       }
 
       if (uploadedCount > 0) {
-        toast.success(`${uploadedCount} file(s) uploaded successfully`)
+        const uploadTime = Math.ceil((Date.now() - startTime) / 1000)
+        toast.success(`${uploadedCount} file(s) uploaded successfully in ${uploadTime}s`, {
+          id: 'large-upload-warning' // Dismiss the loading toast
+        })
         
         // Wait a moment then close
         setTimeout(() => {
           onSuccess?.(uploadedFiles)
         }, 1500)
       } else {
-        toast.error('No files were uploaded successfully')
+        toast.error('No files were uploaded successfully', {
+          id: 'large-upload-warning'
+        })
       }
       
     } catch (error) {
@@ -160,18 +180,19 @@ const FileUpload = ({ onClose, onSuccess, onUploadSuccess, multiple = true }) =>
       case 'uploading':
         return <div className="h-4 w-4 animate-spin rounded-full border-2 border-blue-400 border-t-transparent" />
       default:
-        return <File className="h-4 w-4 text-grey-400" />
+        return <File className="h-4 w-4 text-muted-foreground" />
     }
   }
 
   return (
     <div className="modal-dark-overlay">
-      <Card className="modal-dark-content max-w-3xl">
+      <Card className="modal-dark-content w-full max-w-[95vw] sm:max-w-2xl lg:max-w-3xl max-h-[90vh] overflow-y-auto mx-4">
         <CardHeader className="modal-dark-header flex flex-row items-center justify-between">
           <div>
-            <CardTitle className="heading-dark-3 text-grey-100">Upload Files</CardTitle>
-            <CardDescription className="text-grey-400 mt-2">
-              Upload PDF, images, Word, or Excel files (max 50MB each)
+            <CardTitle className="heading-dark-3 text-foreground">Upload Files</CardTitle>
+            <CardDescription className="text-muted-foreground mt-2">
+              Upload PDF, images, Word, or Excel files (max 50MB each)<br/>
+              <span className="text-blue-400 text-sm">✨ AI Chat available for PDFs and Images</span>
             </CardDescription>
           </div>
           <Button variant="ghost" size="icon" onClick={onClose} className="btn-dark-glass">
@@ -188,7 +209,7 @@ const FileUpload = ({ onClose, onSuccess, onUploadSuccess, multiple = true }) =>
             }`}
           >
             <input {...getInputProps()} />
-            <Upload className="mx-auto h-16 w-16 text-grey-400 mb-6" />
+            <Upload className="mx-auto h-16 w-16 text-muted-foreground mb-6" />
             {isDragActive ? (
               <div>
                 <p className="heading-dark-4 text-blue-300 mb-2">Drop the files here...</p>
@@ -196,11 +217,11 @@ const FileUpload = ({ onClose, onSuccess, onUploadSuccess, multiple = true }) =>
               </div>
             ) : (
               <div>
-                <p className="heading-dark-4 text-grey-200 mb-3">
+                <p className="heading-dark-4 text-card-foreground mb-3">
                   Drag & drop files here, or click to select
                 </p>
-                <p className="body-dark-small text-grey-400 mb-6">
-                  Supports PDF, JPG, PNG, DOC, DOCX, XLS, XLSX
+                <p className="body-dark-small text-muted-foreground mb-6">
+                  Supports PDF, Images (JPG, PNG, GIF, BMP, WebP, TIFF), DOC, DOCX, XLS, XLSX
                 </p>
                 <Button className="btn-blue">
                   <Upload className="mr-2 h-4 w-4" />
@@ -213,18 +234,18 @@ const FileUpload = ({ onClose, onSuccess, onUploadSuccess, multiple = true }) =>
           {/* File List */}
           {files.length > 0 && (
             <div className="space-y-4">
-              <h4 className="heading-dark-4 text-grey-200">Selected Files</h4>
+              <h4 className="heading-dark-4 text-card-foreground">Selected Files</h4>
               <div className="space-y-3 max-h-64 overflow-y-auto scrollbar-dark">
                 {files.map((fileData) => (
                   <div
                     key={fileData.id}
-                    className="flex items-center justify-between p-4 border border-grey-800 rounded-2xl bg-grey-800"
+                    className="flex items-center justify-between p-4 border border-border rounded-2xl bg-elevated"
                   >
                     <div className="flex items-center space-x-4">
                       {getStatusIcon(fileData.status)}
                       <div>
-                        <p className="font-semibold text-grey-200">{fileData.name}</p>
-                        <p className="text-sm text-grey-400">
+                        <p className="font-semibold text-card-foreground">{fileData.name}</p>
+                        <p className="text-sm text-muted-foreground">
                           {formatFileSize(fileData.size)}
                         </p>
                         {fileData.errors?.length > 0 && (
@@ -260,7 +281,7 @@ const FileUpload = ({ onClose, onSuccess, onUploadSuccess, multiple = true }) =>
           {uploading && (
             <div className="space-y-4">
               <div className="flex justify-between text-sm">
-                <span className="text-grey-300 font-medium">Uploading files...</span>
+                <span className="text-card-foreground font-medium">Uploading files...</span>
                 <span className="text-blue-400 font-bold">{Math.round(uploadProgress)}%</span>
               </div>
               <div className="progress-dark">

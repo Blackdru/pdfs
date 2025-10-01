@@ -77,12 +77,12 @@ const Billing = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-grey-950 mobile-spacing-dark">
+      <div className="min-h-screen bg-page mobile-spacing-dark">
         <div className="layout-dark-container py-12">
           <div className="animate-pulse space-y-6">
-            <div className="h-8 bg-grey-800 rounded w-1/4"></div>
-            <div className="h-32 bg-grey-800 rounded"></div>
-            <div className="h-64 bg-grey-800 rounded"></div>
+            <div className="h-8 bg-elevated rounded w-1/4"></div>
+            <div className="h-32 bg-elevated rounded"></div>
+            <div className="h-64 bg-elevated rounded"></div>
           </div>
         </div>
       </div>
@@ -90,12 +90,12 @@ const Billing = () => {
   }
 
   return (
-    <div className="min-h-screen bg-grey-950 mobile-spacing-dark">
+    <div className="min-h-screen bg-page mobile-spacing-dark">
       <div className="layout-dark-container py-12 space-y-8">
         {/* Header */}
         <div className="text-center">
           <h1 className="heading-dark-1 text-gradient-hero">Billing & Subscription</h1>
-          <p className="body-dark-large text-grey-300 mt-4">
+          <p className="body-dark-large text-card-foreground mt-4">
             Manage your subscription, view usage, and billing history
           </p>
         </div>
@@ -103,12 +103,12 @@ const Billing = () => {
         {/* Current Subscription Card */}
         <Card className="dark-card">
           <CardHeader>
-            <CardTitle className="heading-dark-4 flex items-center gap-2 text-grey-100">
+            <CardTitle className="heading-dark-4 flex items-center gap-2 text-foreground">
               {getPlanIcon()}
               Current Plan
               {getStatusBadge()}
             </CardTitle>
-            <CardDescription className="text-grey-400">
+            <CardDescription className="text-muted-foreground">
               Your current subscription details and status
             </CardDescription>
           </CardHeader>
@@ -116,7 +116,7 @@ const Billing = () => {
           <CardContent className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-2">
-                <h3 className="heading-dark-4 text-grey-200">{getPlanDisplayName()} Plan</h3>
+                <h3 className="heading-dark-4 text-card-foreground">{getPlanDisplayName()} Plan</h3>
                 <p className="text-2xl font-bold text-blue-400">
                   {subscription?.planLimits?.price === 0 ? (
                     'Free'
@@ -127,11 +127,11 @@ const Billing = () => {
               </div>
               
               <div className="space-y-2">
-                <h4 className="font-medium flex items-center gap-2 text-grey-300">
-                  <Calendar className="h-4 w-4 text-grey-400" />
+                <h4 className="font-medium flex items-center gap-2 text-card-foreground">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
                   Billing Cycle
                 </h4>
-                <p className="text-sm text-grey-400">
+                <p className="text-sm text-muted-foreground">
                   {subscription?.current_period_end ? (
                     <>
                       Next billing: {formatDate(subscription.current_period_end)}
@@ -143,8 +143,8 @@ const Billing = () => {
               </div>
               
               <div className="space-y-2">
-                <h4 className="font-medium flex items-center gap-2 text-grey-300">
-                  <Settings className="h-4 w-4 text-grey-400" />
+                <h4 className="font-medium flex items-center gap-2 text-card-foreground">
+                  <Settings className="h-4 w-4 text-muted-foreground" />
                   Status
                 </h4>
                 <div className="flex items-center gap-2">
@@ -153,7 +153,7 @@ const Billing = () => {
                   ) : (
                     <AlertCircle className="h-4 w-4 text-red-400" />
                   )}
-                  <span className="text-sm text-grey-300">
+                  <span className="text-sm text-card-foreground">
                     {isActive() ? 'Active' : 'Inactive'}
                   </span>
                 </div>
@@ -217,8 +217,8 @@ const Billing = () => {
         {subscription?.planLimits && (
           <Card className="dark-card">
             <CardHeader>
-              <CardTitle className="heading-dark-4 text-grey-100">Plan Features</CardTitle>
-              <CardDescription className="text-grey-400">
+              <CardTitle className="heading-dark-4 text-foreground">Plan Features</CardTitle>
+              <CardDescription className="text-muted-foreground">
                 What's included in your {getPlanDisplayName()} plan
               </CardDescription>
             </CardHeader>
@@ -228,7 +228,7 @@ const Billing = () => {
                 {subscription.planLimits.features.map((feature, index) => (
                   <div key={index} className="flex items-center gap-2">
                     <CheckCircle className="h-4 w-4 text-green-400" />
-                    <span className="text-sm capitalize text-grey-300">
+                    <span className="text-sm capitalize text-card-foreground">
                       {feature.replace(/_/g, ' ')}
                     </span>
                   </div>

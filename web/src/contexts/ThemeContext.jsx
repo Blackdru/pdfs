@@ -11,32 +11,46 @@ export const useTheme = () => {
 }
 
 export const ThemeProvider = ({ children }) => {
-  // Single color mode - always light theme
-  const [theme] = useState('light')
+  // Single theme - always dark/modern blue-purple
+  const [theme] = useState('dark')
   const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    // Ensure we're mounted before applying theme
     setMounted(true)
-    
-    // Apply light theme to document
-    const root = window.document.documentElement
-    root.classList.remove('dark')
-    root.classList.add('light')
-    
-    // Remove any stored theme preference since we're using single mode
-    localStorage.removeItem('theme')
   }, [])
 
+  useEffect(() => {
+    const root = window.document.documentElement
+    
+    // Always apply dark theme
+    root.classList.remove('light')
+    root.classList.add('dark')
+    
+    // Set body background
+    document.body.style.backgroundColor = '#0A0F1E'
+  }, [])
+
+  // Dummy functions for compatibility (do nothing)
+  const toggleTheme = () => {
+    // No-op - single theme only
+  }
+
+  const setLightTheme = () => {
+    // No-op - single theme only
+  }
+
+  const setDarkTheme = () => {
+    // No-op - single theme only
+  }
+
   const value = {
-    theme: 'light',
-    isDark: false,
-    isLight: true,
+    theme: 'dark',
+    isDark: true,
+    isLight: false,
     mounted,
-    // Deprecated methods for backward compatibility
-    toggleTheme: () => {},
-    setLightTheme: () => {},
-    setDarkTheme: () => {},
+    toggleTheme,
+    setLightTheme,
+    setDarkTheme,
   }
 
   return (

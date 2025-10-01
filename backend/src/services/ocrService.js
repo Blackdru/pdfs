@@ -4,7 +4,6 @@ const fs = require('fs').promises;
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const pdf2pic = require('pdf2pic');
-const pdfParse = require('pdf-parse');
 
 class OCRService {
   constructor() {
@@ -16,11 +15,6 @@ class OCRService {
     
     // Configure Tesseract.js to use local tessdata directory
     process.env.TESSDATA_PREFIX = this.tessdataDir;
-    
-    // Initialize worker pool for better performance
-    this.workerPool = [];
-    this.maxWorkers = 2; // Limit concurrent workers to prevent memory issues
-    this.activeWorkers = 0;
   }
 
   async ensureTempDir() {
@@ -155,7 +149,7 @@ class OCRService {
     }
   }
 
-  // Extract text from PDF - tries direct text extraction first, then OCR
+  // Extract text from PDF using OCR
   async extractTextFromPDF(pdfBuffer, options = {}) {
     if (!this.isEnabled()) {
       throw new Error('OCR is not enabled');
@@ -164,59 +158,7 @@ class OCRService {
     const {
       language = this.languages,
       enhanceImage = true,
-      maxPages = 50 // Limit pages for performance
-    } = options;
-
-    try {
-      // Validate PDF buffer
-      if (!pdfBuffer || pdfBuffer.length === 0) {
-        throw new Error('Invalid PDF buffer provided');
-      }
-
-      console.log('Step 1: Attempting direct text extraction from PDF...');
-      
-      // First, try to extract text directly from PDF (for text-based PDFs)
-      try {
-        const pdfData = await pdfParse(pdfBuffer);
-        if (pdfData.text && pdfData.text.trim().length > 50) {
-          console.log('Direct text extraction successful, text length:', pdfData.text.length);
-          return {
-            text: pdfData.text.trim(),
-            confidence: 0.95, // High confidence for direct extraction
-            pageCount: pdfData.numpages || 1,
-            pages: [{
-              page: 1,
-              text: pdfData.text.trim(),
-              confidence: 0.95,
-              words: []
-            }],
-            language: language,
-            method: 'direct_extraction'
-          };
-        } else {
-          console.log('Direct text extraction yielded minimal text, proceeding with OCR...');
-        }
-      } catch (directExtractionError) {
-        console.log('Direct text extraction failed, proceeding with OCR:', directExtractionError.message);
-      }
-
-      console.log('Step 2: Attempting OCR-based text extraction...');
-      
-      // If direct extraction fails or yields little text, use OCR
-      return await this.extractTextFromPDFWithOCR(pdfBuffer, options);
-
-    } catch (error) {
-      console.error('Error in PDF text extraction:', error);
-      throw new Error('PDF text extraction failed: ' + error.message);
-    }
-  }
-
-  // Extract text from PDF using OCR (fallback method)
-  async extractTextFromPDFWithOCR(pdfBuffer, options = {}) {
-    const {
-      language = this.languages,
-      enhanceImage = true,
-      maxPages = 50 // Limit pages for performance
+      maxPages = 20 // Optimized: Limit pages for performance
     } = options;
 
     const tempPdfPath = path.join(this.tempDir, `${uuidv4()}.pdf`);
@@ -227,61 +169,65 @@ class OCRService {
       await fs.writeFile(tempPdfPath, pdfBuffer);
       await fs.mkdir(tempImagesDir, { recursive: true });
 
-      let pages = [];
+      // Convert PDF to images (optimized DPI)
+      const convert = pdf2pic.fromPath(tempPdfPath, {
+        density: 150, // Optimized: Reduced DPI for faster processing
+        saveFilename: 'page',
+        savePath: tempImagesDir,
+        format: 'png',
+        width: 1800,
+        height: 1800
+      });
+
+      // Process pages (limit for performance)
+      const pages = [];
       let totalText = '';
       let totalConfidence = 0;
       let processedPages = 0;
 
-      console.log('Using pdf2pic for PDF to image conversion...');
-      
-      // Use pdf2pic as the primary method (Linux compatible)
-      const convert = pdf2pic.fromPath(tempPdfPath, {
-        density: 200,           // DPI for image quality
-        saveFilename: 'page',   // Filename prefix
-        savePath: tempImagesDir, // Output directory
-        format: 'png',          // Output format
-        width: 2000,            // Max width
-        height: 2000            // Max height
-      });
-
-      // Process pages with pdf2pic
-      for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
+      for (let pageNum = 1; pageNum <= Math.min(maxPages, 100); pageNum++) {
         try {
-          console.log(`Converting page ${pageNum}...`);
+          console.log(`Processing page ${pageNum}...`);
           const pageImage = await convert(pageNum, { responseType: 'image' });
           
+          // Check if conversion was successful
           if (!pageImage || !pageImage.path) {
-            console.log(`No more pages at page ${pageNum}, stopping conversion`);
-            break;
+            console.log(`No more pages or conversion failed at page ${pageNum}`);
+            break; // No more pages
           }
 
-          // Verify image file exists and is valid
-          const imageStats = await fs.stat(pageImage.path);
-          if (imageStats.size === 0) {
-            console.warn(`Page ${pageNum} image is empty, skipping`);
+          // Verify the image file exists
+          try {
+            await fs.access(pageImage.path);
+          } catch (accessError) {
+            console.error(`Image file not found: ${pageImage.path}`);
             continue;
           }
 
-          console.log(`Page ${pageNum} converted successfully, size: ${imageStats.size} bytes`);
-
           let imagePath = pageImage.path;
+          console.log(`Image path for page ${pageNum}: ${imagePath}`);
 
           // Enhance image if requested
           if (enhanceImage) {
             try {
-              const enhancedPath = await this.enhanceImageForOCR(pageImage.path);
-              if (enhancedPath && enhancedPath !== pageImage.path) {
-                imagePath = enhancedPath;
-                console.log(`Page ${pageNum} enhanced for better OCR`);
+              const enhancedPath = await this.enhanceImageForOCR(imagePath);
+              if (enhancedPath && enhancedPath !== imagePath) {
+                // Verify enhanced image exists
+                try {
+                  await fs.access(enhancedPath);
+                  imagePath = enhancedPath;
+                  console.log(`Using enhanced image: ${enhancedPath}`);
+                } catch (enhancedAccessError) {
+                  console.warn(`Enhanced image not accessible, using original: ${enhancedAccessError.message}`);
+                }
               }
             } catch (enhanceError) {
               console.warn(`Image enhancement failed for page ${pageNum}, using original:`, enhanceError.message);
-              imagePath = pageImage.path;
+              // Continue with original image
             }
           }
 
           // Perform OCR on this page
-          console.log(`Performing OCR on page ${pageNum}...`);
           const ocrResult = await this.performOCR(imagePath, language);
 
           pages.push({
@@ -295,41 +241,29 @@ class OCRService {
           totalConfidence += ocrResult.confidence;
           processedPages++;
 
-          console.log(`Page ${pageNum} OCR completed, confidence: ${ocrResult.confidence}`);
-
           // Clean up enhanced image if different from original
           if (imagePath !== pageImage.path) {
             await this.cleanupFile(imagePath);
           }
 
         } catch (pageError) {
-          console.warn(`Error processing page ${pageNum}:`, pageError.message);
-          
-          // If it's a "page not found" error, we've reached the end
-          if (pageError.message.includes('page') && pageError.message.includes('not found')) {
-            console.log(`Reached end of PDF at page ${pageNum}`);
-            break;
-          }
-          
-          continue;
+          console.error(`Error processing page ${pageNum}:`, pageError);
+          // Continue with next page
         }
       }
 
       if (processedPages === 0) {
-        throw new Error('No pages could be processed successfully. Please ensure the PDF is not corrupted or password-protected.');
+        throw new Error('No pages could be processed successfully');
       }
 
       const avgConfidence = processedPages > 0 ? totalConfidence / processedPages : 0;
-
-      console.log(`PDF OCR completed: ${processedPages} pages processed with average confidence ${avgConfidence}`);
 
       return {
         text: totalText.trim(),
         confidence: avgConfidence,
         pageCount: processedPages,
         pages: pages,
-        language: language,
-        method: 'ocr'
+        language: language
       };
 
     } catch (error) {
@@ -353,12 +287,21 @@ class OCRService {
 
   // Enhance image for better OCR results with multiple strategies
   async enhanceImageForOCR(imagePath) {
+    // Validate input
+    if (!imagePath) {
+      console.error('enhanceImageForOCR called with undefined imagePath');
+      throw new Error('Image path is required for enhancement');
+    }
+
     const enhancedPath = path.join(this.tempDir, `enhanced_${uuidv4()}.png`);
 
     try {
-      // Strategy 1: Aggressive enhancement for ID cards
+      // Verify the input file exists before processing
+      await fs.access(imagePath);
+      
+      // Strategy 1: Optimized enhancement
       await sharp(imagePath)
-        .resize({ width: 3000, height: 3000, fit: 'inside', withoutEnlargement: false }) // Higher resolution
+        .resize({ width: 2000, height: 2000, fit: 'inside', withoutEnlargement: false }) // Optimized resolution
         .grayscale() // Convert to grayscale
         .normalize() // Normalize contrast
         .sharpen({ sigma: 2.0 }) // Strong sharpening
@@ -379,10 +322,10 @@ class OCRService {
     const enhancements = [];
     
     try {
-      // Enhancement 1: High contrast binary
+      // Enhancement 1: High contrast binary (optimized resolution)
       const enhanced1 = path.join(this.tempDir, `enh1_${uuidv4()}.png`);
       await sharp(imagePath)
-        .resize({ width: 3000, height: 3000, fit: 'inside', withoutEnlargement: false })
+        .resize({ width: 2000, height: 2000, fit: 'inside', withoutEnlargement: false })
         .grayscale()
         .normalize()
         .linear(2.0, -50)
@@ -391,10 +334,10 @@ class OCRService {
         .toFile(enhanced1);
       enhancements.push(enhanced1);
 
-      // Enhancement 2: Moderate enhancement
+      // Enhancement 2: Moderate enhancement (optimized resolution)
       const enhanced2 = path.join(this.tempDir, `enh2_${uuidv4()}.png`);
       await sharp(imagePath)
-        .resize({ width: 2500, height: 2500, fit: 'inside', withoutEnlargement: false })
+        .resize({ width: 1800, height: 1800, fit: 'inside', withoutEnlargement: false })
         .grayscale()
         .normalize()
         .sharpen({ sigma: 1.0 })
@@ -402,19 +345,6 @@ class OCRService {
         .png({ quality: 100 })
         .toFile(enhanced2);
       enhancements.push(enhanced2);
-
-      // Enhancement 3: Noise reduction focus
-      const enhanced3 = path.join(this.tempDir, `enh3_${uuidv4()}.png`);
-      await sharp(imagePath)
-        .resize({ width: 2000, height: 2000, fit: 'inside', withoutEnlargement: false })
-        .grayscale()
-        .blur(0.3) // Slight blur to reduce noise
-        .normalize()
-        .sharpen({ sigma: 1.5 })
-        .linear(1.4, -25)
-        .png({ quality: 100 })
-        .toFile(enhanced3);
-      enhancements.push(enhanced3);
 
       return enhancements;
     } catch (error) {
@@ -425,48 +355,39 @@ class OCRService {
 
   // Perform OCR on a single image with optimized settings
   async performOCR(imagePath, language) {
+    // Validate inputs
+    if (!imagePath) {
+      throw new Error('Image path is required for OCR processing');
+    }
+    
+    if (!language) {
+      throw new Error('Language is required for OCR processing');
+    }
+
     try {
       console.log('Starting OCR process for:', imagePath);
       console.log('Using language:', language);
       
-      // Validate inputs
-      if (!imagePath) {
-        throw new Error('Image path is required for OCR processing');
-      }
-      
-      if (!language) {
-        throw new Error('Language is required for OCR processing');
-      }
-
-      // Check if image file exists
+      // Verify the image file exists
       try {
-        const stats = await fs.stat(imagePath);
-        if (stats.size === 0) {
-          throw new Error('Image file is empty');
-        }
-        console.log('Image file size:', stats.size, 'bytes');
-      } catch (statError) {
-        throw new Error(`Image file not accessible: ${statError.message}`);
+        await fs.access(imagePath);
+      } catch (accessError) {
+        throw new Error(`Image file not accessible: ${imagePath}`);
       }
       
-      // Create worker with initialization parameters
-      const worker = await Tesseract.createWorker(language, 1, {
+      // Only use the first language if multiple are specified
+      const primaryLanguage = language.split(',')[0].split('+')[0];
+      console.log('Using primary language:', primaryLanguage);
+      
+      const worker = await Tesseract.createWorker(primaryLanguage, 1, {
+        langPath: this.tessdataDir,
         logger: () => {}, // Disable verbose logging
-        // Set engine mode during initialization
-        tessedit_ocr_engine_mode: Tesseract.OEM.LSTM_ONLY,
-        // Dictionary settings during initialization
-        load_system_dawg: '0',
-        load_freq_dawg: '0',
-        load_punc_dawg: '0',
-        load_number_dawg: '0',
-        load_unambig_dawg: '0',
-        load_bigram_dawg: '0',
-        load_fixed_length_dawgs: '0'
+        errorHandler: (err) => console.error('Tesseract error:', err)
       });
       
-      // Configure Tesseract for better text recognition (only runtime parameters)
+      // Configure Tesseract for ID card recognition
       await worker.setParameters({
-        tessedit_pageseg_mode: Tesseract.PSM.AUTO, // Auto page segmentation
+        tessedit_pageseg_mode: Tesseract.PSM.SINGLE_BLOCK, // Treat as single text block
         preserve_interword_spaces: '1',
         tessedit_char_whitelist: '', // Allow all characters
         tessedit_char_blacklist: '',
@@ -477,32 +398,24 @@ class OCRService {
         tessedit_reject_mode: '0' // Don't reject characters
       });
       
-      // Perform OCR recognition
       const { data } = await worker.recognize(imagePath);
       
       await worker.terminate();
-      
-      // Validate OCR results
-      if (!data) {
-        throw new Error('OCR processing returned no data');
-      }
-      
       console.log('OCR confidence:', data.confidence);
-      console.log('Text length:', data.text ? data.text.length : 0);
+      console.log('Text length:', data.text.length);
 
-      // Handle case where no words are detected
-      const words = data.words || [];
-      const acceptableWords = words.filter(
-        word => word && word.confidence > 20 // Lower threshold for better coverage
-      );
+      // Accept more words for ID cards
+      const acceptableWords = data.words ? data.words.filter(
+        word => word.confidence > 30 // Very low threshold for ID cards
+      ) : [];
 
       return {
         text: data.text || '',
         confidence: (data.confidence || 0) / 100,
         words: acceptableWords.map(word => ({
-          text: word.text || '',
-          confidence: (word.confidence || 0) / 100,
-          bbox: word.bbox || {}
+          text: word.text,
+          confidence: word.confidence / 100,
+          bbox: word.bbox
         }))
       };
     } catch (error) {
@@ -560,6 +473,89 @@ class OCRService {
       'kor': 'Korean',
       'ara': 'Arabic'
     };
+  }
+
+  // Extract text with AI enhancement option
+  async extractTextWithAI(buffer, options = {}) {
+    const {
+      enhanceWithAI = false,
+      extractOriginal = false,
+      language = 'auto',
+      fileType = 'pdf',
+      confidenceThreshold = 0.6
+    } = options;
+
+    try {
+      console.log('Starting OCR with AI enhancement:', { enhanceWithAI, extractOriginal, fileType });
+
+      // First, extract the original text using OCR
+      let ocrResult;
+      if (fileType === 'pdf') {
+        ocrResult = await this.extractTextFromPDF(buffer, {
+          language: language === 'auto' ? this.languages : language,
+          enhanceImage: true,
+          maxPages: 50
+        });
+      } else {
+        ocrResult = await this.extractTextFromImage(buffer, {
+          language: language === 'auto' ? this.languages : language,
+          enhanceImage: true
+        });
+      }
+
+      console.log('Original OCR completed. Text length:', ocrResult.text.length);
+      console.log('OCR confidence:', ocrResult.confidence);
+
+      const result = {
+        text: ocrResult.text,
+        originalText: ocrResult.text,
+        enhancedText: null,
+        confidence: ocrResult.confidence,
+        pageCount: ocrResult.pageCount,
+        pages: ocrResult.pages,
+        detectedLanguage: ocrResult.language || language,
+        aiEnhanced: false,
+        processingOptions: {
+          enhanceWithAI,
+          extractOriginal,
+          language,
+          fileType
+        }
+      };
+
+      // If AI enhancement is requested and we have text
+      if (enhanceWithAI && !extractOriginal && ocrResult.text && ocrResult.text.length > 10) {
+        console.log('Applying AI enhancement to extracted text...');
+        
+        try {
+          const aiService = require('./aiService');
+          
+          if (aiService.isEnabled()) {
+            const enhancedText = await aiService.enhanceTextWithAI(ocrResult.text);
+            
+            if (enhancedText && enhancedText.length > 0) {
+              result.enhancedText = enhancedText;
+              result.text = enhancedText; // Use enhanced text as the main text
+              result.aiEnhanced = true;
+              console.log('AI enhancement completed. Enhanced text length:', enhancedText.length);
+            } else {
+              console.warn('AI enhancement returned empty text, using original');
+            }
+          } else {
+            console.warn('AI service not enabled, skipping enhancement');
+          }
+        } catch (aiError) {
+          console.error('AI enhancement failed:', aiError.message);
+          // Continue with original text if AI enhancement fails
+        }
+      }
+
+      return result;
+
+    } catch (error) {
+      console.error('Error in extractTextWithAI:', error);
+      throw error;
+    }
   }
 }
 

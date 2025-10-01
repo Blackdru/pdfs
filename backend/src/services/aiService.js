@@ -442,6 +442,250 @@ class AIService {
     
     return dotProduct / (magnitudeA * magnitudeB);
   }
+
+  // Enhance extracted text using AI - works for all document types
+  async enhanceTextWithAI(rawText) {
+    if (!this.isEnabled()) {
+      throw new Error('AI service is not available');
+    }
+
+    try {
+      console.log('Enhancing text with AI, original length:', rawText.length);
+      
+      // Detect document type for better enhancement
+      const documentType = this.detectDocumentType(rawText);
+      console.log('Detected document type:', documentType);
+      
+      // Create a comprehensive prompt for all document types
+      const prompt = `You are an expert at cleaning up OCR-extracted text from various types of documents including government documents, business documents, academic papers, invoices, contracts, and general text documents.
+
+Please clean and enhance the following OCR-extracted text by:
+1. Fixing obvious OCR errors and misread characters (like "rn" → "m", "cl" → "d", "0" → "O")
+2. Correcting spacing and formatting issues
+3. Removing unwanted symbols, artifacts, and garbled text
+4. Standardizing common document terms and formatting
+5. Preserving all original information, numbers, dates, and names exactly
+6. Maintaining proper document structure and formatting
+7. Converting garbled or corrupted text to readable format
+8. Fixing common OCR mistakes in names, addresses, and technical terms
+9. Preserving line breaks and paragraph structure where appropriate
+10. Removing duplicate characters or words that are OCR artifacts
+
+Document type detected: ${documentType}
+
+${this.getDocumentSpecificInstructions(documentType)}
+
+Original OCR text:
+${rawText}
+
+Please provide only the cleaned and enhanced text without any explanations or comments:`;
+
+      const response = await this.openai.chat.completions.create({
+        model: this.model,
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a professional OCR text enhancement expert. Clean up OCR-extracted text while preserving all original information exactly. Focus on fixing OCR errors, improving readability, and maintaining document structure. Return only the enhanced text without any explanations.'
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        max_tokens: Math.min(2000, Math.ceil(rawText.length * 1.5)),
+        temperature: 0.1, // Very low temperature for consistent corrections
+      });
+
+      const enhancedText = response.choices[0].message.content.trim();
+      console.log('AI enhancement completed, new length:', enhancedText.length);
+      
+      // Validate that the enhanced text is reasonable
+      if (enhancedText.length > rawText.length * 3) {
+        console.warn('AI enhancement produced text that is too long, using original');
+        return rawText;
+      }
+
+      if (enhancedText.length < rawText.length * 0.3) {
+        console.warn('AI enhancement produced text that is too short, using original');
+        return rawText;
+      }
+
+      // Additional validation for important document information
+      if (this.containsImportantDocumentInfo(rawText) && !this.containsImportantDocumentInfo(enhancedText)) {
+        console.warn('AI enhancement removed important document information, using original');
+        return rawText;
+      }
+
+      return enhancedText;
+    } catch (error) {
+      console.error('Error enhancing text with AI:', error);
+      throw error;
+    }
+  }
+
+  // Detect document type for better enhancement
+  detectDocumentType(text) {
+    const textLower = text.toLowerCase();
+    
+    // Government/ID documents
+    if (/pan|aadhaar|passport|license|certificate|govt|government|income tax|birth certificate|marriage certificate/i.test(text)) {
+      return 'government_id';
+    }
+    
+    // Business documents
+    if (/invoice|receipt|bill|purchase|order|quotation|estimate|contract|agreement/i.test(text)) {
+      return 'business';
+    }
+    
+    // Academic documents
+    if (/university|college|degree|transcript|certificate|academic|student|course|grade|gpa/i.test(text)) {
+      return 'academic';
+    }
+    
+    // Medical documents
+    if (/patient|doctor|medical|hospital|prescription|diagnosis|treatment|health|clinic/i.test(text)) {
+      return 'medical';
+    }
+    
+    // Legal documents
+    if (/court|legal|law|attorney|lawyer|case|judgment|petition|affidavit|notary/i.test(text)) {
+      return 'legal';
+    }
+    
+    // Financial documents
+    if (/bank|account|statement|balance|transaction|credit|debit|loan|mortgage|insurance/i.test(text)) {
+      return 'financial';
+    }
+    
+    return 'general';
+  }
+
+  // Get document-specific enhancement instructions
+  getDocumentSpecificInstructions(documentType) {
+    const instructions = {
+      government_id: `
+Special focus for government/ID documents:
+- Fix common ID document terms (e.g., "Date of Birth", "Father's Name", "Address")
+- Preserve ID numbers, dates, and official codes exactly
+- Clean up government agency names and official terminology
+- Fix address formatting and postal codes`,
+      
+      business: `
+Special focus for business documents:
+- Fix company names, addresses, and contact information
+- Preserve monetary amounts, invoice numbers, and dates exactly
+- Clean up product descriptions and quantities
+- Fix tax information and business terms`,
+      
+      academic: `
+Special focus for academic documents:
+- Fix institution names and academic terminology
+- Preserve grades, GPAs, and course codes exactly
+- Clean up degree titles and academic credentials
+- Fix dates and academic year information`,
+      
+      medical: `
+Special focus for medical documents:
+- Fix medical terminology and drug names
+- Preserve patient information and medical codes exactly
+- Clean up doctor names and medical facility information
+- Fix dosage information and medical instructions`,
+      
+      legal: `
+Special focus for legal documents:
+- Fix legal terminology and case references
+- Preserve court names, case numbers, and legal codes exactly
+- Clean up party names and legal addresses
+- Fix dates and legal document formatting`,
+      
+      financial: `
+Special focus for financial documents:
+- Fix bank names and financial terminology
+- Preserve account numbers, amounts, and transaction details exactly
+- Clean up financial institution information
+- Fix dates and financial codes`,
+      
+      general: `
+Special focus for general documents:
+- Fix common words and phrases
+- Preserve names, dates, and numbers exactly
+- Clean up formatting and structure
+- Fix punctuation and spacing issues`
+    };
+    
+    return instructions[documentType] || instructions.general;
+  }
+
+  // Helper method to check if text contains important document information
+  containsImportantDocumentInfo(text) {
+    const importantPatterns = [
+      // ID patterns
+      /[A-Z]{5}[0-9]{4}[A-Z]/,  // PAN number pattern
+      /\d{4}\s?\d{4}\s?\d{4}/,   // Aadhaar/SSN number pattern
+      
+      // Date patterns
+      /\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4}/,  // Various date formats
+      
+      // Common document terms
+      /name|address|date|number|amount|total|signature|phone|email/i,
+      
+      // Numbers and codes
+      /\b\d{3,}\b/,  // Any number with 3+ digits
+      
+      // Currency
+      /[\$€£¥₹]\s?\d+|\d+\s?[\$€£¥₹]/,  // Currency amounts
+    ];
+
+    return importantPatterns.some(pattern => pattern.test(text));
+  }
+
+  // Translate extracted text
+  async translateText(text, targetLanguage) {
+    if (!this.isEnabled()) {
+      throw new Error('AI service is not available for translation');
+    }
+
+    try {
+      console.log('Translating text to:', targetLanguage, 'Length:', text.length);
+      
+      const prompt = `Translate the following text to ${targetLanguage}. This appears to be from an Indian government document (possibly a PAN card or similar). Please:
+
+1. Translate accurately while preserving the document structure
+2. Keep all numbers, dates, and official codes exactly as they are
+3. Translate only the descriptive text and labels
+4. Maintain proper formatting and line breaks
+5. Preserve any official terminology appropriately
+
+Text to translate:
+${text}
+
+Provide only the translation without any explanations:`;
+
+      const response = await this.openai.chat.completions.create({
+        model: this.model,
+        messages: [
+          {
+            role: 'system',
+            content: `You are a professional translator specializing in Indian government documents. Translate text accurately to ${targetLanguage} while preserving all numbers, codes, and official formatting. Provide only the translation without explanations.`
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        max_tokens: Math.min(2000, Math.ceil(text.length * 2)),
+        temperature: 0.2, // Low temperature for consistent translation
+      });
+
+      const translatedText = response.choices[0].message.content.trim();
+      console.log('Translation completed, new length:', translatedText.length);
+      
+      return translatedText;
+    } catch (error) {
+      console.error('Error translating text:', error);
+      throw new Error(`Translation failed: ${error.message}`);
+    }
+  }
 }
 
 module.exports = new AIService();

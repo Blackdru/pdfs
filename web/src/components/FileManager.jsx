@@ -363,14 +363,14 @@ const FileManager = () => {
     return (
       <div className="space-y-8">
         <div className="animate-pulse">
-          <div className="h-8 bg-grey-800 rounded w-1/4 mb-4"></div>
-          <div className="h-4 bg-grey-800 rounded w-1/2 mb-8"></div>
+          <div className="h-8 bg-elevated rounded w-1/4 mb-4"></div>
+          <div className="h-4 bg-elevated rounded w-1/2 mb-8"></div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {[...Array(8)].map((_, i) => (
               <div key={i} className="dark-card p-6">
-                <div className="h-32 bg-grey-800 rounded-2xl mb-4"></div>
-                <div className="h-4 bg-grey-800 rounded mb-2"></div>
-                <div className="h-3 bg-grey-800 rounded w-1/2"></div>
+                <div className="h-32 bg-elevated rounded-2xl mb-4"></div>
+                <div className="h-4 bg-elevated rounded mb-2"></div>
+                <div className="h-3 bg-elevated rounded w-1/2"></div>
               </div>
             ))}
           </div>
@@ -390,8 +390,9 @@ const FileManager = () => {
               File Management
             </div>
             <h1 className="heading-dark-2 mb-3">File Manager</h1>
-            <p className="body-dark-large text-grey-400">
-              Manage your PDF documents and files with advanced organization tools
+            <p className="body-dark-large text-muted-foreground">
+              Manage your PDF documents, images, and files with advanced organization tools
+              <br/><span className="text-blue-400 text-sm">✨ AI Chat available for PDFs and Images</span>
             </p>
           </div>
           <div className="mt-6 md:mt-0">
@@ -405,13 +406,13 @@ const FileManager = () => {
         {/* Search and Filters */}
         <div className="flex flex-col gap-4 mb-6 sm:mb-8">
           <div className="relative">
-            <Search className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-grey-500" />
+            <Search className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-secondary" />
             <input
               type="text"
               placeholder="Search files..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-grey-800 border border-grey-700 text-grey-200 rounded-xl pl-10 sm:pl-12 pr-4 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="w-full bg-elevated border border-border text-card-foreground rounded-xl pl-10 sm:pl-12 pr-4 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
           
@@ -466,12 +467,12 @@ const FileManager = () => {
               </DropdownMenu>
             </div>
 
-            <div className="flex border border-grey-700 rounded-xl bg-grey-800 w-full sm:w-auto">
+            <div className="flex border border-border rounded-xl bg-elevated w-full sm:w-auto">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setViewMode('grid')}
-                className={`flex-1 sm:flex-none rounded-r-none text-xs sm:text-sm ${viewMode === 'grid' ? 'bg-blue-600 text-white' : 'text-grey-400 hover:text-grey-200'}`}
+                className={`flex-1 sm:flex-none rounded-r-none text-xs sm:text-sm ${viewMode === 'grid' ? 'bg-blue-600 text-white' : 'text-grey-400 hover:text-foreground'}`}
               >
                 <Grid className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-0" />
                 <span className="sm:hidden">Grid</span>
@@ -480,7 +481,7 @@ const FileManager = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => setViewMode('list')}
-                className={`flex-1 sm:flex-none rounded-l-none border-l border-grey-700 text-xs sm:text-sm ${viewMode === 'list' ? 'bg-blue-600 text-white' : 'text-grey-400 hover:text-grey-200'}`}
+                className={`flex-1 sm:flex-none rounded-l-none border-l border-grey-700 text-xs sm:text-sm ${viewMode === 'list' ? 'bg-blue-600 text-white' : 'text-grey-400 hover:text-foreground'}`}
               >
                 <List className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-0" />
                 <span className="sm:hidden">List</span>
@@ -552,8 +553,8 @@ const FileManager = () => {
                     <FolderOpen className="h-8 w-8 text-blue-400" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-semibold text-grey-200 truncate">{folder.name}</h3>
-                    <p className="text-sm text-grey-400">
+                    <h3 className="font-semibold text-card-foreground truncate">{folder.name}</h3>
+                    <p className="text-sm text-muted-foreground">
                       {folder.fileCount} files
                     </p>
                   </div>
@@ -572,11 +573,11 @@ const FileManager = () => {
 
         {sortedFiles.length === 0 ? (
           <div className="dark-card p-16 text-center">
-            <div className="p-6 bg-grey-800 rounded-full w-24 h-24 mx-auto mb-6 flex items-center justify-center">
-              <FileText className="h-12 w-12 text-grey-400" />
+            <div className="p-6 bg-elevated rounded-full w-24 h-24 mx-auto mb-6 flex items-center justify-center">
+              <FileText className="h-12 w-12 text-muted-foreground" />
             </div>
             <h3 className="heading-dark-3 mb-4">No files found</h3>
-            <p className="body-dark text-grey-400 mb-8">
+            <p className="body-dark text-muted-foreground mb-8">
               {searchQuery || filterType !== 'all' 
                 ? 'Try adjusting your search or filter criteria'
                 : 'Upload your first file to get started'
@@ -611,7 +612,7 @@ const FileManager = () => {
                       type="checkbox"
                       checked={isSelected}
                       onChange={() => handleFileSelect(file.id)}
-                      className="rounded border-grey-600 bg-grey-800 text-blue-500 focus:ring-blue-500"
+                      className="rounded border-border bg-elevated text-blue-500 focus:ring-blue-500"
                     />
                   </div>
 
@@ -621,7 +622,7 @@ const FileManager = () => {
                       e.stopPropagation()
                       handleStarFile(file.id)
                     }}
-                    className="absolute top-3 right-3 p-2 rounded-full hover:bg-grey-700 transition-colors duration-200"
+                    className="absolute top-3 right-3 p-2 rounded-full hover:bg-accent transition-colors duration-200"
                   >
                     <Star className={`h-4 w-4 ${
                       file.starred ? 'text-blue-400 fill-current' : 'text-grey-500'
@@ -629,7 +630,7 @@ const FileManager = () => {
                   </button>
 
                   {/* File preview */}
-                  <div className="flex items-center justify-center h-32 mb-6 bg-grey-800 rounded-2xl">
+                  <div className="flex items-center justify-center h-32 mb-6 bg-elevated rounded-2xl">
                     <div className={`p-4 rounded-2xl ${getFileColor(file.type)}`}>
                       <FileIconComponent className="h-12 w-12" />
                     </div>
@@ -637,10 +638,10 @@ const FileManager = () => {
 
                   {/* File info */}
                   <div className="space-y-3">
-                    <h3 className="font-semibold text-grey-200 truncate" title={file.name}>
+                    <h3 className="font-semibold text-card-foreground truncate" title={file.name}>
                       {file.name}
                     </h3>
-                    <div className="flex items-center justify-between text-sm text-grey-400">
+                    <div className="flex items-center justify-between text-sm text-muted-foreground">
                       <span>{formatFileSize(file.size)}</span>
                       <span>{formatDate(file.createdAt)}</span>
                     </div>
@@ -711,7 +712,7 @@ const FileManager = () => {
                       type="checkbox"
                       checked={isSelected}
                       onChange={() => handleFileSelect(file.id)}
-                      className="rounded border-grey-600 bg-grey-800 text-blue-500 focus:ring-blue-500"
+                      className="rounded border-border bg-elevated text-blue-500 focus:ring-blue-500"
                     />
                     
                     <div className={`p-3 rounded-xl ${getFileColor(file.type)}`}>
@@ -720,7 +721,7 @@ const FileManager = () => {
                     
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center space-x-2">
-                        <h3 className="font-semibold text-grey-200 truncate">{file.name}</h3>
+                        <h3 className="font-semibold text-card-foreground truncate">{file.name}</h3>
                         {file.starred && (
                           <Star className="h-4 w-4 text-blue-400 fill-current flex-shrink-0" />
                         )}
@@ -728,7 +729,7 @@ const FileManager = () => {
                           <Share className="h-4 w-4 text-blue-400 flex-shrink-0" />
                         )}
                       </div>
-                      <div className="flex items-center space-x-4 text-sm text-grey-400">
+                      <div className="flex items-center space-x-4 text-sm text-muted-foreground">
                         <span>{formatFileSize(file.size)}</span>
                         <span>{formatDate(file.createdAt)}</span>
                         <span className="capitalize">{file.type}</span>
@@ -739,7 +740,10 @@ const FileManager = () => {
                           <span className="text-blue-400 text-xs">Summary</span>
                         )}
                         {file.has_embeddings && (
-                          <span className="text-purple-400 text-xs">AI Ready</span>
+                          <span className="text-purple-400 text-xs">AI Chat Ready</span>
+                        )}
+                        {(file.type === 'pdf' || file.type === 'image') && !file.has_embeddings && (
+                          <span className="text-yellow-400 text-xs">AI Chat Available</span>
                         )}
                       </div>
                     </div>

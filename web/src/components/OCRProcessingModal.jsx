@@ -17,8 +17,8 @@ const OCRProcessingModal = ({ isOpen, fileName, progress, stage }) => {
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-      <Card className="w-full max-w-md">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-2 sm:p-4 z-50">
+      <Card className="w-full max-w-[95vw] sm:max-w-md">
         <CardHeader className="text-center">
           <div className="mx-auto mb-4 p-3 bg-blue-100 rounded-full">
             <Eye className="h-8 w-8 text-blue-600" />

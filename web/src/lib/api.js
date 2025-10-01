@@ -23,16 +23,36 @@ class ApiClient {
       config.headers.Authorization = `Bearer ${token}`
     }
 
-    // Create AbortController for timeout
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), config.timeout)
-    config.signal = controller.signal
+    // Create AbortController for timeout with better error handling
+    let controller = null
+    let timeoutId = null
+    
+    try {
+      // Only create controller if no signal is already provided
+      if (!config.signal) {
+        controller = new AbortController()
+        config.signal = controller.signal
+        
+        timeoutId = setTimeout(() => {
+          if (controller && !controller.signal.aborted) {
+            controller.abort('Request timeout')
+          }
+        }, config.timeout)
+      }
+    } catch (controllerError) {
+      console.warn('AbortController creation failed:', controllerError)
+      // Continue without timeout control
+    }
 
     try {
       console.log(`API Request: ${options.method || 'GET'} ${url}`)
       
       const response = await fetch(url, config)
-      clearTimeout(timeoutId)
+      
+      // Clear timeout safely
+      if (timeoutId) {
+        clearTimeout(timeoutId)
+      }
       
       if (!response.ok) {
         let errorMessage = `HTTP ${response.status}: ${response.statusText}`
@@ -70,30 +90,40 @@ class ApiClient {
         return response
       }
     } catch (error) {
-      clearTimeout(timeoutId)
+      // Clear timeout safely
+      if (timeoutId) {
+        clearTimeout(timeoutId)
+      }
       
       console.error('API request failed:', error)
       console.error('Request URL:', url)
       console.error('Request config:', { ...config, signal: undefined })
       
+      // Safely get error message
+      const errorMessage = error?.message || String(error) || 'Unknown error'
+      
       // Handle different types of errors
-      if (error.name === 'AbortError') {
+      if (error.name === 'AbortError' || 
+          errorMessage.includes('signal is aborted') || 
+          errorMessage.includes('The operation was aborted') ||
+          errorMessage.includes('aborted without reason') ||
+          errorMessage.includes('Request timeout')) {
         throw new Error('Request timeout. Please check your connection and try again.')
       }
       
-      if (error.name === 'TypeError' && (error.message.includes('fetch') || error.message.includes('Failed to fetch'))) {
+      if (error.name === 'TypeError' && (errorMessage.includes('fetch') || errorMessage.includes('Failed to fetch'))) {
         throw new Error('Network error: Unable to connect to server. Please check your internet connection.')
       }
       
-      if (error.message.includes('ERR_CONNECTION_REFUSED') || error.message.includes('ERR_FAILED')) {
+      if (errorMessage.includes('ERR_CONNECTION_REFUSED') || errorMessage.includes('ERR_FAILED')) {
         throw new Error('Server unavailable: The service is currently down. Please try again later.')
       }
       
-      if (error.message.includes('ERR_NETWORK')) {
+      if (errorMessage.includes('ERR_NETWORK')) {
         throw new Error('Network error: Please check your internet connection and try again.')
       }
       
-      if (error.message.includes('ERR_INTERNET_DISCONNECTED')) {
+      if (errorMessage.includes('ERR_INTERNET_DISCONNECTED')) {
         throw new Error('No internet connection: Please check your network settings.')
       }
       
@@ -169,8 +199,13 @@ class ApiClient {
   // Health check method
   async healthCheck() {
     try {
-      const response = await this.request('/health', { timeout: 5000 })
-      return response.status === 'OK'
+      const healthUrl = `${this.baseURL.replace('/api', '')}/health`
+      const response = await fetch(healthUrl, { timeout: 5000 })
+      if (response.ok) {
+        const data = await response.json()
+        return data.status === 'OK'
+      }
+      return false
     } catch (error) {
       console.warn('Health check failed:', error.message)
       return false
@@ -183,14 +218,27 @@ class ApiClient {
     
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        return await this.request(endpoint, options)
+        // Create a completely fresh options object for each attempt
+        const attemptOptions = {
+          ...options,
+          signal: undefined, // Clear any existing signal
+          timeout: options.timeout || 30000 // Ensure timeout is set
+        }
+        
+        return await this.request(endpoint, attemptOptions)
       } catch (error) {
         lastError = error
         
         // Don't retry on authentication errors or client errors
         if (error.message.includes('Authentication') || 
             error.message.includes('Access denied') ||
-            error.message.includes('404')) {
+            error.message.includes('404') ||
+            error.message.includes('File not found')) {
+          throw error
+        }
+        
+        // Don't retry timeout errors on the last attempt
+        if (attempt === maxRetries || error.message.includes('timeout')) {
           throw error
         }
         
@@ -255,6 +303,7 @@ class ApiClient {
       method: 'POST',
       headers: {}, // Remove Content-Type to let browser set it for FormData
       body: formData,
+      timeout: 300000, // 5 minutes for large file uploads
     })
   }
 
@@ -266,6 +315,7 @@ class ApiClient {
       method: 'POST',
       headers: {}, // Remove Content-Type to let browser set it for FormData
       body: formData,
+      timeout: 300000, // 5 minutes for large file uploads
     })
   }
 
@@ -470,7 +520,7 @@ class ApiClient {
     return this.request('/ai/ocr', {
       method: 'POST',
       body: JSON.stringify({ fileId, ...options }),
-      timeout: 90000, // 90 seconds for OCR
+      timeout: 120000, // 2 minutes for OCR
     })
   }
 
@@ -526,9 +576,10 @@ class ApiClient {
 
   // Translation endpoint
   async translateText(text, targetLanguage = 'en') {
-    return this.request('/ai/translate', {
+    return this.request('/ai/translate-text', {
       method: 'POST',
       body: JSON.stringify({ text, targetLanguage }),
+      timeout: 60000, // 1 minute for translation
     })
   }
 

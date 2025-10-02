@@ -380,24 +380,24 @@ const FileManager = () => {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 sm:space-y-8">
       {/* Header */}
       <div>
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
-          <div>
-            <div className="inline-flex items-center px-6 py-3 bg-gradient-blue text-white rounded-full text-sm font-semibold mb-4">
-              <Layers className="h-5 w-5 mr-2" />
+        <div className="mobile-flex-col mobile-gap-lg mb-6 sm:mb-8">
+          <div className="flex-1">
+            <div className="inline-flex items-center mobile-padding bg-gradient-blue text-white mobile-rounded text-xs sm:text-sm font-semibold mb-3 sm:mb-4">
+              <Layers className="mobile-icon mr-2" />
               File Management
             </div>
-            <h1 className="heading-dark-2 mb-3">File Manager</h1>
-            <p className="body-dark-large text-muted-foreground">
+            <h1 className="mobile-text-2xl font-bold mb-2 sm:mb-3">File Manager</h1>
+            <p className="mobile-text-sm text-muted-foreground">
               Manage your PDF documents, images, and files with advanced organization tools
-              <br/><span className="text-blue-400 text-sm">✨ AI Chat available for PDFs and Images</span>
+              <br className="hidden sm:block"/><span className="text-blue-400 text-xs sm:text-sm">✨ AI Chat available for PDFs and Images</span>
             </p>
           </div>
-          <div className="mt-6 md:mt-0">
-            <Button className="btn-blue">
-              <Upload className="h-4 w-4 mr-2" />
+          <div className="w-full sm:w-auto">
+            <Button className="btn-blue w-full sm:w-auto mobile-btn mobile-touch-target">
+              <Upload className="mobile-icon mr-2" />
               Upload Files
             </Button>
           </div>

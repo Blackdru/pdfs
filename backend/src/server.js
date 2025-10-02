@@ -17,6 +17,8 @@ const batchRoutes = require('./routes/batch');
 const folderRoutes = require('./routes/folders');
 const subscriptionRoutes = require('./routes/subscriptions');
 const webhookRoutes = require('./routes/webhooks');
+const contactRoutes = require('./routes/contact');
+const pricingRoutes = require('./routes/pricing');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -83,6 +85,10 @@ app.use('/api/subscriptions', subscriptionRoutes);
 console.log('Subscription routes loaded');
 app.use('/api/webhooks', webhookRoutes);
 console.log('Webhook routes loaded');
+app.use('/api/contact', contactRoutes);
+console.log('Contact routes loaded');
+app.use('/api/pricing', pricingRoutes);
+console.log('Pricing routes loaded');
 
 // 404 handler
 app.use('*', (req, res) => {

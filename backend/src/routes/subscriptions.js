@@ -3,14 +3,9 @@ const { supabaseAdmin } = require('../config/supabase');
 const { authenticateUser } = require('../middleware/auth');
 const { PLAN_LIMITS } = require('../../../shared/planLimits.js');
 const stripeService = require('../services/stripeService');
+const currencyService = require('../services/currencyService');
 
 const router = express.Router();
-
-// Stripe price IDs mapping
-const STRIPE_PRICE_IDS = {
-  pro: process.env.STRIPE_PRICE_ID_PRO || 'price_1234567890abcdef', // Replace with actual price ID
-  premium: process.env.STRIPE_PRICE_ID_PREMIUM || 'price_0987654321fedcba' // Replace with actual price ID
-};
 
 // Get available subscription plans
 router.get('/plans', async (req, res) => {
@@ -199,13 +194,21 @@ router.get('/usage', authenticateUser, async (req, res) => {
   }
 });
 
-// Create subscription (for free plan or upgrade)
+// Create subscription (for free plan or upgrade) with currency support
 router.post('/create', authenticateUser, async (req, res) => {
   try {
-    const { plan } = req.body;
+    const { plan, currency } = req.body;
 
     if (!plan || !PLAN_LIMITS[plan]) {
       return res.status(400).json({ error: 'Invalid plan specified' });
+    }
+
+    // Detect currency if not provided
+    const selectedCurrency = currency || await currencyService.getCurrencyFromRequest(req);
+
+    // Validate currency
+    if (!currencyService.isCurrencySupported(selectedCurrency)) {
+      return res.status(400).json({ error: 'Currency not supported' });
     }
 
     // For free plan, just update user profile
@@ -217,7 +220,8 @@ router.post('/create', authenticateUser, async (req, res) => {
             user_id: req.user.id,
             plan: 'free',
             status: 'active',
-            started_at: new Date().toISOString()
+            started_at: new Date().toISOString(),
+            metadata: { currency: selectedCurrency }
           }
         ]);
 
@@ -233,7 +237,7 @@ router.post('/create', authenticateUser, async (req, res) => {
       // Get user profile for email
       const { data: userProfile, error: profileError } = await supabaseAdmin
         .from('users')
-        .select('email, full_name')
+        .select('email, name')
         .eq('id', req.user.id)
         .single();
 
@@ -252,32 +256,29 @@ router.post('/create', authenticateUser, async (req, res) => {
       if (existingSubscription?.stripe_customer_id) {
         customerId = existingSubscription.stripe_customer_id;
       } else {
-        // Create new Stripe customer
+        // Create new Stripe customer with currency preference
         const customer = await stripeService.createCustomer(
           userProfile.email,
-          userProfile.full_name,
-          req.user.id
+          userProfile.name,
+          req.user.id,
+          selectedCurrency
         );
         customerId = customer.id;
       }
 
-      // Get the price ID for the plan
-      const priceId = STRIPE_PRICE_IDS[plan];
-      if (!priceId) {
-        return res.status(400).json({ error: 'Invalid plan price ID' });
-      }
-
-      // Create Stripe subscription
+      // Create Stripe subscription with plan and currency
       const result = await stripeService.createSubscription(
         customerId,
-        priceId,
-        req.user.id
+        plan,
+        req.user.id,
+        selectedCurrency
       );
 
       res.json({
         success: true,
         clientSecret: result.clientSecret,
-        subscriptionId: result.subscriptionId
+        subscriptionId: result.subscriptionId,
+        currency: selectedCurrency
       });
 
     } catch (stripeError) {
@@ -345,28 +346,61 @@ router.post('/reactivate', authenticateUser, async (req, res) => {
   }
 });
 
-// Update subscription plan
+// Update subscription plan with currency support
 router.put('/plan', authenticateUser, async (req, res) => {
   try {
-    const { plan } = req.body;
+    const { plan, currency } = req.body;
 
     if (!plan || !PLAN_LIMITS[plan]) {
       return res.status(400).json({ error: 'Invalid plan specified' });
     }
 
-    const { error } = await supabaseAdmin
+    // Get current subscription
+    const { data: currentSub, error: subError } = await supabaseAdmin
       .from('subscriptions')
-      .update({
-        plan: plan,
-        updated_at: new Date().toISOString()
-      })
-      .eq('user_id', req.user.id);
+      .select('*')
+      .eq('user_id', req.user.id)
+      .single();
 
-    if (error) {
-      return res.status(400).json({ error: error.message });
+    if (subError || !currentSub) {
+      return res.status(404).json({ error: 'Subscription not found' });
     }
 
-    res.json({ message: 'Plan updated successfully' });
+    // Get currency from request or use existing
+    const selectedCurrency = currency || currentSub.metadata?.currency || 'USD';
+
+    // If there's a Stripe subscription, update it
+    if (currentSub.stripe_subscription_id) {
+      try {
+        await stripeService.updateSubscriptionPlan(
+          currentSub.stripe_subscription_id,
+          plan,
+          selectedCurrency
+        );
+      } catch (stripeError) {
+        console.error('Stripe update error:', stripeError);
+        return res.status(500).json({ 
+          error: 'Failed to update subscription with payment provider',
+          details: stripeError.message 
+        });
+      }
+    } else {
+      // Update local subscription only
+      const { error } = await supabaseAdmin
+        .from('subscriptions')
+        .update({
+          plan: plan,
+          metadata: { ...currentSub.metadata, currency: selectedCurrency },
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', req.user.id);
+
+      if (error) {
+        return res.status(400).json({ error: error.message });
+      }
+    }
+
+    res.json({ message: 'Plan updated successfully', currency: selectedCurrency });
   } catch (error) {
     console.error('Error updating plan:', error);
     res.status(500).json({ error: 'Failed to update plan' });

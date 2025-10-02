@@ -17,50 +17,151 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true)
   const [session, setSession] = useState(null)
 
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      setLoading(false)
-    })
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      setLoading(false)
-
-      // Store token for API requests
-      if (session?.access_token) {
-        localStorage.setItem('supabase.auth.token', session.access_token)
-        // Ensure user profile exists in database
-        setTimeout(() => ensureUserProfile(), 100)
-      } else {
-        localStorage.removeItem('supabase.auth.token')
+    // Check for stored session
+    const storedSession = localStorage.getItem('auth_session')
+    if (storedSession) {
+      try {
+        const parsedSession = JSON.parse(storedSession)
+        setSession(parsedSession)
+        fetchCurrentUser(parsedSession.access_token)
+      } catch (error) {
+        console.error('Error parsing stored session:', error)
+        localStorage.removeItem('auth_session')
+        setLoading(false)
       }
-    })
+    } else {
+      // Check for Supabase session (for Google OAuth backward compatibility)
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        if (session) {
+          setSession(session)
+          setUser(session?.user ?? null)
+          localStorage.setItem('supabase.auth.token', session.access_token)
+        }
+        setLoading(false)
+      })
 
-    return () => subscription.unsubscribe()
+      // Listen for Supabase auth changes (for Google OAuth)
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange(async (event, session) => {
+        if (session) {
+          setSession(session)
+          setUser(session?.user ?? null)
+          localStorage.setItem('supabase.auth.token', session.access_token)
+        }
+        setLoading(false)
+      })
+
+      return () => subscription.unsubscribe()
+    }
   }, [])
+
+  const fetchCurrentUser = async (token) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/me`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setUser(data.user)
+      } else {
+        // Token invalid, clear session
+        localStorage.removeItem('auth_session')
+        setSession(null)
+        setUser(null)
+      }
+    } catch (error) {
+      console.error('Error fetching user:', error)
+      localStorage.removeItem('auth_session')
+      setSession(null)
+      setUser(null)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const signUp = async (email, password, name) => {
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            name,
-          },
+      const response = await fetch(`${API_BASE_URL}/auth/register`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
         },
+        body: JSON.stringify({ email, password, name })
       })
 
-      if (error) throw error
+      const data = await response.json()
 
-      toast.success('Registration successful! Please check your email to verify your account.')
+      if (!response.ok) {
+        throw new Error(data.error || 'Registration failed')
+      }
+
+      toast.success('OTP sent to your email! Please verify to complete registration.')
+      return { data, error: null }
+    } catch (error) {
+      toast.error(error.message)
+      return { data: null, error }
+    }
+  }
+
+  const verifyOTP = async (email, otp) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/verify-otp`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, otp })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'OTP verification failed')
+      }
+
+      // Store session
+      const sessionData = {
+        access_token: data.session.access_token,
+        refresh_token: data.session.refresh_token,
+        expires_in: data.session.expires_in
+      }
+      localStorage.setItem('auth_session', JSON.stringify(sessionData))
+      setSession(sessionData)
+      setUser(data.user)
+
+      toast.success('Email verified successfully! Welcome to PDFPet!')
+      return { data, error: null }
+    } catch (error) {
+      toast.error(error.message)
+      return { data: null, error }
+    }
+  }
+
+  const resendOTP = async (email, type = 'verification') => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/resend-otp`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, type })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to resend OTP')
+      }
+
+      toast.success('OTP sent successfully!')
       return { data, error: null }
     } catch (error) {
       toast.error(error.message)
@@ -70,12 +171,32 @@ export const AuthProvider = ({ children }) => {
 
   const signIn = async (email, password) => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, password })
       })
 
-      if (error) throw error
+      const data = await response.json()
+
+      if (!response.ok) {
+        if (data.needsVerification) {
+          throw new Error('Please verify your email first. Check your inbox for the OTP.')
+        }
+        throw new Error(data.error || 'Login failed')
+      }
+
+      // Store session
+      const sessionData = {
+        access_token: data.session.access_token,
+        refresh_token: data.session.refresh_token,
+        expires_in: data.session.expires_in
+      }
+      localStorage.setItem('auth_session', JSON.stringify(sessionData))
+      setSession(sessionData)
+      setUser(data.user)
 
       toast.success('Welcome back!')
       return { data, error: null }
@@ -105,10 +226,72 @@ export const AuthProvider = ({ children }) => {
 
   const signOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut()
-      if (error) throw error
+      const storedSession = localStorage.getItem('auth_session')
+      
+      if (storedSession) {
+        try {
+          const parsedSession = JSON.parse(storedSession)
+          
+          // Call logout endpoint
+          await fetch(`${API_BASE_URL}/auth/logout`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${parsedSession.access_token}`,
+              'Content-Type': 'application/json'
+            }
+          })
+        } catch (err) {
+          console.error('Logout API error:', err)
+        }
+      }
+
+      // Try Supabase signout for Google OAuth users (ignore errors)
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session) {
+          await supabase.auth.signOut({ scope: 'local' })
+        }
+      } catch (err) {
+        console.error('Supabase signout error:', err)
+      }
+
+      // Clear local storage
+      localStorage.removeItem('auth_session')
+      localStorage.removeItem('supabase.auth.token')
+      
+      setSession(null)
+      setUser(null)
 
       toast.success('Signed out successfully')
+      return { error: null }
+    } catch (error) {
+      console.error('Signout error:', error)
+      // Still clear local state even if API calls fail
+      localStorage.removeItem('auth_session')
+      localStorage.removeItem('supabase.auth.token')
+      setSession(null)
+      setUser(null)
+      return { error: null }
+    }
+  }
+
+  const forgotPassword = async (email) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send reset email')
+      }
+
+      toast.success('Password reset OTP sent to your email!')
       return { error: null }
     } catch (error) {
       toast.error(error.message)
@@ -116,15 +299,23 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  const resetPassword = async (email) => {
+  const resetPassword = async (email, otp, newPassword) => {
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
+      const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email, otp, newPassword })
       })
 
-      if (error) throw error
+      const data = await response.json()
 
-      toast.success('Password reset email sent!')
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to reset password')
+      }
+
+      toast.success('Password reset successfully! Please login with your new password.')
       return { error: null }
     } catch (error) {
       toast.error(error.message)
@@ -134,6 +325,7 @@ export const AuthProvider = ({ children }) => {
 
   const updateProfile = async (updates) => {
     try {
+      // For Supabase OAuth users
       const { error } = await supabase.auth.updateUser(updates)
       if (error) throw error
 
@@ -145,25 +337,44 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  const ensureUserProfile = async () => {
-    if (!session?.access_token) return
-
+  const refreshSession = async () => {
     try {
-      const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
-      const response = await fetch(`${API_BASE_URL}/auth/ensure-profile`, {
+      const storedSession = localStorage.getItem('auth_session')
+      if (!storedSession) return { error: 'No session found' }
+
+      const parsedSession = JSON.parse(storedSession)
+
+      const response = await fetch(`${API_BASE_URL}/auth/refresh`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${session.access_token}`,
           'Content-Type': 'application/json'
-        }
+        },
+        body: JSON.stringify({ refresh_token: parsedSession.refresh_token })
       })
 
+      const data = await response.json()
+
       if (!response.ok) {
-        const error = await response.json()
-        console.error('Error ensuring user profile:', error)
+        throw new Error(data.error || 'Failed to refresh session')
       }
+
+      // Update stored session
+      const newSession = {
+        access_token: data.session.access_token,
+        refresh_token: data.session.refresh_token,
+        expires_in: data.session.expires_in
+      }
+      localStorage.setItem('auth_session', JSON.stringify(newSession))
+      setSession(newSession)
+
+      return { error: null }
     } catch (error) {
-      console.error('Error ensuring user profile:', error)
+      console.error('Session refresh error:', error)
+      // Clear invalid session
+      localStorage.removeItem('auth_session')
+      setSession(null)
+      setUser(null)
+      return { error }
     }
   }
 
@@ -172,12 +383,15 @@ export const AuthProvider = ({ children }) => {
     session,
     loading,
     signUp,
+    verifyOTP,
+    resendOTP,
     signIn,
     signInWithGoogle,
     signOut,
+    forgotPassword,
     resetPassword,
     updateProfile,
-    ensureUserProfile,
+    refreshSession,
   }
 
   return (

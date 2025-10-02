@@ -25,7 +25,8 @@ import {
   Sparkles,
   Rocket,
   Heart,
-  DollarSign
+  DollarSign,
+  Mail
 } from 'lucide-react'
 import {
   DropdownMenu,
@@ -67,6 +68,7 @@ const ModernNavbar = () => {
 
   const publicNavItems = [
     { path: '/upgrade', label: 'Pricing', icon: DollarSign },
+    { path: '/contact', label: 'Contact', icon: Mail },
   ]
 
   return (
@@ -239,22 +241,7 @@ const ModernNavbar = () => {
                 </div>
               )}
 
-              {/* Mobile Menu Button */}
-              <div className="md:hidden">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                  className="h-12 w-12 rounded-2xl hover:bg-elevated"
-                >
-                  {isMobileMenuOpen ? (
-                    <X className="h-5 w-5" />
-                  ) : (
-                    <Menu className="h-5 w-5" />
-                  )}
-                </Button>
-              </div>
-            </div>
+                          </div>
           </div>
         </div>
       </nav>

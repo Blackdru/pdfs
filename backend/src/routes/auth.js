@@ -1,60 +1,281 @@
 const express = require('express');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 const { supabase } = require('../config/supabase');
 const { validateRequest, schemas } = require('../middleware/validation');
+const { generateOTP, sendOTPEmail, sendWelcomeEmail } = require('../services/emailService');
 
 const router = express.Router();
 
-// Register new user
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+const JWT_EXPIRES_IN = '7d';
+const REFRESH_TOKEN_EXPIRES_IN = '30d';
+
+// Helper function to generate tokens
+const generateTokens = (userId, email) => {
+  const accessToken = jwt.sign(
+    { userId, email, type: 'access' },
+    JWT_SECRET,
+    { expiresIn: JWT_EXPIRES_IN }
+  );
+
+  const refreshToken = jwt.sign(
+    { userId, email, type: 'refresh' },
+    JWT_SECRET,
+    { expiresIn: REFRESH_TOKEN_EXPIRES_IN }
+  );
+
+  return { accessToken, refreshToken };
+};
+
+// Register new user - Step 1: Send OTP
 router.post('/register', validateRequest(schemas.register), async (req, res) => {
   try {
     const { email, password, name } = req.body;
 
-    // Create user in Supabase Auth
-    const { data: authData, error: authError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: {
-          name
-        }
-      }
-    });
+    // Check if user already exists
+    const { data: existingUser } = await supabase
+      .from('users')
+      .select('id, email_verified')
+      .eq('email', email)
+      .single();
 
-    if (authError) {
-      return res.status(400).json({ error: authError.message });
+    if (existingUser && existingUser.email_verified) {
+      return res.status(400).json({ error: 'User already exists with this email' });
     }
 
-    // Create user profile in database
-    if (authData.user) {
-      const { error: profileError } = await supabase
+    // Generate OTP
+    const otp = generateOTP();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    // Store OTP in database
+    const { error: otpError } = await supabase
+      .from('otp_codes')
+      .insert([
+        {
+          email,
+          otp_code: otp,
+          type: 'verification',
+          expires_at: expiresAt.toISOString()
+        }
+      ]);
+
+    if (otpError) {
+      console.error('OTP storage error:', otpError);
+      return res.status(500).json({ error: 'Failed to generate OTP' });
+    }
+
+    // Hash password and store temporarily (we'll create user after verification)
+    const passwordHash = await bcrypt.hash(password, 10);
+
+    // Store user data temporarily (or update if exists)
+    if (existingUser) {
+      await supabase
         .from('users')
-        .upsert([
+        .update({ password_hash: passwordHash, name })
+        .eq('email', email);
+    } else {
+      // Create unverified user
+      const { error: userError } = await supabase
+        .from('users')
+        .insert([
           {
-            id: authData.user.id,
-            email: authData.user.email,
+            email,
             name,
+            password_hash: passwordHash,
+            email_verified: false,
             role: 'user'
           }
         ]);
 
-      if (profileError) {
-        console.error('Profile creation error:', profileError);
-        // Continue anyway, as the auth user was created successfully
+      if (userError) {
+        console.error('User creation error:', userError);
+        return res.status(500).json({ error: 'Failed to create user' });
       }
     }
 
-    res.status(201).json({
-      message: 'User registered successfully',
-      user: {
-        id: authData.user?.id,
-        email: authData.user?.email,
-        name
-      },
-      session: authData.session
+    // Send OTP email
+    const emailResult = await sendOTPEmail(email, otp, 'verification');
+
+    if (!emailResult.success) {
+      return res.status(500).json({ error: 'Failed to send verification email' });
+    }
+
+    res.status(200).json({
+      message: 'OTP sent to your email. Please verify to complete registration.',
+      email
     });
   } catch (error) {
     console.error('Registration error:', error);
     res.status(500).json({ error: 'Registration failed' });
+  }
+});
+
+// Verify OTP and complete registration
+router.post('/verify-otp', async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      return res.status(400).json({ error: 'Email and OTP are required' });
+    }
+
+    // Find valid OTP
+    const { data: otpData, error: otpError } = await supabase
+      .from('otp_codes')
+      .select('*')
+      .eq('email', email)
+      .eq('otp_code', otp)
+      .eq('type', 'verification')
+      .eq('used', false)
+      .gt('expires_at', new Date().toISOString())
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (otpError || !otpData) {
+      return res.status(400).json({ error: 'Invalid or expired OTP' });
+    }
+
+    // Mark OTP as used
+    await supabase
+      .from('otp_codes')
+      .update({ used: true, used_at: new Date().toISOString() })
+      .eq('id', otpData.id);
+
+    // Update user as verified
+    const { data: user, error: updateError } = await supabase
+      .from('users')
+      .update({
+        email_verified: true,
+        verified_at: new Date().toISOString()
+      })
+      .eq('email', email)
+      .select()
+      .single();
+
+    if (updateError) {
+      console.error('User verification error:', updateError);
+      return res.status(500).json({ error: 'Failed to verify user' });
+    }
+
+    // Create subscription for new user
+    const { error: subError } = await supabase
+      .from('subscriptions')
+      .insert([
+        {
+          user_id: user.id,
+          plan: 'free',
+          status: 'active',
+          started_at: new Date().toISOString()
+        }
+      ]);
+
+    if (subError) {
+      console.error('Subscription creation error:', subError);
+    }
+
+    // Send welcome email
+    await sendWelcomeEmail(email, user.name);
+
+    // Generate tokens
+    const { accessToken, refreshToken } = generateTokens(user.id, user.email);
+
+    // Store session
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+    await supabase
+      .from('user_sessions')
+      .insert([
+        {
+          user_id: user.id,
+          token: accessToken,
+          refresh_token: refreshToken,
+          expires_at: expiresAt.toISOString(),
+          ip_address: req.ip,
+          user_agent: req.headers['user-agent']
+        }
+      ]);
+
+    res.status(200).json({
+      message: 'Email verified successfully',
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        email_verified: user.email_verified
+      },
+      session: {
+        access_token: accessToken,
+        refresh_token: refreshToken,
+        expires_in: 7 * 24 * 60 * 60 // 7 days in seconds
+      }
+    });
+  } catch (error) {
+    console.error('OTP verification error:', error);
+    res.status(500).json({ error: 'Verification failed' });
+  }
+});
+
+// Resend OTP
+router.post('/resend-otp', async (req, res) => {
+  try {
+    const { email, type = 'verification' } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    // Check if user exists
+    const { data: user } = await supabase
+      .from('users')
+      .select('email_verified')
+      .eq('email', email)
+      .single();
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    if (type === 'verification' && user.email_verified) {
+      return res.status(400).json({ error: 'Email already verified' });
+    }
+
+    // Generate new OTP
+    const otp = generateOTP();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    // Store OTP
+    const { error: otpError } = await supabase
+      .from('otp_codes')
+      .insert([
+        {
+          email,
+          otp_code: otp,
+          type,
+          expires_at: expiresAt.toISOString()
+        }
+      ]);
+
+    if (otpError) {
+      console.error('OTP storage error:', otpError);
+      return res.status(500).json({ error: 'Failed to generate OTP' });
+    }
+
+    // Send OTP email
+    const emailResult = await sendOTPEmail(email, otp, type);
+
+    if (!emailResult.success) {
+      return res.status(500).json({ error: 'Failed to send OTP email' });
+    }
+
+    res.status(200).json({
+      message: 'OTP sent successfully',
+      email
+    });
+  } catch (error) {
+    console.error('Resend OTP error:', error);
+    res.status(500).json({ error: 'Failed to resend OTP' });
   }
 });
 
@@ -63,54 +284,64 @@ router.post('/login', validateRequest(schemas.login), async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    });
-
-    if (error) {
-      return res.status(401).json({ error: error.message });
-    }
-
-    // Get user profile from database
-    let { data: profile, error: profileError } = await supabase
+    // Get user from database
+    const { data: user, error: userError } = await supabase
       .from('users')
-      .select('name, role')
-      .eq('id', data.user.id)
+      .select('*')
+      .eq('email', email)
       .single();
 
-    // If user profile doesn't exist, create it
-    if (profileError && profileError.code === 'PGRST116') {
-      const { error: createError } = await supabase
-        .from('users')
-        .insert([
-          {
-            id: data.user.id,
-            email: data.user.email,
-            name: data.user.user_metadata?.name || data.user.email.split('@')[0],
-            role: 'user'
-          }
-        ]);
-
-      if (createError) {
-        console.error('Profile creation error during login:', createError);
-      } else {
-        profile = {
-          name: data.user.user_metadata?.name || data.user.email.split('@')[0],
-          role: 'user'
-        };
-      }
+    if (userError || !user) {
+      return res.status(401).json({ error: 'Invalid email or password' });
     }
+
+    // Check if email is verified
+    if (!user.email_verified) {
+      return res.status(401).json({ 
+        error: 'Email not verified. Please verify your email first.',
+        needsVerification: true 
+      });
+    }
+
+    // Verify password
+    const isValidPassword = await bcrypt.compare(password, user.password_hash);
+
+    if (!isValidPassword) {
+      return res.status(401).json({ error: 'Invalid email or password' });
+    }
+
+    // Generate tokens
+    const { accessToken, refreshToken } = generateTokens(user.id, user.email);
+
+    // Store session
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
+    await supabase
+      .from('user_sessions')
+      .insert([
+        {
+          user_id: user.id,
+          token: accessToken,
+          refresh_token: refreshToken,
+          expires_at: expiresAt.toISOString(),
+          ip_address: req.ip,
+          user_agent: req.headers['user-agent']
+        }
+      ]);
 
     res.json({
       message: 'Login successful',
       user: {
-        id: data.user.id,
-        email: data.user.email,
-        name: profile?.name || data.user.email.split('@')[0],
-        role: profile?.role || 'user'
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role,
+        email_verified: user.email_verified
       },
-      session: data.session
+      session: {
+        access_token: accessToken,
+        refresh_token: refreshToken,
+        expires_in: 7 * 24 * 60 * 60 // 7 days in seconds
+      }
     });
   } catch (error) {
     console.error('Login error:', error);
@@ -121,10 +352,16 @@ router.post('/login', validateRequest(schemas.login), async (req, res) => {
 // Logout user
 router.post('/logout', async (req, res) => {
   try {
-    const { error } = await supabase.auth.signOut();
+    const authHeader = req.headers.authorization;
     
-    if (error) {
-      return res.status(400).json({ error: error.message });
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      const token = authHeader.substring(7);
+      
+      // Delete session
+      await supabase
+        .from('user_sessions')
+        .delete()
+        .eq('token', token);
     }
 
     res.json({ message: 'Logout successful' });
@@ -143,17 +380,55 @@ router.post('/refresh', async (req, res) => {
       return res.status(400).json({ error: 'Refresh token required' });
     }
 
-    const { data, error } = await supabase.auth.refreshSession({
-      refresh_token
-    });
-
-    if (error) {
-      return res.status(401).json({ error: error.message });
+    // Verify refresh token
+    let decoded;
+    try {
+      decoded = jwt.verify(refresh_token, JWT_SECRET);
+    } catch (err) {
+      return res.status(401).json({ error: 'Invalid refresh token' });
     }
+
+    if (decoded.type !== 'refresh') {
+      return res.status(401).json({ error: 'Invalid token type' });
+    }
+
+    // Check if session exists
+    const { data: session } = await supabase
+      .from('user_sessions')
+      .select('*')
+      .eq('refresh_token', refresh_token)
+      .gt('expires_at', new Date().toISOString())
+      .single();
+
+    if (!session) {
+      return res.status(401).json({ error: 'Session expired or invalid' });
+    }
+
+    // Generate new tokens
+    const { accessToken, refreshToken: newRefreshToken } = generateTokens(
+      decoded.userId,
+      decoded.email
+    );
+
+    // Update session
+    const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+    await supabase
+      .from('user_sessions')
+      .update({
+        token: accessToken,
+        refresh_token: newRefreshToken,
+        expires_at: expiresAt.toISOString(),
+        last_used_at: new Date().toISOString()
+      })
+      .eq('id', session.id);
 
     res.json({
       message: 'Token refreshed successfully',
-      session: data.session
+      session: {
+        access_token: accessToken,
+        refresh_token: newRefreshToken,
+        expires_in: 7 * 24 * 60 * 60
+      }
     });
   } catch (error) {
     console.error('Token refresh error:', error);
@@ -161,7 +436,169 @@ router.post('/refresh', async (req, res) => {
   }
 });
 
-// Google OAuth (initiate)
+// Request password reset
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: 'Email is required' });
+    }
+
+    // Check if user exists
+    const { data: user } = await supabase
+      .from('users')
+      .select('id, email_verified')
+      .eq('email', email)
+      .single();
+
+    // Always return success to prevent email enumeration
+    if (!user || !user.email_verified) {
+      return res.status(200).json({
+        message: 'If the email exists, a password reset OTP has been sent'
+      });
+    }
+
+    // Generate OTP
+    const otp = generateOTP();
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    // Store OTP
+    await supabase
+      .from('otp_codes')
+      .insert([
+        {
+          email,
+          otp_code: otp,
+          type: 'password_reset',
+          expires_at: expiresAt.toISOString()
+        }
+      ]);
+
+    // Send OTP email
+    await sendOTPEmail(email, otp, 'password_reset');
+
+    res.status(200).json({
+      message: 'If the email exists, a password reset OTP has been sent'
+    });
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({ error: 'Failed to process request' });
+  }
+});
+
+// Reset password with OTP
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+
+    if (!email || !otp || !newPassword) {
+      return res.status(400).json({ error: 'Email, OTP, and new password are required' });
+    }
+
+    // Validate password strength
+    if (newPassword.length < 8) {
+      return res.status(400).json({ error: 'Password must be at least 8 characters long' });
+    }
+
+    // Find valid OTP
+    const { data: otpData, error: otpError } = await supabase
+      .from('otp_codes')
+      .select('*')
+      .eq('email', email)
+      .eq('otp_code', otp)
+      .eq('type', 'password_reset')
+      .eq('used', false)
+      .gt('expires_at', new Date().toISOString())
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (otpError || !otpData) {
+      return res.status(400).json({ error: 'Invalid or expired OTP' });
+    }
+
+    // Mark OTP as used
+    await supabase
+      .from('otp_codes')
+      .update({ used: true, used_at: new Date().toISOString() })
+      .eq('id', otpData.id);
+
+    // Hash new password
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+
+    // Update user password
+    const { error: updateError } = await supabase
+      .from('users')
+      .update({ password_hash: passwordHash })
+      .eq('email', email);
+
+    if (updateError) {
+      console.error('Password update error:', updateError);
+      return res.status(500).json({ error: 'Failed to reset password' });
+    }
+
+    // Invalidate all existing sessions for this user
+    const { data: user } = await supabase
+      .from('users')
+      .select('id')
+      .eq('email', email)
+      .single();
+
+    if (user) {
+      await supabase
+        .from('user_sessions')
+        .delete()
+        .eq('user_id', user.id);
+    }
+
+    res.status(200).json({
+      message: 'Password reset successfully. Please login with your new password.'
+    });
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({ error: 'Failed to reset password' });
+  }
+});
+
+// Get current user
+router.get('/me', async (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+
+    const token = authHeader.substring(7);
+    
+    // Verify token
+    let decoded;
+    try {
+      decoded = jwt.verify(token, JWT_SECRET);
+    } catch (err) {
+      return res.status(401).json({ error: 'Invalid token' });
+    }
+
+    // Get user from database
+    const { data: user, error } = await supabase
+      .from('users')
+      .select('id, email, name, role, email_verified, created_at')
+      .eq('id', decoded.userId)
+      .single();
+
+    if (error || !user) {
+      return res.status(401).json({ error: 'User not found' });
+    }
+
+    res.json({ user });
+  } catch (error) {
+    console.error('Get user error:', error);
+    res.status(500).json({ error: 'Failed to get user' });
+  }
+});
+
+// Google OAuth (keeping for backward compatibility)
 router.get('/google', async (req, res) => {
   try {
     const { data, error } = await supabase.auth.signInWithOAuth({
@@ -182,7 +619,7 @@ router.get('/google', async (req, res) => {
   }
 });
 
-// OAuth callback
+// OAuth callback (keeping for backward compatibility)
 router.get('/callback', async (req, res) => {
   try {
     const { code } = req.query;
@@ -206,7 +643,9 @@ router.get('/callback', async (req, res) => {
             id: data.user.id,
             email: data.user.email,
             name: data.user.user_metadata?.full_name || data.user.user_metadata?.name || data.user.email.split('@')[0],
-            role: 'user'
+            role: 'user',
+            email_verified: true,
+            verified_at: new Date().toISOString()
           }
         ]);
 
@@ -216,75 +655,11 @@ router.get('/callback', async (req, res) => {
     }
 
     // Redirect to frontend with session data
-    const redirectUrl = process.env.NODE_ENV === 'production'
-      ? 'https://your-domain.com/auth/callback'
-      : 'http://localhost:3000/auth/callback';
-
-    res.redirect(`${redirectUrl}?access_token=${data.session.access_token}&refresh_token=${data.session.refresh_token}`);
+    const redirectUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    res.redirect(`${redirectUrl}/auth/callback?access_token=${data.session.access_token}&refresh_token=${data.session.refresh_token}`);
   } catch (error) {
     console.error('OAuth callback error:', error);
     res.status(500).json({ error: 'OAuth callback failed' });
-  }
-});
-
-// Endpoint to ensure user profile exists (for existing auth users)
-router.post('/ensure-profile', async (req, res) => {
-  try {
-    const authHeader = req.headers.authorization;
-    
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({ error: 'No token provided' });
-    }
-
-    const token = authHeader.substring(7);
-    
-    const { data: { user }, error } = await supabase.auth.getUser(token);
-    
-    if (error || !user) {
-      return res.status(401).json({ error: 'Invalid token' });
-    }
-
-    // Check if user profile exists
-    const { data: profile, error: profileError } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', user.id)
-      .single();
-
-    if (profileError && profileError.code === 'PGRST116') {
-      // User profile doesn't exist, create it
-      const { error: createError } = await supabase
-        .from('users')
-        .insert([
-          {
-            id: user.id,
-            email: user.email,
-            name: user.user_metadata?.name || user.user_metadata?.full_name || user.email.split('@')[0],
-            role: 'user'
-          }
-        ]);
-
-      if (createError) {
-        console.error('Error creating user profile:', createError);
-        return res.status(500).json({ error: 'Failed to create user profile' });
-      }
-
-      return res.json({ 
-        message: 'User profile created successfully',
-        created: true
-      });
-    } else if (profileError) {
-      console.error('Error checking user profile:', profileError);
-      return res.status(500).json({ error: 'Failed to check user profile' });
-    }
-
-    res.json({ 
-      message: 'User profile already exists',
-      created: false
-    });
-  } catch (error) {
-    console.error('Ensure profile error:', error);
-    res.status(500).json({ error: 'Failed to ensure user profile' });
   }
 });
 

@@ -111,32 +111,32 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-page px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
+    <div className="min-h-screen bg-page mobile-container mobile-spacing-dark py-4 sm:py-6 lg:py-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="flex flex-col space-y-4 sm:space-y-6 mb-6 sm:mb-8">
+        <div className="mobile-flex-col space-y-4 sm:space-y-0 sm:items-center sm:justify-between mb-6 sm:mb-8">
           <div className="text-center sm:text-left">
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2 text-foreground break-words">
+            <h1 className="mobile-text-2xl font-bold mb-2 text-foreground break-words">
               Welcome back, {user?.user_metadata?.name || user?.email?.split('@')[0] || 'User'}
             </h1>
-            <p className="text-sm sm:text-base text-muted-foreground">
+            <p className="mobile-text-sm text-muted-foreground">
               Manage your PDF files with AI-powered tools
             </p>
           </div>
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-2 w-full sm:w-auto sm:ml-auto">
+          <div className="flex flex-col sm:flex-row mobile-gap w-full sm:w-auto">
             <Button 
               variant="outline" 
               onClick={() => setShowBatchProcessor(true)}
-              className="w-full sm:w-auto btn-dark-outline text-sm sm:text-base py-2 sm:py-2"
+              className="w-full sm:w-auto btn-dark-outline mobile-btn-sm mobile-touch-target"
             >
-              <Zap className="mr-2 h-4 w-4 flex-shrink-0" />
+              <Zap className="mr-2 mobile-icon flex-shrink-0" />
               <span className="truncate">Batch Process</span>
             </Button>
             <Button 
               onClick={() => setShowUpload(true)}
-              className="w-full sm:w-auto btn-blue text-sm sm:text-base py-2 sm:py-2"
+              className="w-full sm:w-auto btn-blue mobile-btn-sm mobile-touch-target"
             >
-              <Upload className="mr-2 h-4 w-4 flex-shrink-0" />
+              <Upload className="mr-2 mobile-icon flex-shrink-0" />
               <span className="truncate">Upload Files</span>
             </Button>
           </div>

@@ -173,6 +173,10 @@ const AdvancedTools = () => {
     console.log('Tool:', selectedTool.id)
     console.log('Settings received:', toolSettings)
     
+    // Initialize processing modal
+    initializeProcessingSteps(selectedTool.id)
+    setIsProcessing(true)
+    
     try {
       let uploadedFileIds = []
       

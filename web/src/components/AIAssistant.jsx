@@ -202,12 +202,12 @@ const AIAssistant = ({ fileId, fileName, onClose, isMinimized, onToggleMinimize 
 
   if (isMinimized) {
     return (
-      <div className="fixed bottom-4 right-4 z-50">
+      <div className="fixed bottom-20 sm:bottom-4 right-4 z-50">
         <Button
           onClick={onToggleMinimize}
-          className="bg-blue-600 hover:bg-blue-700 text-white rounded-full w-14 h-14 shadow-lg"
+          className="bg-blue-600 hover:bg-blue-700 text-white rounded-full w-12 h-12 sm:w-14 sm:h-14 shadow-lg"
         >
-          <MessageSquare className="h-6 w-6" />
+          <MessageSquare className="h-5 w-5 sm:h-6 sm:w-6" />
         </Button>
       </div>
     )
@@ -215,7 +215,7 @@ const AIAssistant = ({ fileId, fileName, onClose, isMinimized, onToggleMinimize 
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-2 sm:p-4">
-      <Card className="bg-surface border-border flex flex-col h-[95vh] sm:h-[85vh] w-full max-w-[95vw] sm:max-w-2xl lg:max-w-3xl">
+      <Card className="bg-surface border-border flex flex-col h-[90vh] sm:h-[85vh] w-full max-w-[95vw] sm:max-w-2xl lg:max-w-3xl mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-border">
         <div className="flex items-center space-x-3">

@@ -1,5 +1,6 @@
 const Stripe = require('stripe');
 const { supabase } = require('../config/supabase');
+const { getStripePriceId } = require('../../../shared/currencies');
 
 // Initialize Stripe with secret key
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
@@ -8,13 +9,15 @@ class StripeService {
   /**
    * Create a Stripe customer
    */
-  async createCustomer(email, name, userId) {
+  async createCustomer(email, name, userId, currency = 'USD') {
     try {
       const customer = await stripe.customers.create({
         email,
         name,
+        preferred_locales: [this.getLocaleFromCurrency(currency)],
         metadata: {
-          userId
+          userId,
+          preferredCurrency: currency
         }
       });
 
@@ -26,10 +29,17 @@ class StripeService {
   }
 
   /**
-   * Create a subscription
+   * Create a subscription with currency support
    */
-  async createSubscription(customerId, priceId, userId) {
+  async createSubscription(customerId, plan, userId, currency = 'USD') {
     try {
+      // Get the correct price ID for the plan and currency
+      const priceId = getStripePriceId(plan, currency);
+      
+      if (!priceId) {
+        throw new Error(`Price ID not found for plan: ${plan}, currency: ${currency}`);
+      }
+
       const subscription = await stripe.subscriptions.create({
         customer: customerId,
         items: [{ price: priceId }],
@@ -37,7 +47,9 @@ class StripeService {
         payment_settings: { save_default_payment_method: 'on_subscription' },
         expand: ['latest_invoice.payment_intent'],
         metadata: {
-          userId
+          userId,
+          plan,
+          currency
         }
       });
 
@@ -53,6 +65,36 @@ class StripeService {
       console.error('Error creating subscription:', error);
       throw new Error('Failed to create subscription');
     }
+  }
+
+  /**
+   * Get locale from currency code
+   */
+  getLocaleFromCurrency(currency) {
+    const localeMap = {
+      USD: 'en-US',
+      EUR: 'de-DE',
+      GBP: 'en-GB',
+      INR: 'en-IN',
+      CAD: 'en-CA',
+      AUD: 'en-AU',
+      JPY: 'ja-JP',
+      BRL: 'pt-BR',
+      MXN: 'es-MX',
+      SGD: 'en-SG',
+      CHF: 'de-CH',
+      CNY: 'zh-CN',
+      SEK: 'sv-SE',
+      NOK: 'nb-NO',
+      DKK: 'da-DK',
+      PLN: 'pl-PL',
+      NZD: 'en-NZ',
+      ZAR: 'en-ZA',
+      AED: 'ar-AE',
+      SAR: 'ar-SA'
+    };
+    
+    return localeMap[currency] || 'en-US';
   }
 
   /**
@@ -101,18 +143,30 @@ class StripeService {
   }
 
   /**
-   * Update subscription plan
+   * Update subscription plan with currency support
    */
-  async updateSubscriptionPlan(subscriptionId, newPriceId) {
+  async updateSubscriptionPlan(subscriptionId, newPlan, currency = 'USD') {
     try {
       const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+      
+      // Get the correct price ID for the new plan and currency
+      const newPriceId = getStripePriceId(newPlan, currency);
+      
+      if (!newPriceId) {
+        throw new Error(`Price ID not found for plan: ${newPlan}, currency: ${currency}`);
+      }
       
       const updatedSubscription = await stripe.subscriptions.update(subscriptionId, {
         items: [{
           id: subscription.items.data[0].id,
           price: newPriceId,
         }],
-        proration_behavior: 'create_prorations'
+        proration_behavior: 'create_prorations',
+        metadata: {
+          ...subscription.metadata,
+          plan: newPlan,
+          currency
+        }
       });
 
       return updatedSubscription;
@@ -339,13 +393,9 @@ class StripeService {
    * Update subscription in database
    */
   async updateSubscriptionInDatabase(stripeSubscription, userId) {
-    const planMap = {
-      [process.env.STRIPE_PRICE_ID_PRO]: 'pro',
-      [process.env.STRIPE_PRICE_ID_PREMIUM]: 'premium'
-    };
-
-    const priceId = stripeSubscription.items.data[0]?.price?.id;
-    const plan = planMap[priceId] || 'free';
+    // Get plan from metadata (more reliable than price ID mapping)
+    const plan = stripeSubscription.metadata?.plan || 'free';
+    const currency = stripeSubscription.metadata?.currency || 'USD';
 
     const subscriptionData = {
       user_id: userId,
@@ -359,7 +409,10 @@ class StripeService {
       cancelled_at: stripeSubscription.canceled_at ? new Date(stripeSubscription.canceled_at * 1000).toISOString() : null,
       trial_start: stripeSubscription.trial_start ? new Date(stripeSubscription.trial_start * 1000).toISOString() : null,
       trial_end: stripeSubscription.trial_end ? new Date(stripeSubscription.trial_end * 1000).toISOString() : null,
-      metadata: stripeSubscription.metadata || {},
+      metadata: {
+        ...stripeSubscription.metadata,
+        currency
+      },
       updated_at: new Date().toISOString()
     };
 

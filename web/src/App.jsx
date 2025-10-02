@@ -9,6 +9,7 @@ import Home from './pages/Home'
 import ModernHome from './pages/ModernHome'
 import Login from './pages/Login'
 import Register from './pages/Register'
+import ForgotPassword from './pages/ForgotPassword'
 import Dashboard from './pages/Dashboard'
 import ModernDashboard from './pages/ModernDashboard'
 import Tools from './pages/Tools'
@@ -22,6 +23,7 @@ import Pricing from './pages/Pricing'
 import PrivacyPolicy from './pages/PrivacyPolicy'
 import TermsConditions from './pages/TermsConditions'
 import CancellationRefunds from './pages/CancellationRefunds'
+import Contact from './pages/Contact'
 
 // Components
 import Navbar from './components/Navbar'
@@ -47,6 +49,7 @@ const AppContent = () => {
                 <Route path="/" element={<ModernHome />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
                 <Route 
                   path="/dashboard" 
                   element={
@@ -104,6 +107,7 @@ const AppContent = () => {
                   } 
                 />
                 <Route path="/pricing" element={<Pricing />} />
+                <Route path="/contact" element={<Contact />} />
                 <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                 <Route path="/terms-conditions" element={<TermsConditions />} />
                 <Route path="/cancellation-refunds" element={<CancellationRefunds />} />

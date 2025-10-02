@@ -4,7 +4,8 @@ import { useAuth } from '../contexts/AuthContext'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
-import { FileText, Mail, Lock, Chrome, ArrowRight, Sparkles, Heart, Rocket, Shield } from 'lucide-react'
+import { FileText, Mail, Lock, ArrowRight, Sparkles, Heart, Rocket, Shield } from 'lucide-react'
+import GoogleIcon from '../components/icons/GoogleIcon'
 
 const Login = () => {
   const [email, setEmail] = useState('')
@@ -41,12 +42,12 @@ const Login = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center py-16 px-4 sm:px-6 lg:px-8 bg-page relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 relative overflow-hidden">
       {/* Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-blue-950 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-green-950 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-purple-950 rounded-full blur-3xl animate-float" style={{ animationDelay: '4s' }}></div>
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '4s' }}></div>
       </div>
       
       <div className={`max-w-lg w-full space-y-10 relative z-10 transition-all duration-1000 ${
@@ -135,9 +136,9 @@ const Login = () => {
             <Button
               onClick={handleGoogleSignIn}
               disabled={loading}
-              className="w-full btn-dark-outline text-lg py-4 h-auto font-semibold"
+              className="w-full bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-200 hover:border-gray-300 text-lg py-4 h-auto font-semibold transition-all duration-200"
             >
-              <Chrome className="mr-3 h-5 w-5 text-purple-400" />
+              <GoogleIcon className="mr-3 h-5 w-5" />
               Continue with Google
             </Button>
 

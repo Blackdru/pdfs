@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { FileText, Heart, Shield, CreditCard, RefreshCw } from 'lucide-react'
+import { FileText, Heart, Shield, CreditCard, RefreshCw, Mail, HelpCircle } from 'lucide-react'
 
 const Footer = () => {
   return (
@@ -74,16 +74,18 @@ const Footer = () => {
                 <CreditCard className="h-4 w-4 mr-2" />
                 Pricing
               </Link>
-              <a 
-                href="mailto:support@pdfpet.com" 
+              <Link 
+                to="/contact" 
                 className="flex items-center text-muted-foreground hover:text-card-foreground transition-colors text-sm"
               >
-                Contact Support
-              </a>
+                <Mail className="h-4 w-4 mr-2" />
+                Contact Us
+              </Link>
               <Link 
                 to="/help" 
                 className="flex items-center text-muted-foreground hover:text-card-foreground transition-colors text-sm"
               >
+                <HelpCircle className="h-4 w-4 mr-2" />
                 Help Center
               </Link>
             </div>

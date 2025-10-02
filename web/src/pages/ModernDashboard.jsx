@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useSubscription } from '../contexts/SubscriptionContext'
+import { api } from '../lib/api'
+import { formatFileSize, formatDate } from '../lib/utils'
 import { Button } from '../components/ui/button'
 import { 
   FileText, 
@@ -44,24 +46,36 @@ const ModernDashboard = () => {
     toolsUsed: 0
   })
   const [isVisible, setIsVisible] = useState(false)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     setIsVisible(true)
-    // Simulate loading recent files and stats
-    setRecentFiles([
-      { id: 1, name: 'Project_Report.pdf', size: '2.4 MB', date: '2 hours ago', type: 'pdf' },
-      { id: 2, name: 'Invoice_2024.pdf', size: '1.2 MB', date: '1 day ago', type: 'pdf' },
-      { id: 3, name: 'Presentation.pdf', size: '5.8 MB', date: '3 days ago', type: 'pdf' },
-      { id: 4, name: 'Contract.pdf', size: '890 KB', date: '1 week ago', type: 'pdf' },
-    ])
-
-    setStats({
-      totalFiles: 24,
-      filesThisMonth: 12,
-      storageUsed: 45.2,
-      toolsUsed: 8
-    })
+    loadDashboardData()
   }, [])
+
+  const loadDashboardData = async () => {
+    try {
+      const [filesResponse, statsResponse] = await Promise.all([
+        api.getFiles(1, 4),
+        api.getUserStats()
+      ])
+      
+      setRecentFiles(filesResponse.files || [])
+      
+      if (statsResponse.stats) {
+        setStats({
+          totalFiles: statsResponse.stats.totalFiles || 0,
+          filesThisMonth: statsResponse.stats.recentActivity || 0,
+          storageUsed: (statsResponse.stats.totalStorage || 0) / (1024 * 1024),
+          toolsUsed: statsResponse.stats.toolsUsed || 0
+        })
+      }
+    } catch (error) {
+      console.error('Failed to load dashboard data:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const quickActions = [
     {
@@ -284,7 +298,11 @@ const ModernDashboard = () => {
                 </Link>
               </div>
               
-              {recentFiles.length > 0 ? (
+              {loading ? (
+                <div className="text-center py-12">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+                </div>
+              ) : recentFiles.length > 0 ? (
                 <div className="space-y-4">
                   {recentFiles.map((file, index) => (
                     <div key={file.id} className="flex items-center justify-between p-4 rounded-2xl hover:bg-elevated transition-all duration-200 group">
@@ -293,15 +311,27 @@ const ModernDashboard = () => {
                           <FileText className="h-6 w-6 text-purple-400" />
                         </div>
                         <div>
-                          <p className="font-semibold text-card-foreground group-hover:text-foreground transition-colors duration-200">{file.name}</p>
-                          <p className="text-sm text-secondary">{file.size} • {file.date}</p>
+                          <p className="font-semibold text-card-foreground group-hover:text-foreground transition-colors duration-200">{file.filename}</p>
+                          <p className="text-sm text-secondary">{formatFileSize(file.size)} • {formatDate(file.created_at)}</p>
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
-                        <Button variant="ghost" size="sm" className="p-3 rounded-xl hover:bg-accent">
+                        <Button variant="ghost" size="sm" className="p-3 rounded-xl hover:bg-accent" onClick={() => navigate(`/files/${file.id}`)}>
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" className="p-3 rounded-xl hover:bg-accent">
+                        <Button variant="ghost" size="sm" className="p-3 rounded-xl hover:bg-accent" onClick={async () => {
+                          try {
+                            const blob = await api.downloadFile(file.id)
+                            const url = window.URL.createObjectURL(blob)
+                            const a = document.createElement('a')
+                            a.href = url
+                            a.download = file.filename
+                            a.click()
+                            window.URL.revokeObjectURL(url)
+                          } catch (error) {
+                            console.error('Download failed:', error)
+                          }
+                        }}>
                           <Download className="h-4 w-4" />
                         </Button>
                       </div>

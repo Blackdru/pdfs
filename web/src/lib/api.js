@@ -134,7 +134,20 @@ class ApiClient {
 
   // Helper method to get auth token
   getAuthToken() {
-    // Try multiple sources for the auth token
+    // First, try to get JWT token from new auth system
+    const authSession = localStorage.getItem('auth_session')
+    if (authSession) {
+      try {
+        const sessionData = JSON.parse(authSession)
+        if (sessionData.access_token) {
+          return sessionData.access_token
+        }
+      } catch (e) {
+        console.warn('Failed to parse auth session:', e)
+      }
+    }
+
+    // Fallback to Supabase token (for Google OAuth backward compatibility)
     let token = localStorage.getItem('supabase.auth.token')
     
     if (!token) {
@@ -184,6 +197,7 @@ class ApiClient {
   // Helper method to clear auth token
   clearAuthToken() {
     const keys = [
+      'auth_session',
       'supabase.auth.token',
       'sb-localhost-auth-token',
       'sb-auth-token',
@@ -338,22 +352,7 @@ class ApiClient {
   }
 
   async downloadFile(fileId) {
-    let token = localStorage.getItem('supabase.auth.token')
-    
-    if (!token) {
-      // Try to get token from Supabase session
-      const supabaseSession = localStorage.getItem('sb-localhost-auth-token')
-      if (supabaseSession) {
-        try {
-          const sessionData = JSON.parse(supabaseSession)
-          if (sessionData.access_token) {
-            token = sessionData.access_token
-          }
-        } catch (e) {
-          console.warn('Failed to parse Supabase session:', e)
-        }
-      }
-    }
+    let token = this.getAuthToken()
     
     const url = `${this.baseURL}/files/${fileId}/download?t=${Date.now()}`
     

@@ -665,14 +665,14 @@ const Tools = () => {
         )}
 
         {/* Category Filter */}
-        <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-6 sm:py-8">
-          <div className="overflow-x-auto pb-2 mb-8 sm:mb-12">
-            <div className="flex justify-center gap-2 sm:gap-3 min-w-max px-2">
+        <div className="max-w-7xl mx-auto mobile-container py-6 sm:py-8">
+          <div className="mobile-overflow-x pb-2 mb-6 sm:mb-8 lg:mb-12">
+            <div className="flex justify-center mobile-gap min-w-max">
               {categories.map((category) => (
                 <button
                   key={category}
                   onClick={() => setSelectedCategory(category)}
-                  className={`px-4 sm:px-6 py-2 sm:py-3 rounded-full font-medium transition-all duration-300 text-sm sm:text-base whitespace-nowrap ${
+                  className={`mobile-btn-sm mobile-touch-target rounded-full font-medium transition-all duration-300 whitespace-nowrap ${
                     selectedCategory === category
                       ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
                       : 'bg-grey-800 text-grey-300 hover:bg-accent hover:text-foreground'
@@ -685,7 +685,7 @@ const Tools = () => {
           </div>
 
           {/* Tools Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 mb-12 sm:mb-16">
+          <div className="mobile-grid-3 mobile-gap-lg mb-8 sm:mb-12 lg:mb-16">
             {filteredTools.map((tool) => (
               <div
                 key={tool.id}

@@ -124,29 +124,31 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-page mobile-spacing-dark">
-      <div className="layout-dark-container py-12">
-        <div className="text-center mb-12">
-          <h1 className="heading-dark-1 text-gradient-hero">Profile Settings</h1>
-          <p className="body-dark-large text-card-foreground mt-4">
+      <div className="mobile-container py-6 sm:py-8 lg:py-12">
+        <div className="text-center mb-8 sm:mb-12">
+          <h1 className="mobile-text-3xl font-bold text-gradient-hero mb-2 sm:mb-4">Profile Settings</h1>
+          <p className="mobile-text-base text-card-foreground">
             Manage your account settings and view your activity
           </p>
         </div>
 
-        <Tabs defaultValue="profile" className="space-y-6">
-          <TabsList className="tab-dark-list">
-            <TabsTrigger value="profile" className="tab-dark-button">
-              <User className="mr-2 h-4 w-4" />
-              Profile
-            </TabsTrigger>
-            <TabsTrigger value="stats" className="tab-dark-button">
-              <Activity className="mr-2 h-4 w-4" />
-              Statistics
-            </TabsTrigger>
-            <TabsTrigger value="history" className="tab-dark-button">
-              <Calendar className="mr-2 h-4 w-4" />
-              Activity
-            </TabsTrigger>
-          </TabsList>
+        <Tabs defaultValue="profile" className="space-y-4 sm:space-y-6">
+          <div className="mobile-overflow-x">
+            <TabsList className="inline-flex w-full sm:w-auto min-w-max bg-elevated border border-border rounded-xl p-1">
+              <TabsTrigger value="profile" className="mobile-btn-sm mobile-touch-target flex items-center justify-center">
+                <User className="mr-1 sm:mr-2 mobile-icon-sm" />
+                <span className="text-xs sm:text-sm">Profile</span>
+              </TabsTrigger>
+              <TabsTrigger value="stats" className="mobile-btn-sm mobile-touch-target flex items-center justify-center">
+                <Activity className="mr-1 sm:mr-2 mobile-icon-sm" />
+                <span className="text-xs sm:text-sm">Statistics</span>
+              </TabsTrigger>
+              <TabsTrigger value="history" className="mobile-btn-sm mobile-touch-target flex items-center justify-center">
+                <Calendar className="mr-1 sm:mr-2 mobile-icon-sm" />
+                <span className="text-xs sm:text-sm">Activity</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
         {/* Profile Tab */}
         <TabsContent value="profile">

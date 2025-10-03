@@ -11,7 +11,7 @@ const PrivacyPolicy = () => {
             <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
               <Shield className="h-8 w-8 text-white" />
             </div>
-            <h1 className="text-4xl font-bold text-card-foreground mb-4">Privacy Policy</h1>
+            <h1 className="text-3xl font-bold text-card-foreground mb-4">Privacy Policy</h1>
             <p className="text-muted-foreground text-lg">
               Your privacy is our priority. Learn how we protect and handle your data.
             </p>
@@ -120,8 +120,8 @@ const PrivacyPolicy = () => {
                 </ul>
                 <p className="mt-4">
                   To exercise these rights, contact us at{' '}
-                  <a href="mailto:privacy@pdfpet.com" className="text-blue-400 hover:text-blue-300">
-                    privacy@pdfpet.com
+                  <a href="mailto:privacy@robotpdf.com" className="text-blue-400 hover:text-blue-300">
+                    privacy@robotpdf.com
                   </a>
                 </p>
               </div>
@@ -134,8 +134,8 @@ const PrivacyPolicy = () => {
                   If you have any questions about this Privacy Policy, please contact us:
                 </p>
                 <div className="space-y-2">
-                  <p>Email: <a href="mailto:privacy@pdfpet.com" className="text-blue-400 hover:text-blue-300">privacy@pdfpet.com</a></p>
-                  <p>Support: <a href="mailto:support@pdfpet.com" className="text-blue-400 hover:text-blue-300">support@pdfpet.com</a></p>
+                  <p>Email: <a href="mailto:privacy@robotpdf.com" className="text-blue-400 hover:text-blue-300">privacy@robotpdf.com</a></p>
+                  <p>Support: <a href="mailto:support@robotpdf.com" className="text-blue-400 hover:text-blue-300">support@robotpdf.com</a></p>
                 </div>
               </div>
             </Card>

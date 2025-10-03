@@ -27,8 +27,8 @@ const sendOTPEmail = async (email, otp, type = 'verification') => {
     const transporter = createTransporter();
 
     const subject = type === 'verification' 
-      ? 'Verify Your Email - PDFPet' 
-      : 'Password Reset OTP - PDFPet';
+      ? 'Verify Your Email - RobotPDF' 
+      : 'Password Reset OTP - RobotPDF';
 
     const html = `
       <!DOCTYPE html>
@@ -83,13 +83,13 @@ const sendOTPEmail = async (email, otp, type = 'verification') => {
       <body>
         <div class="container">
           <div class="header">
-            <h1>PDFPet</h1>
+            <h1>RobotPDF</h1>
           </div>
           <div class="content">
             <h2>${type === 'verification' ? 'Verify Your Email' : 'Reset Your Password'}</h2>
             <p>Hello,</p>
             <p>${type === 'verification' 
-              ? 'Thank you for registering with PDFPet. Please use the following OTP to verify your email address:' 
+              ? 'Thank you for registering with RobotPDF. Please use the following OTP to verify your email address:' 
               : 'You requested to reset your password. Please use the following OTP:'}</p>
             
             <div class="otp-box">
@@ -99,7 +99,7 @@ const sendOTPEmail = async (email, otp, type = 'verification') => {
             <p><strong>This OTP will expire in 10 minutes.</strong></p>
             <p>If you didn't request this, please ignore this email.</p>
             
-            <p>Best regards,<br>The PDFPet Team</p>
+            <p>Best regards,<br>The RobotPDF Team</p>
           </div>
           <div class="footer">
             <p>This is an automated email. Please do not reply.</p>
@@ -110,7 +110,7 @@ const sendOTPEmail = async (email, otp, type = 'verification') => {
     `;
 
     const mailOptions = {
-      from: `"PDFPet" <${process.env.SMTP_USER}>`,
+      from: `"RobotPDF" <${process.env.SMTP_USER}>`,
       to: email,
       subject: subject,
       html: html,
@@ -184,14 +184,14 @@ const sendWelcomeEmail = async (email, name) => {
       <body>
         <div class="container">
           <div class="header">
-            <h1>Welcome to PDFPet!</h1>
+            <h1>Welcome to RobotPDF!</h1>
           </div>
           <div class="content">
             <h2>Hello ${name}!</h2>
-            <p>Welcome to PDFPet - Your Beautiful PDF Tools Platform!</p>
+            <p>Welcome to RobotPDF - Your Beautiful PDF Tools Platform!</p>
             <p>Your email has been successfully verified and your account is now active.</p>
             
-            <p>With PDFPet, you can:</p>
+            <p>With RobotPDF, you can:</p>
             <ul>
               <li>Merge, split, and compress PDF files</li>
               <li>Convert documents to and from PDF</li>
@@ -208,7 +208,7 @@ const sendWelcomeEmail = async (email, name) => {
             
             <p>If you have any questions, feel free to reach out to our support team.</p>
             
-            <p>Best regards,<br>The PDFPet Team</p>
+            <p>Best regards,<br>The RobotPDF Team</p>
           </div>
           <div class="footer">
             <p>This is an automated email. Please do not reply.</p>
@@ -219,9 +219,9 @@ const sendWelcomeEmail = async (email, name) => {
     `;
 
     const mailOptions = {
-      from: `"PDFPet" <${process.env.SMTP_USER}>`,
+      from: `"RobotPDF" <${process.env.SMTP_USER}>`,
       to: email,
-      subject: 'Welcome to PDFPet!',
+      subject: 'Welcome to RobotPDF!',
       html: html,
     };
 

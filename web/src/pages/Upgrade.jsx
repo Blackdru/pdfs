@@ -173,7 +173,7 @@ const Upgrade = () => {
           </div>
           
           <p className="body-dark-large text-card-foreground max-w-2xl mx-auto">
-            Unlock the full potential of PDFPet with advanced features, 
+            Unlock the full potential of RobotPDF with advanced features, 
             higher limits, and priority support
           </p>
           
@@ -301,7 +301,7 @@ const Upgrade = () => {
         <div className="text-center space-y-4 py-8">
           <h2 className="heading-dark-2 text-foreground">Ready to get started?</h2>
           <p className="text-muted-foreground">
-            Join thousands of users who trust PDFPet for their document processing needs
+            Join thousands of users who trust RobotPDF for their document processing needs
           </p>
           <div className="flex justify-center gap-4">
             <Button 

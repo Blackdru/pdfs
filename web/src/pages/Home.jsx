@@ -95,13 +95,13 @@ const Home = () => {
             <div className="flex justify-center items-center mb-8">
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl blur-lg opacity-30"></div>
-                <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 p-4 rounded-2xl">
-                  <FileText className="h-16 w-16 text-white" />
+                <div className="relative bg-white p-2 rounded-2xl">
+                  <img src="/logo.png" alt="RobotPDF Logo" className="h-16 w-16 object-contain" />
                 </div>
               </div>
               <div className="ml-4">
-                <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  PDFPet
+                <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  RobotPDF
                 </h1>
                 <div className="flex items-center justify-center mt-2">
                   <Heart className="h-4 w-4 text-red-500 mr-1" />
@@ -110,7 +110,7 @@ const Home = () => {
               </div>
             </div>
 
-            <h2 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 leading-tight">
+            <h2 className="text-3xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
               <span className="bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
                 Transform PDFs
               </span>
@@ -204,9 +204,9 @@ const Home = () => {
       <section className="py-24 px-4 bg-gradient-to-br from-muted/30 to-background">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-20">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+            <h2 className="text-3xl md:text-4xl font-bold mb-6">
               Why developers and businesses
-              <span className="bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent"> love PDFPet</span>
+              <span className="bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent"> love RobotPDF</span>
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Built with modern technology and security best practices
@@ -244,11 +244,11 @@ const Home = () => {
             <span className="text-sm font-medium">Join thousands of satisfied users</span>
           </div>
           
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">
+          <h2 className="text-3xl md:text-4xl font-bold mb-6">
             Ready to transform your PDFs?
           </h2>
           <p className="text-xl mb-12 opacity-90 max-w-2xl mx-auto">
-            Start using PDFPet today and experience the most beautiful PDF toolkit ever created.
+            Start using RobotPDF today and experience the most beautiful PDF toolkit ever created.
           </p>
           
           {!user && (

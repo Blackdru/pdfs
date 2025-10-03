@@ -261,302 +261,177 @@ const EnhancedOCRModal = ({ isOpen, onClose, result, fileName, fileId, onResultU
   }
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-2 sm:p-4 z-50">
-      <Card className="w-full max-w-[95vw] sm:max-w-4xl lg:max-w-5xl max-h-[95vh] sm:max-h-[90vh] overflow-hidden">
-        <CardHeader className="flex flex-row items-center justify-between border-b">
-          <div className="flex items-center space-x-3">
-            <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full">
-              <Brain className="h-6 w-6 text-white" />
+    <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-3 sm:p-4 z-50">
+      <Card className="w-full max-w-[94vw] sm:max-w-xl lg:max-w-3xl h-[90vh] sm:h-[80vh] overflow-hidden bg-card">
+        <CardHeader className="flex flex-row items-center justify-between border-b p-3 sm:p-4">
+          <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
+            <div className="p-1.5 sm:p-2 bg-blue-600 rounded-full flex-shrink-0">
+              <Brain className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
             </div>
-            <div>
-              <CardTitle className="text-xl flex items-center">
-                Enhanced OCR Results
-                <Sparkles className="h-5 w-5 ml-2 text-yellow-500" />
+            <div className="min-w-0">
+              <CardTitle className="text-sm sm:text-base flex items-center">
+                <span className="truncate">OCR Results</span>
+                <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 ml-1 sm:ml-2 text-yellow-500 flex-shrink-0" />
               </CardTitle>
-              <p className="text-sm text-muted-foreground">{fileName}</p>
+              <p className="text-xs text-muted-foreground truncate">{fileName}</p>
             </div>
           </div>
-          <Button variant="ghost" size="icon" onClick={onClose}>
+          <Button variant="ghost" size="icon" onClick={onClose} className="flex-shrink-0 h-8 w-8">
             <X className="h-4 w-4" />
           </Button>
         </CardHeader>
         
         <CardContent className="p-0">
-          <div className="flex h-[calc(95vh-120px)]">
+          <div className="flex flex-col lg:flex-row h-[calc(90vh-70px)] sm:h-[calc(80vh-70px)]">
             {/* Left Panel - Settings */}
-            <div className="w-80 border-r bg-card p-4 overflow-y-auto">
-              <div className="space-y-6">
+            <div className="w-full lg:w-56 border-b lg:border-b-0 lg:border-r bg-card p-3 overflow-y-auto max-h-40 lg:max-h-full">
+              <div className="space-y-2 sm:space-y-3">
                 {/* OCR Info */}
-                <div className="space-y-3">
-                  <h3 className="font-semibold flex items-center">
-                    <Eye className="h-4 w-4 mr-2" />
-                    OCR Information
+                <div className="space-y-1.5">
+                  <h3 className="text-xs font-semibold flex items-center">
+                    <Eye className="h-3 w-3 mr-1" />
+                    Info
                   </h3>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Badge variant="secondary" className="bg-blue-100 text-blue-700">
-                        <Eye className="h-3 w-3 mr-1" />
-                        Confidence: {Math.round(result.confidence * 100)}%
-                      </Badge>
-                      <Badge variant="outline">
-                        Pages: {result.pageCount}
-                      </Badge>
-                    </div>
+                  <div className="flex flex-wrap gap-1.5">
+                    <Badge variant="secondary" className="bg-blue-600 text-white text-[10px] sm:text-xs px-1.5 py-0.5">
+                      <Eye className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" />
+                      {Math.round(result.confidence * 100)}%
+                    </Badge>
+                    <Badge variant="secondary" className="bg-gray-600 text-white text-[10px] sm:text-xs px-1.5 py-0.5">
+                      Pages: {result.pageCount}
+                    </Badge>
                     {autoDetectedLanguage && (
-                      <Badge variant="outline" className="w-full justify-center">
-                        <Languages className="h-3 w-3 mr-1" />
-                        Detected: {autoDetectedLanguage}
+                      <Badge variant="secondary" className="bg-purple-600 text-white text-[10px] sm:text-xs px-1.5 py-0.5">
+                        <Languages className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" />
+                        {autoDetectedLanguage}
                       </Badge>
                     )}
                   </div>
-                </div>
-
-                {/* AI Enhancement Settings */}
-                <div className="space-y-4">
-                  <h3 className="font-semibold flex items-center">
-                    <Settings className="h-4 w-4 mr-2" />
-                    AI Enhancement
-                  </h3>
-                  
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="enhance-ai" className="text-sm">
-                        Enhance with AI
-                      </Label>
-                      <Switch
-                        id="enhance-ai"
-                        checked={enhanceWithAI}
-                        onCheckedChange={setEnhanceWithAI}
-                      />
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="extract-original" className="text-sm">
-                        Extract Original
-                      </Label>
-                      <Switch
-                        id="extract-original"
-                        checked={extractOriginal}
-                        onCheckedChange={setExtractOriginal}
-                      />
-                    </div>
-                  </div>
-
-                  <Button 
-                    onClick={handleEnhanceWithAI}
-                    disabled={isEnhancing || !result.text}
-                    className="w-full"
-                    variant="default"
-                  >
-                    {isEnhancing ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        Enhancing...
-                      </>
-                    ) : (
-                      <>
-                        <Wand2 className="h-4 w-4 mr-2" />
-                        Enhance with AI
-                      </>
-                    )}
-                  </Button>
-
-                  {isEnhancing && (
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-xs">
-                        <span>Processing...</span>
-                        <span>{enhancementProgress}%</span>
-                      </div>
-                      <Progress value={enhancementProgress} className="h-2" />
-                    </div>
-                  )}
                 </div>
 
                 {/* Translation Settings */}
-                <div className="space-y-4">
-                  <h3 className="font-semibold flex items-center">
-                    <Globe className="h-4 w-4 mr-2" />
-                    Translation
+                <div className="space-y-1.5">
+                  <h3 className="text-xs font-semibold flex items-center">
+                    <Globe className="h-3 w-3 mr-1" />
+                    Translate
                   </h3>
                   
-                  <div className="space-y-3">
-                    <div>
-                      <Label htmlFor="target-language" className="text-sm">
-                        Target Language
-                      </Label>
-                      <Select value={targetLanguage} onValueChange={setTargetLanguage}>
-                        <SelectTrigger className="w-full mt-1">
-                          <SelectValue placeholder="Select language..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {languages.map((lang) => (
-                            <SelectItem key={lang.code} value={lang.code}>
-                              {lang.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
+                  <div className="space-y-1.5">
+                    <Select value={targetLanguage} onValueChange={setTargetLanguage}>
+                      <SelectTrigger className="w-full h-7 sm:h-8 text-xs bg-gray-700">
+                        <SelectValue placeholder="Select..." />
+                      </SelectTrigger>
+                      <SelectContent className="bg-gray-800 border-gray-700">
+                        {languages.map((lang) => (
+                          <SelectItem key={lang.code} value={lang.code} className="text-xs bg-gray-800 hover:bg-gray-700 focus:bg-gray-700">
+                            {lang.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
 
                     <Button 
                       onClick={handleTranslate}
                       disabled={isTranslating || !targetLanguage || (!result.text && !enhancedText)}
-                      className="w-full"
-                      variant="outline"
+                      className="w-full h-7 sm:h-8 text-xs"
+                      size="sm"
                     >
                       {isTranslating ? (
                         <>
-                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          Translating...
+                          <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                          <span className="hidden sm:inline">Translating...</span>
+                          <span className="sm:hidden">...</span>
                         </>
                       ) : (
                         <>
-                          <Languages className="h-4 w-4 mr-2" />
-                          Translate Text
+                          <Languages className="h-3 w-3 mr-1" />
+                          Translate
                         </>
                       )}
                     </Button>
 
                     {isTranslating && (
-                      <div className="space-y-2">
-                        <div className="flex justify-between text-xs">
-                          <span>Translating...</span>
-                          <span>{translationProgress}%</span>
-                        </div>
-                        <Progress value={translationProgress} className="h-2" />
-                      </div>
+                      <Progress value={translationProgress} className="h-1" />
                     )}
-                  </div>
-                </div>
-
-                {/* Actions */}
-                <div className="space-y-3">
-                  <h3 className="font-semibold">Actions</h3>
-                  <div className="space-y-2">
-                    <Button 
-                      onClick={handleReprocessOCR}
-                      variant="outline" 
-                      size="sm" 
-                      className="w-full"
-                    >
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                      Reprocess OCR
-                    </Button>
                   </div>
                 </div>
               </div>
             </div>
 
             {/* Right Panel - Results */}
-            <div className="flex-1 flex flex-col">
+            <div className="flex-1 flex flex-col min-h-0">
               <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-                <TabsList className="grid w-full grid-cols-3 m-4 mb-0">
-                  <TabsTrigger value="results" className="flex items-center">
-                    <FileText className="h-4 w-4 mr-2" />
-                    Original
+                <TabsList className="grid w-full grid-cols-2 m-2 sm:m-3 mb-0">
+                  <TabsTrigger value="results" className="flex items-center text-xs sm:text-sm">
+                   <FileText className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                    <span className="hidden sm:inline">Extracted</span>
+                    <span className="sm:hidden">Text</span>
                   </TabsTrigger>
-                  <TabsTrigger value="enhanced" className="flex items-center" disabled={!enhancedText}>
-                    <Sparkles className="h-4 w-4 mr-2" />
-                    Enhanced
-                  </TabsTrigger>
-                  <TabsTrigger value="translated" className="flex items-center" disabled={!translatedText}>
-                    <Globe className="h-4 w-4 mr-2" />
-                    Translated
+                  <TabsTrigger value="translated" className="flex items-center text-xs sm:text-sm" disabled={!translatedText}>
+                    <Globe className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                    <span className="hidden sm:inline">Translated</span>
+                    <span className="sm:hidden">Trans</span>
                   </TabsTrigger>
                 </TabsList>
 
-                <div className="flex-1 p-4 pt-2">
-                  <TabsContent value="results" className="h-full mt-2">
-                    <div className="space-y-4 h-full">
-                      <div className="flex items-center justify-between">
-                        <Label className="text-sm font-medium">Original Extracted Text:</Label>
-                        <div className="flex space-x-2">
-                          <Button onClick={() => handleCopyText(result.text)} size="sm" variant="outline">
-                            <Copy className="h-4 w-4 mr-2" />
-                            Copy
+                <div className="flex-1 p-2 sm:p-3 pt-2 overflow-y-auto">
+                  <TabsContent value="results" className="h-full mt-0">
+                    <div className="space-y-2 h-full flex flex-col">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
+                        <Label className="text-xs sm:text-sm font-medium">Extracted:</Label>
+                        <div className="flex space-x-1 sm:space-x-2">
+                          <Button onClick={() => handleCopyText(result.text)} size="sm" variant="outline" className="h-7 text-xs">
+                            <Copy className="h-3 w-3 sm:mr-1" />
+                            <span className="hidden sm:inline">Copy</span>
                           </Button>
                           <Button 
                             onClick={() => downloadText(result.text, `${fileName}_original.txt`)} 
                             size="sm" 
                             variant="outline"
+                            className="h-7 text-xs"
                           >
-                            <Download className="h-4 w-4 mr-2" />
-                            Download
+                            <Download className="h-3 w-3 sm:mr-1" />
+                            <span className="hidden sm:inline">Download</span>
                           </Button>
                         </div>
                       </div>
                       <Textarea
                         value={result.text}
                         readOnly
-                        className="flex-1 min-h-96 text-sm resize-none"
+                        className="flex-1 text-xs sm:text-sm resize-none min-h-[200px]"
                         placeholder="No text extracted..."
                       />
                     </div>
                   </TabsContent>
 
-                  <TabsContent value="enhanced" className="h-full mt-2">
-                    <div className="space-y-4 h-full">
-                      <div className="flex items-center justify-between">
-                        <Label className="text-sm font-medium flex items-center">
-                          <Sparkles className="h-4 w-4 mr-2 text-yellow-500" />
-                          AI Enhanced Text:
+                  <TabsContent value="translated" className="h-full mt-0">
+                    <div className="space-y-2 h-full flex flex-col">
+                      <div className="flex items-center justify-between flex-wrap gap-2">
+                        <Label className="text-xs sm:text-sm font-medium flex items-center">
+                          <Globe className="h-3 w-3 sm:h-4 sm:w-4 mr-1 text-blue-500" />
+                          Translated
                         </Label>
-                        <div className="flex space-x-2">
-                          <Button onClick={() => handleCopyText(enhancedText)} size="sm" variant="outline">
-                            <Copy className="h-4 w-4 mr-2" />
-                            Copy
-                          </Button>
-                          <Button 
-                            onClick={() => downloadText(enhancedText, `${fileName}_enhanced.txt`)} 
-                            size="sm" 
-                            variant="outline"
-                          >
-                            <Download className="h-4 w-4 mr-2" />
-                            Download
-                          </Button>
-                        </div>
-                      </div>
-                      <Textarea
-                        value={enhancedText}
-                        readOnly
-                        className="flex-1 min-h-96 text-sm resize-none"
-                        placeholder="Click 'Enhance with AI' to improve the extracted text..."
-                      />
-                    </div>
-                  </TabsContent>
-
-                  <TabsContent value="translated" className="h-full mt-2">
-                    <div className="space-y-4 h-full">
-                      <div className="flex items-center justify-between">
-                        <Label className="text-sm font-medium flex items-center">
-                          <Globe className="h-4 w-4 mr-2 text-blue-500" />
-                          Translated Text:
-                          {targetLanguage && (
-                            <Badge variant="outline" className="ml-2">
-                              {languages.find(lang => lang.code === targetLanguage)?.name}
-                            </Badge>
-                          )}
-                        </Label>
-                        <div className="flex space-x-2">
-                          <Button onClick={() => handleCopyText(translatedText)} size="sm" variant="outline">
-                            <Copy className="h-4 w-4 mr-2" />
-                            Copy
+                        <div className="flex space-x-1 sm:space-x-2">
+                          <Button onClick={() => handleCopyText(translatedText)} size="sm" variant="outline" className="h-7 text-xs">
+                            <Copy className="h-3 w-3 sm:mr-1" />
+                            <span className="hidden sm:inline">Copy</span>
                           </Button>
                           <Button 
                             onClick={() => downloadText(translatedText, `${fileName}_translated.txt`)} 
                             size="sm" 
                             variant="outline"
+                            className="h-7 text-xs"
                           >
-                            <Download className="h-4 w-4 mr-2" />
-                            Download
+                            <Download className="h-3 w-3 sm:mr-1" />
+                            <span className="hidden sm:inline">Download</span>
                           </Button>
                         </div>
                       </div>
                       <Textarea
                         value={translatedText}
                         readOnly
-                        className="flex-1 min-h-96 text-sm resize-none"
-                        placeholder="Select a target language and click 'Translate Text' to translate the extracted text..."
+                        className="flex-1 text-xs sm:text-sm resize-none min-h-[200px]"
+                        placeholder="Select a language and translate..."
                       />
                     </div>
                   </TabsContent>

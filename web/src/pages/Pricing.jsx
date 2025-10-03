@@ -344,7 +344,7 @@ const Pricing = () => {
         <div className="text-center space-y-4 py-8">
           <h2 className="heading-dark-2 text-foreground">Ready to get started?</h2>
           <p className="text-muted-foreground">
-            Join thousands of users who trust PDFPet for their document processing needs
+            Join thousands of users who trust RobotPDF for their document processing needs
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             {!user ? (

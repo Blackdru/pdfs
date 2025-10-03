@@ -11,7 +11,7 @@ const TermsConditions = () => {
             <div className="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center mx-auto mb-6">
               <FileText className="h-8 w-8 text-white" />
             </div>
-            <h1 className="text-4xl font-bold text-card-foreground mb-4">Terms & Conditions</h1>
+            <h1 className="text-3xl font-bold text-card-foreground mb-4">Terms & Conditions</h1>
             <p className="text-muted-foreground text-lg">
               Please read these terms carefully before using our services.
             </p>
@@ -29,7 +29,7 @@ const TermsConditions = () => {
               </div>
               <div className="space-y-4 text-muted-foreground">
                 <p>
-                  By accessing and using PDFPet ("the Service"), you accept and agree to be bound by the terms 
+                  By accessing and using RobotPDF ("the Service"), you accept and agree to be bound by the terms 
                   and provision of this agreement. If you do not agree to abide by the above, please do not use this service.
                 </p>
                 <p>
@@ -45,7 +45,7 @@ const TermsConditions = () => {
               </div>
               <div className="space-y-4 text-muted-foreground">
                 <p>
-                  Permission is granted to temporarily use PDFPet for personal and commercial document processing. 
+                  Permission is granted to temporarily use RobotPDF for personal and commercial document processing. 
                   This is the grant of a license, not a transfer of title, and under this license you may not:
                 </p>
                 <ul className="list-disc list-inside space-y-2 ml-4">
@@ -66,7 +66,7 @@ const TermsConditions = () => {
               </div>
               <div className="space-y-4 text-muted-foreground">
                 <p>
-                  PDFPet offers both free and paid subscription plans:
+                  RobotPDF offers both free and paid subscription plans:
                 </p>
                 <ul className="list-disc list-inside space-y-2 ml-4">
                   <li>Free accounts have limited features and usage quotas</li>
@@ -169,8 +169,8 @@ const TermsConditions = () => {
                   If you have any questions about these Terms & Conditions, please contact us:
                 </p>
                 <div className="space-y-2">
-                  <p>Email: <a href="mailto:legal@pdfpet.com" className="text-blue-400 hover:text-blue-300">legal@pdfpet.com</a></p>
-                  <p>Support: <a href="mailto:support@pdfpet.com" className="text-blue-400 hover:text-blue-300">support@pdfpet.com</a></p>
+                  <p>Email: <a href="mailto:legal@robotpdf.com" className="text-blue-400 hover:text-blue-300">legal@robotpdf.com</a></p>
+                  <p>Support: <a href="mailto:support@robotpdf.com" className="text-blue-400 hover:text-blue-300">support@robotpdf.com</a></p>
                 </div>
               </div>
             </Card>

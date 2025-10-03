@@ -137,7 +137,7 @@ export const AuthProvider = ({ children }) => {
       setSession(sessionData)
       setUser(data.user)
 
-      toast.success('Email verified successfully! Welcome to PDFPet!')
+      toast.success('Email verified successfully! Welcome to RobotPDF!')
       return { data, error: null }
     } catch (error) {
       toast.error(error.message)

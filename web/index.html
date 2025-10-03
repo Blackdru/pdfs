@@ -2,8 +2,9 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
     <script>
       // Prevent flash of unstyled content by setting theme immediately
       (function() {
@@ -13,12 +14,106 @@
         document.documentElement.style.colorScheme = theme;
       })();
     </script>
-    <title>PDFPet - Beautiful PDF Tools Online</title>
-    <meta name="description" content="Transform PDFs like magic with PDFPet - the most beautiful PDF toolkit. Merge, split, compress, and convert PDFs with ease." />
-    <meta name="keywords" content="PDF tools, merge PDF, split PDF, compress PDF, convert PDF, online PDF editor" />
-    <meta property="og:title" content="PDFPet - Beautiful PDF Tools Online" />
-    <meta property="og:description" content="Transform PDFs like magic with PDFPet - the most beautiful PDF toolkit." />
+
+    <title>RobotPDF: AI PDF Tools — Merge, Split, OCR, Convert, Chat with PDFs</title>
+    <meta name="description" content="RobotPDF offers fast, secure, and beautiful AI-powered PDF tools: merge, split, compress, convert, OCR, extract, summarize and chat with your PDFs in seconds." />
+    <meta name="keywords" content="AI PDF, PDF tools, merge PDF, split PDF, compress PDF, convert PDF, PDF to Word, PDF to text, OCR PDF, extract text, summarize PDF, chat with PDF, AI document, batch PDF, online PDF editor" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="author" content="RobotPDF" />
+    <meta name="application-name" content="RobotPDF" />
+    <meta name="theme-color" content="#0b0f19" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+
+    <!-- Canonical & language -->
+    <link id="canonical" rel="canonical" href="https://robotpdf.com/" />
+    <link rel="alternate" href="https://robotpdf.com/" hreflang="en" />
+
+    <!-- Icons & PWA -->
+    <link rel="icon" type="image/png" href="/logo.png" />
+    <link rel="shortcut icon" type="image/png" href="/logo.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/logo.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+
+    <!-- Preload critical PDF worker -->
+    <link rel="preload" as="script" href="/pdf.worker.min.js" />
+
+    <!-- Open Graph -->
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:site_name" content="RobotPDF" />
     <meta property="og:type" content="website" />
+    <meta property="og:title" content="RobotPDF: AI PDF Tools — Merge, Split, OCR, Convert, Chat with PDFs" />
+    <meta property="og:description" content="AI-powered PDF toolkit: merge, split, compress, convert, OCR, extract, summarize and chat with PDFs in seconds." />
+    <meta property="og:url" content="https://robotpdf.com/" />
+    <meta property="og:image" content="/logo.png" />
+    <meta property="og:image:alt" content="RobotPDF — AI PDF Tools" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="RobotPDF: AI PDF Tools — Merge, Split, OCR, Convert, Chat with PDFs" />
+    <meta name="twitter:description" content="AI-powered PDF toolkit: merge, split, compress, convert, OCR, extract, summarize and chat with PDFs in seconds." />
+    <meta name="twitter:image" content="/logo.png" />
+    <meta name="twitter:site" content="@robotpdf" />
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    [
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "RobotPDF",
+        "url": "https://robotpdf.com/",
+        "logo": "https://robotpdf.com/logo.png",
+        "sameAs": [
+          "https://twitter.com/robotpdf"
+        ]
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "RobotPDF",
+        "url": "https://robotpdf.com/",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://robotpdf.com/?q={search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
+      },
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "RobotPDF",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web",
+        "description": "AI-powered PDF tools to merge, split, compress, convert, OCR, extract text, summarize and chat with PDFs.",
+        "featureList": [
+          "Merge PDF",
+          "Split PDF",
+          "Compress PDF",
+          "Convert PDF",
+          "OCR PDF",
+          "PDF to Word",
+          "Chat with PDF",
+          "AI Summarization",
+          "Batch PDF Processing"
+        ],
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "url": "https://robotpdf.com/"
+      }
+    ]
+    </script>
+
+    <!-- Runtime canonical and og:url based on environment/site URL -->
+    <script type="module">
+      const site = (import.meta.env?.VITE_SITE_URL || location.origin).replace(/\/+$/,'');
+      const canon = document.getElementById('canonical');
+      if (canon) canon.href = site + '/';
+      const ogUrl = document.querySelector('meta[property="og:url"]');
+      if (ogUrl) ogUrl.setAttribute('content', site + '/');
+    </script>
   </head>
   <body>
     <div id="root"></div>

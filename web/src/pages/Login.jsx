@@ -2,9 +2,8 @@ import { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { Button } from '../components/ui/button'
-import { Input } from '../components/ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card'
-import { FileText, Mail, Lock, ArrowRight, Sparkles, Heart, Rocket, Shield } from 'lucide-react'
+import { Card, CardContent } from '../components/ui/card'
+import { FileText, Mail, Lock, ArrowRight, Sparkles, Shield, Zap, CheckCircle } from 'lucide-react'
 import GoogleIcon from '../components/icons/GoogleIcon'
 
 const Login = () => {
@@ -41,142 +40,237 @@ const Login = () => {
     setLoading(false)
   }
 
+  const features = [
+    "Process unlimited PDFs",
+    "Cloud storage included",
+    "Advanced AI tools",
+    "24/7 support"
+  ]
+
   return (
-    <div className="min-h-screen flex items-center justify-center py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 relative overflow-hidden">
-      {/* Background Elements */}
+    <div className="min-h-screen flex items-center justify-center py-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden bg-gradient-to-br from-background via-background to-muted/30">
+      {/* Animated Background Elements - Matching Home Page */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-blue-500/20 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '4s' }}></div>
+        <div className="absolute top-20 left-10 w-72 h-72 bg-gradient-to-r from-blue-400 to-purple-600 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
+        <div className="absolute top-40 right-10 w-72 h-72 bg-gradient-to-r from-purple-400 to-pink-600 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
+        <div className="absolute bottom-20 left-20 w-72 h-72 bg-gradient-to-r from-cyan-400 to-blue-600 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
       </div>
       
-      <div className={`max-w-lg w-full space-y-10 relative z-10 transition-all duration-1000 ${
+      <div className={`max-w-6xl w-full relative z-10 transition-all duration-1000 ${
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
       }`}>
-       
-
-        {/* Login Form */}
-        <div className="dark-card p-10 bg-surface shadow-blue-lg">
-          <div className="space-y-2 pb-8">
-            <h3 className="heading-dark-4 text-center">Sign in to your account</h3>
-            <p className="body-dark-small text-muted-foreground text-center">
-              Enter your credentials to access your dashboard
-            </p>
-          </div>
-          
-          <div className="space-y-8">
-            <form onSubmit={handleSubmit} className="space-y-8">
-              <div className="space-y-3">
-                <label htmlFor="email" className="block text-sm font-semibold text-card-foreground">
-                  Email address
-                </label>
-                <div className="relative">
-                  <Mail className="absolute left-4 top-4 h-5 w-5 text-secondary" />
-                  <input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email"
-                    className="dark-input pl-12"
-                    required
-                  />
+        <div className="grid lg:grid-cols-2 gap-12 items-center">
+          {/* Left Side - Branding & Features */}
+          <div className="hidden lg:block space-y-8">
+            {/* Logo */}
+            <div className="flex items-center space-x-4">
+              <div className="relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl blur-lg opacity-50"></div>
+                <div className="relative bg-white p-3 rounded-2xl shadow-xl">
+                  <img src="/logo.png" alt="RobotPDF Logo" className="h-16 w-16 object-contain" />
                 </div>
               </div>
-
-              <div className="space-y-3">
-                <label htmlFor="password" className="block text-sm font-semibold text-card-foreground">
-                  Password
-                </label>
-                <div className="relative">
-                  <Lock className="absolute left-4 top-4 h-5 w-5 text-secondary" />
-                  <input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter your password"
-                    className="dark-input pl-12"
-                    required
-                  />
-                </div>
-              </div>
-
-              <Button 
-                type="submit" 
-                className="w-full btn-blue text-lg py-4 h-auto font-semibold" 
-                disabled={loading}
-              >
-                {loading ? (
-                  <div className="flex items-center">
-                    <div className="loading-dark mr-3"></div>
-                    Signing in...
-                  </div>
-                ) : (
-                  <div className="flex items-center">
-                    <Rocket className="mr-3 h-5 w-5" />
-                    Sign in
-                    <ArrowRight className="ml-3 h-5 w-5" />
-                  </div>
-                )}
-              </Button>
-            </form>
-
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <span className="w-full border-t border-border" />
-              </div>
-              <div className="relative flex justify-center text-sm uppercase">
-                <span className="bg-surface px-4 text-secondary font-semibold">
-                  Or continue with
-                </span>
+              <div>
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  RobotPDF
+                </h1>
+                <p className="text-muted-foreground">Your PDF companion</p>
               </div>
             </div>
 
-            <Button
-              onClick={handleGoogleSignIn}
-              disabled={loading}
-              className="w-full bg-white hover:bg-gray-50 text-gray-900 border-2 border-gray-200 hover:border-gray-300 text-lg py-4 h-auto font-semibold transition-all duration-200"
-            >
-              <GoogleIcon className="mr-3 h-5 w-5" />
-              Continue with Google
-            </Button>
+            {/* Welcome Message */}
+            <div className="space-y-4">
+              <h2 className="text-4xl font-bold text-foreground">
+                Welcome back to the future of PDF tools
+              </h2>
+              <p className="text-xl text-muted-foreground">
+                Sign in to access your powerful PDF toolkit and continue where you left off.
+              </p>
+            </div>
 
-            <div className="text-center space-y-6">
-              <Link 
-                to="/forgot-password" 
-                className="text-sm text-blue-400 hover:text-blue-300 font-semibold transition-colors duration-200"
-              >
-                Forgot your password?
-              </Link>
-              
-              <p className="body-dark-small text-muted-foreground">
-                Don't have an account?{' '}
-                <Link 
-                  to="/register" 
-                  className="font-semibold text-blue-400 hover:text-blue-300 transition-colors duration-200"
+            {/* Features List */}
+            <div className="space-y-4">
+              {features.map((feature, index) => (
+                <div key={index} className="flex items-center space-x-3 group">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow">
+                    <CheckCircle className="h-5 w-5 text-white" />
+                  </div>
+                  <span className="text-lg text-foreground font-medium">{feature}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* Stats */}
+            <div className="grid grid-cols-3 gap-6 pt-8">
+              <div className="text-center">
+                <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  50K+
+                </div>
+                <div className="text-sm text-muted-foreground">Active Users</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  1M+
+                </div>
+                <div className="text-sm text-muted-foreground">PDFs Processed</div>
+              </div>
+              <div className="text-center">
+                <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  99.9%
+                </div>
+                <div className="text-sm text-muted-foreground">Uptime</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Side - Login Form */}
+          <div className="space-y-6">
+            {/* Mobile Logo */}
+            <div className="lg:hidden text-center mb-8">
+              <div className="flex justify-center items-center mb-4">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl blur-lg opacity-50"></div>
+                  <div className="relative bg-white p-2 rounded-2xl shadow-xl">
+                    <img src="/logo.png" alt="RobotPDF Logo" className="h-12 w-12 object-contain" />
+                  </div>
+                </div>
+              </div>
+              <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+                Welcome Back
+              </h2>
+              <p className="text-muted-foreground">
+                Sign in to continue to RobotPDF
+              </p>
+            </div>
+
+            {/* Login Form Card */}
+            <Card className="border-0 shadow-2xl bg-gradient-to-br from-white to-gray-50 dark:from-gray-800/50 dark:to-gray-900/50 backdrop-blur-xl">
+              <CardContent className="p-8">
+                <div className="hidden lg:block mb-6">
+                  <h3 className="text-2xl font-bold text-foreground mb-2">Sign in to your account</h3>
+                  <p className="text-muted-foreground">Enter your credentials to access your dashboard</p>
+                </div>
+
+                <form onSubmit={handleSubmit} className="space-y-5">
+                  <div className="space-y-2">
+                    <label htmlFor="email" className="block text-sm font-semibold text-foreground">
+                      Email address
+                    </label>
+                    <div className="relative group">
+                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-blue-600 transition-colors" />
+                      <input
+                        id="email"
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="you@example.com"
+                        className="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-foreground focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 transition-all outline-none"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label htmlFor="password" className="block text-sm font-semibold text-foreground">
+                        Password
+                      </label>
+                      <Link 
+                        to="/forgot-password" 
+                        className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
+                      >
+                        Forgot?
+                      </Link>
+                    </div>
+                    <div className="relative group">
+                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-blue-600 transition-colors" />
+                      <input
+                        id="password"
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Enter your password"
+                        className="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-foreground focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 transition-all outline-none"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-6 text-base font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5" 
+                    disabled={loading}
+                  >
+                    {loading ? (
+                      <div className="flex items-center justify-center">
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-3"></div>
+                        Signing in...
+                      </div>
+                    ) : (
+                      <div className="flex items-center justify-center">
+                        Sign in to RobotPDF
+                      </div>
+                    )}
+                  </Button>
+                </form>
+
+                <div className="relative my-6">
+                  <div className="absolute inset-0 flex items-center">
+                    <span className="w-full border-t border-gray-200 dark:border-gray-700" />
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-white dark:bg-gray-800/50 px-4 text-muted-foreground font-medium">
+                      Or continue with
+                    </span>
+                  </div>
+                </div>
+
+                <Button
+                  onClick={handleGoogleSignIn}
+                  disabled={loading}
+                  type="button"
+                  className="w-full bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-900 dark:text-white border-2 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 py-6 text-base font-semibold rounded-xl transition-all duration-300 hover:shadow-lg"
                 >
-                  Sign up for free
-                </Link>
+                  <GoogleIcon className="mr-3 h-5 w-5" />
+                  Continue with Google
+                </Button>
+
+                <div className="text-center pt-6">
+                  <p className="text-sm text-muted-foreground">
+                    Don't have an account?{' '}
+                    <Link 
+                      to="/register" 
+                      className="font-semibold text-blue-600 hover:text-blue-700 transition-colors"
+                    >
+                      Sign up for free
+                    </Link>
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Trust Indicators */}
+            <div className="flex items-center justify-center space-x-6 text-muted-foreground">
+              <div className="flex items-center space-x-2">
+                <Shield className="h-4 w-4 text-green-500" />
+                <span className="text-xs font-medium">Secure Login</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Sparkles className="h-4 w-4 text-blue-500" />
+                <span className="text-xs font-medium">50K+ Users</span>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="text-center">
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                By signing in, you agree to our{' '}
+                <Link to="/terms-conditions" className="underline hover:text-blue-600 transition-colors">Terms</Link>
+                {' '}and{' '}
+                <Link to="/privacy-policy" className="underline hover:text-blue-600 transition-colors">Privacy Policy</Link>
               </p>
             </div>
           </div>
-        </div>
-
-        {/* Security Badge */}
-        <div className="flex items-center justify-center space-x-3 text-muted-foreground">
-          <Shield className="h-5 w-5 text-green-400" />
-          <span className="text-sm font-medium">Bank-level security & encryption</span>
-        </div>
-
-        {/* Footer */}
-        <div className="text-center">
-          <p className="text-xs text-secondary leading-relaxed">
-            By signing in, you agree to our{' '}
-            <Link to="/terms" className="underline hover:text-blue-400 transition-colors duration-200">Terms of Service</Link>
-            {' '}and{' '}
-            <Link to="/privacy" className="underline hover:text-blue-400 transition-colors duration-200">Privacy Policy</Link>
-          </p>
         </div>
       </div>
     </div>

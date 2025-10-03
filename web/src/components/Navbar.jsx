@@ -53,12 +53,12 @@ const Navbar = () => {
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg blur opacity-30 group-hover:opacity-50 transition-opacity"></div>
               <div className="relative bg-gradient-to-r from-blue-600 to-purple-600 p-1.5 sm:p-2 rounded-lg">
-                <FileText className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                <FileText className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
               </div>
             </div>
             <div className="flex flex-col">
               <span className="text-lg sm:text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                PDFPet
+                RobotPDF
               </span>
               <span className="text-xs text-muted-foreground -mt-1 hidden sm:block">PDF Magic</span>
             </div>
@@ -358,7 +358,7 @@ const Navbar = () => {
                 <div className="space-y-4">
                   {/* Welcome Section */}
                   <div className="text-center py-4">
-                    <h3 className="text-lg font-semibold mb-2">Welcome to PDFPet</h3>
+                    <h3 className="text-lg font-semibold mb-2">Welcome to RobotPDF</h3>
                     <p className="text-sm text-muted-foreground mb-4">Sign in to access powerful PDF tools</p>
                   </div>
 

@@ -27,7 +27,10 @@ import {
   Layers,
   Award,
   Heart,
-  Palette
+  Palette,
+  TrendingUp,
+  Globe,
+  Clock
 } from 'lucide-react'
 
 const ModernHome = () => {
@@ -43,225 +46,236 @@ const ModernHome = () => {
     {
       icon: GitMerge,
       title: 'Smart PDF Merge',
-      description: 'Intelligently combine multiple PDFs with AI-powered organization',
-      color: 'text-blue-400',
-      bgColor: 'bg-blue-900',
-      hoverBg: 'group-hover:bg-blue-800',
-      gradient: 'bg-gradient-blue'
+      description: 'Combine multiple PDFs seamlessly with intelligent page ordering',
+      color: 'from-blue-500 to-cyan-500',
+      iconBg: 'bg-blue-500/10',
+      iconColor: 'text-blue-400'
     },
     {
       icon: Scissors,
       title: 'Precision Split',
-      description: 'Extract pages with surgical precision using advanced algorithms',
-      color: 'text-green-400',
-      bgColor: 'bg-green-900',
-      hoverBg: 'group-hover:bg-green-800',
-      gradient: 'bg-gradient-green'
+      description: 'Extract specific pages or split by size with surgical precision',
+      color: 'from-emerald-500 to-teal-500',
+      iconBg: 'bg-emerald-500/10',
+      iconColor: 'text-emerald-400'
     },
     {
       icon: Archive,
       title: 'Ultra Compress',
-      description: 'Reduce file sizes by up to 90% while preserving quality',
-      color: 'text-purple-400',
-      bgColor: 'bg-purple-900',
-      hoverBg: 'group-hover:bg-purple-800',
-      gradient: 'bg-gradient-purple'
+      description: 'Reduce file sizes by up to 90% without quality loss',
+      color: 'from-purple-500 to-pink-500',
+      iconBg: 'bg-purple-500/10',
+      iconColor: 'text-purple-400'
     },
     {
-      icon: Image,
-      title: 'Image Magic',
-      description: 'Transform any image format into beautiful PDFs instantly',
-      color: 'text-orange-400',
-      bgColor: 'bg-orange-900',
-      hoverBg: 'group-hover:bg-orange-800',
-      gradient: 'bg-gradient-orange'
+      icon: Brain,
+      title: 'AI-Enhanced OCR',
+      description: 'Extract text from scanned PDFs with 99% accuracy',
+      color: 'from-orange-500 to-red-500',
+      iconBg: 'bg-orange-500/10',
+      iconColor: 'text-orange-400'
     },
     {
-      icon: Eye,
-      title: 'Preview Pro',
-      description: 'Advanced PDF viewer with annotation and markup tools',
-      color: 'text-blue-400',
-      bgColor: 'bg-blue-900',
-      hoverBg: 'group-hover:bg-blue-800',
-      gradient: 'bg-gradient-blue'
+      icon: MessageSquare,
+      title: 'Chat with PDF',
+      description: 'Ask questions and get instant answers from your documents',
+      color: 'from-cyan-500 to-blue-500',
+      iconBg: 'bg-cyan-500/10',
+      iconColor: 'text-cyan-400'
     },
     {
-      icon: Lock,
-      title: 'Fort Knox Security',
-      description: 'Military-grade encryption and password protection',
-      color: 'text-grey-400',
-      bgColor: 'bg-grey-700',
-      hoverBg: 'group-hover:bg-grey-600',
-      gradient: 'bg-gradient-accent'
+      icon: Sparkles,
+      title: 'Smart Summary',
+      description: 'Generate intelligent summaries in seconds with AI',
+      color: 'from-pink-500 to-rose-500',
+      iconBg: 'bg-pink-500/10',
+      iconColor: 'text-pink-400'
     }
   ]
 
   const benefits = [
     {
-      icon: Rocket,
-      title: 'Lightning Speed',
-      description: 'Process documents 10x faster than traditional tools',
-      color: 'text-blue-400',
-      bgGradient: 'bg-gradient-blue'
+      icon: Zap,
+      title: 'Lightning Fast',
+      description: 'Process documents 10x faster with optimized algorithms',
+      gradient: 'from-yellow-400 to-orange-500'
     },
     {
       icon: Shield,
       title: 'Bank-Level Security',
-      description: 'Your files are encrypted and auto-deleted after processing',
-      color: 'text-green-400',
-      bgGradient: 'bg-gradient-green'
+      description: 'End-to-end encryption and automatic file deletion',
+      gradient: 'from-green-400 to-emerald-500'
     },
     {
-      icon: Brain,
-      title: 'AI-Powered',
-      description: 'Advanced AI for smart document processing and analysis',
-      color: 'text-purple-400',
-      bgGradient: 'bg-gradient-purple'
+      icon: Globe,
+      title: '100+ Languages',
+      description: 'Support for all major languages with AI translation',
+      gradient: 'from-blue-400 to-cyan-500'
     },
     {
-      icon: MessageSquare,
-      title: 'Chat with PDFs',
-      description: 'Ask questions and get instant answers from your documents',
-      color: 'text-orange-400',
-      bgGradient: 'bg-gradient-orange'
+      icon: Clock,
+      title: '24/7 Availability',
+      description: 'Access your tools anytime, anywhere, on any device',
+      gradient: 'from-purple-400 to-pink-500'
     }
   ]
 
   const stats = [
-    { number: '5M+', label: 'Documents Processed', icon: FileText },
-    { number: '100K+', label: 'Happy Users', icon: Users },
-    { number: '99.99%', label: 'Uptime', icon: Zap },
-    { number: '24/7', label: 'AI Support', icon: Brain }
-  ]
-
-  const testimonials = [
-    {
-      name: 'Sarah Chen',
-      role: 'Product Manager',
-      company: 'TechCorp',
-      content: 'This tool has revolutionized how our team handles documents. The AI features are incredible!',
-      avatar: '👩‍💼'
-    },
-    {
-      name: 'Marcus Johnson',
-      role: 'Freelance Designer',
-      company: 'Independent',
-      content: 'The quality and speed are unmatched. I can process hundreds of files in minutes.',
-      avatar: '👨‍🎨'
-    },
-    {
-      name: 'Elena Rodriguez',
-      role: 'Legal Assistant',
-      company: 'Law Firm',
-      content: 'Security and reliability are paramount for us. This platform delivers on both fronts.',
-      avatar: '👩‍⚖️'
-    }
+    { number: '10M+', label: 'Documents Processed', icon: FileText, color: 'text-blue-400' },
+    { number: '500K+', label: 'Happy Users', icon: Users, color: 'text-emerald-400' },
+    { number: '99.9%', label: 'Uptime', icon: TrendingUp, color: 'text-purple-400' },
+    { number: '4.9/5', label: 'User Rating', icon: Star, color: 'text-orange-400' }
   ]
 
   return (
-    <div className="min-h-screen bg-page relative overflow-hidden">
-      {/* Animated Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-96 h-96 bg-blue-900 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-green-900 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-purple-950 rounded-full blur-3xl animate-float" style={{ animationDelay: '4s' }}></div>
-        <div className="absolute top-20 left-20 w-64 h-64 bg-orange-950 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute bottom-20 right-20 w-80 h-80 bg-elevated rounded-full blur-3xl animate-float" style={{ animationDelay: '3s' }}></div>
+    <div className="min-h-screen bg-page">
+      {/* Animated Background */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
+        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-cyan-500/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }}></div>
       </div>
 
       {/* Hero Section */}
-      <section className="layout-dark-section relative">
-        <div className="layout-dark-container">
-          <div className={`text-center max-w-6xl mx-auto transition-all duration-1000 ${
+      <section className="relative pt-32 pb-20 px-4">
+        <div className="container mx-auto max-w-7xl">
+          <div className={`text-center transition-all duration-1000 ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
           }`}>
-            <div className="inline-flex items-center px-8 py-4 glass-card-dark text-card-foreground rounded-full text-sm font-semibold mb-12 border border-border">
-              <Sparkles className="h-5 w-5 mr-3 text-blue-400" />
-              ✨ Next-Generation AI-Powered PDF Suite
-              <ChevronRight className="h-4 w-4 ml-2" />
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 backdrop-blur-sm mb-8">
+              <Sparkles className="h-4 w-4 text-blue-400" />
+              <span className="text-sm font-medium text-blue-200">AI-Powered PDF Suite</span>
+              <ChevronRight className="h-4 w-4 text-blue-400" />
             </div>
             
-            <h1 className="heading-dark-1 mb-8 leading-tight">
-              Transform Documents with
-              <span className="block mt-4 text-gradient-hero animate-pulse-glow">
-                Intelligent Precision
+            {/* Main Heading */}
+            <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-6 leading-tight">
+              <span className="text-white">Transform PDFs with</span>
+              <br />
+              <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent animate-gradient">
+                AI Intelligence
               </span>
             </h1>
             
-            <p className="body-dark-large text-card-foreground mb-16 max-w-4xl mx-auto leading-relaxed">
-              Experience the future of document processing with our revolutionary AI-powered platform. 
-              Merge, split, compress, and transform your PDFs with unprecedented speed, intelligence, and beauty.
+            {/* Subtitle */}
+            <p className="text-xl md:text-2xl text-slate-300 mb-12 max-w-3xl mx-auto leading-relaxed">
+              The most powerful PDF toolkit powered by artificial intelligence. 
+              Merge, split, compress, and chat with your documents in seconds.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-20">
+            {/* CTA Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
               {user ? (
                 <Button 
-                  onClick={() => navigate('/register')} 
-                  className="btn-blue text-xl px-12 py-6 h-auto font-semibold"
+                  onClick={() => navigate('/dashboard')} 
+                  className="group relative px-8 py-6 text-lg font-semibold rounded-2xl bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg shadow-blue-500/50 hover:shadow-xl hover:shadow-blue-500/60 transition-all duration-300 hover:-translate-y-1"
                 >
-                  <Rocket className="mr-3 h-6 w-6" />
-                  Start for Free
-                  <ArrowRight className="ml-3 h-6 w-6" />
+                  <Rocket className="inline-block mr-2 h-5 w-5" />
+                  Go to Dashboard
+                  <ArrowRight className="inline-block ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
               ) : (
                 <>
                   <Button 
                     onClick={() => navigate('/register')} 
-                    className="btn-blue text-xl px-12 py-6 h-auto font-semibold"
+                    className="group relative px-8 py-6 text-lg font-semibold rounded-2xl bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg shadow-blue-500/50 hover:shadow-xl hover:shadow-blue-500/60 transition-all duration-300 hover:-translate-y-1"
                   >
-                    <Play className="mr-3 h-6 w-6" />
-                    Start Free Journey
-                    <ArrowRight className="ml-3 h-6 w-6" />
+                    <Play className="inline-block mr-2 h-5 w-5" />
+                    Start Free
+                    <ArrowRight className="inline-block ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
                   </Button>
                   <Button 
                     onClick={() => navigate('/login')}
-                    className="btn-dark-glass text-xl px-12 py-6 h-auto font-semibold"
+                    className="px-8 py-6 text-lg font-semibold rounded-2xl bg-white/5 hover:bg-white/10 text-white border border-white/10 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1"
                   >
                     Sign In
                   </Button>
                 </>
               )}
             </div>
+
+            {/* Trust Indicators */}
+            <div className="flex flex-wrap items-center justify-center gap-8 text-sm text-slate-400">
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-5 w-5 text-emerald-400" />
+                <span>No credit card required</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-5 w-5 text-emerald-400" />
+                <span>Free forever plan</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <CheckCircle className="h-5 w-5 text-emerald-400" />
+                <span>Cancel anytime</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Stats Section */}
+      <section className="relative py-16 px-4">
+        <div className="container mx-auto max-w-7xl">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            {stats.map((stat, index) => (
+              <div 
+                key={index}
+                className={`text-center transition-all duration-500 ${
+                  isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+                }`}
+                style={{ transitionDelay: `${index * 100}ms` }}
+              >
+                <stat.icon className={`h-8 w-8 ${stat.color} mx-auto mb-3`} />
+                <div className="text-4xl md:text-5xl font-bold text-white mb-2">{stat.number}</div>
+                <div className="text-slate-400">{stat.label}</div>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section className="layout-dark-section bg-surface">
-        <div className="layout-dark-container">
-          <div className="text-center mb-20">
-            <div className="inline-flex items-center px-6 py-3 bg-gradient-blue text-white rounded-full text-sm font-semibold mb-8">
-              <Layers className="h-5 w-5 mr-2" />
-              Powerful Features
+      <section className="relative py-20 px-4">
+        <div className="container mx-auto max-w-7xl">
+          {/* Section Header */}
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 backdrop-blur-sm mb-6">
+              <Layers className="h-4 w-4 text-purple-400" />
+              <span className="text-sm font-medium text-purple-200">Powerful Features</span>
             </div>
-            <h2 className="heading-dark-2 mb-6">Revolutionary PDF Tools</h2>
-            <p className="body-dark-large text-card-foreground max-w-3xl mx-auto">
-              Discover a complete suite of intelligent tools designed to make document processing effortless and enjoyable
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+              Everything You Need
+            </h2>
+            <p className="text-xl text-slate-300 max-w-2xl mx-auto">
+              Professional-grade PDF tools powered by cutting-edge AI technology
             </p>
           </div>
           
-          <div className="grid-dark-responsive">
+          {/* Features Grid */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {features.map((feature, index) => (
               <div 
-                key={feature.title}
-                className={`dark-card-hover p-8 group relative overflow-hidden ${
-                  isVisible ? 'animate-slide-up-fade' : ''
+                key={index}
+                className={`group relative p-8 rounded-3xl bg-gradient-to-br from-slate-900/50 to-slate-800/50 border border-slate-700/50 backdrop-blur-sm hover:border-slate-600/50 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl ${
+                  isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
                 }`}
-                style={{ animationDelay: `${index * 100}ms` }}
+                style={{ transitionDelay: `${index * 100}ms` }}
               >
-                <div className="absolute top-0 right-0 w-32 h-32 rounded-full blur-2xl transition-all duration-500 group-hover:scale-150" 
-                     style={{ background: feature.gradient }}></div>
+                {/* Gradient Overlay */}
+                <div className={`absolute inset-0 rounded-3xl bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-10 transition-opacity duration-500`}></div>
                 
-                <div className="relative z-10">
-                  <div className="flex items-start space-x-6">
-                    <div className={`p-5 rounded-3xl ${feature.bgColor} ${feature.hoverBg} transition-all duration-500 group-hover:scale-110 group-hover:rotate-3`}>
-                      <feature.icon className={`h-8 w-8 ${feature.color}`} />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="heading-dark-4 mb-3 group-hover:text-foreground transition-colors">{feature.title}</h3>
-                      <p className="body-dark text-muted-foreground group-hover:text-card-foreground transition-colors leading-relaxed">{feature.description}</p>
-                    </div>
+                {/* Content */}
+                <div className="relative">
+                  <div className={`inline-flex items-center justify-center w-14 h-14 rounded-2xl ${feature.iconBg} mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                    <feature.icon className={`h-7 w-7 ${feature.iconColor}`} />
                   </div>
+                  <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-blue-300 transition-colors">
+                    {feature.title}
+                  </h3>
+                  <p className="text-slate-400 leading-relaxed">
+                    {feature.description}
+                  </p>
                 </div>
               </div>
             ))}
@@ -270,341 +284,164 @@ const ModernHome = () => {
       </section>
 
       {/* Benefits Section */}
-      <section className="layout-dark-section bg-elevated relative">
-        <div className="layout-dark-container relative">
-          <div className="text-center mb-20">
-            <div className="inline-flex items-center px-6 py-3 bg-gradient-green text-white rounded-full text-sm font-semibold mb-8">
-              <Award className="h-5 w-5 mr-2" />
-              Why Choose Us
+      <section className="relative py-20 px-4 bg-gradient-to-b from-transparent via-blue-950/20 to-transparent">
+        <div className="container mx-auto max-w-7xl">
+          {/* Section Header */}
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-500/20 backdrop-blur-sm mb-6">
+              <Award className="h-4 w-4 text-emerald-400" />
+              <span className="text-sm font-medium text-emerald-200">Why Choose Us</span>
             </div>
-            <h2 className="heading-dark-2 mb-6">Built for Excellence</h2>
-            <p className="body-dark-large text-card-foreground max-w-3xl mx-auto">
-              Experience the perfect blend of cutting-edge technology and intuitive design
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+              Built for Performance
+            </h2>
+            <p className="text-xl text-slate-300 max-w-2xl mx-auto">
+              Experience the perfect blend of speed, security, and intelligence
             </p>
           </div>
           
+          {/* Benefits Grid */}
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {benefits.map((benefit, index) => (
               <div 
-                key={benefit.title}
+                key={index}
                 className={`text-center group ${
-                  isVisible ? 'animate-scale-fade' : ''
+                  isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
                 }`}
-                style={{ animationDelay: `${index * 200}ms` }}
+                style={{ transitionDelay: `${index * 150}ms` }}
               >
-                <div className="relative mb-8">
-                  <div className={`inline-flex items-center justify-center w-20 h-20 ${benefit.bgGradient} rounded-3xl shadow-xl mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500`}>
-                    <benefit.icon className="h-10 w-10 text-white" />
-                  </div>
+                <div className={`inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br ${benefit.gradient} mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg`}>
+                  <benefit.icon className="h-10 w-10 text-white" />
                 </div>
-                <h3 className="heading-dark-4 mb-4 group-hover:text-foreground transition-colors">{benefit.title}</h3>
-                <p className="body-dark text-muted-foreground group-hover:text-card-foreground transition-colors">{benefit.description}</p>
+                <h3 className="text-xl font-bold text-white mb-3">
+                  {benefit.title}
+                </h3>
+                <p className="text-slate-400">
+                  {benefit.description}
+                </p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      
-
-      {/* How It Works Section */}
-      <section className="layout-dark-section bg-surface">
-        <div className="layout-dark-container">
-          <div className="text-center mb-20">
-            <div className="inline-flex items-center px-6 py-3 bg-gradient-purple text-white rounded-full text-sm font-semibold mb-8">
-              <Zap className="h-5 w-5 mr-2" />
-              Simple Process
+      {/* How It Works */}
+      <section className="relative py-20 px-4">
+        <div className="container mx-auto max-w-7xl">
+          {/* Section Header */}
+          <div className="text-center mb-16">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/20 backdrop-blur-sm mb-6">
+              <Zap className="h-4 w-4 text-orange-400" />
+              <span className="text-sm font-medium text-orange-200">Simple Process</span>
             </div>
-            <h2 className="heading-dark-2 mb-6">Three Steps to Magic</h2>
-            <p className="body-dark-large text-card-foreground max-w-3xl mx-auto">
-              Transform your documents in just three simple steps with our intuitive interface
+            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+              Three Steps to Success
+            </h2>
+            <p className="text-xl text-slate-300 max-w-2xl mx-auto">
+              Transform your documents in just three simple steps
             </p>
           </div>
           
-          <div className="grid md:grid-cols-3 gap-12">
+          {/* Steps */}
+          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
             {[
               {
                 icon: Upload,
-                title: 'Upload & Drop',
-                description: 'Drag and drop your files or select them from your device. We support all major formats.',
-                color: 'bg-gradient-blue',
-                delay: '100ms'
+                title: 'Upload Files',
+                description: 'Drag and drop your PDFs or select them from your device',
+                gradient: 'from-blue-500 to-cyan-500',
+                number: '01'
               },
               {
                 icon: Palette,
-                title: 'Choose & Customize',
-                description: 'Select your desired tool and customize settings with our intelligent recommendations.',
-                color: 'bg-gradient-green',
-                delay: '300ms'
+                title: 'Choose Tool',
+                description: 'Select from our suite of powerful AI-powered tools',
+                gradient: 'from-purple-500 to-pink-500',
+                number: '02'
               },
               {
                 icon: Download,
-                title: 'Download & Enjoy',
-                description: 'Get your perfectly processed files instantly with our lightning-fast processing engine.',
-                color: 'bg-gradient-purple',
-                delay: '500ms'
+                title: 'Download Result',
+                description: 'Get your processed files instantly with perfect quality',
+                gradient: 'from-emerald-500 to-teal-500',
+                number: '03'
               }
             ].map((step, index) => (
               <div 
                 key={index}
-                className={`text-center relative group ${
-                  isVisible ? 'animate-slide-up-fade' : ''
+                className={`relative text-center ${
+                  isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
                 }`}
-                style={{ animationDelay: step.delay }}
+                style={{ transitionDelay: `${index * 200}ms` }}
               >
-                <div className="relative mb-8">
-                  <div className={`relative inline-flex items-center justify-center w-24 h-24 ${step.color} text-white rounded-3xl text-2xl font-bold shadow-2xl group-hover:scale-110 group-hover:rotate-6 transition-all duration-500`}>
-                    {index + 1}
-                    <step.icon className="absolute inset-0 m-auto h-10 w-10 opacity-30" />
-                  </div>
+                {/* Connector Line */}
+                {index < 2 && (
+                  <div className="hidden md:block absolute top-16 left-full w-full h-0.5 bg-gradient-to-r from-slate-700 to-transparent"></div>
+                )}
+                
+                {/* Step Number */}
+                <div className={`relative inline-flex items-center justify-center w-32 h-32 rounded-3xl bg-gradient-to-br ${step.gradient} mb-6 shadow-2xl`}>
+                  <span className="text-5xl font-bold text-white">{step.number}</span>
+                  <step.icon className="absolute bottom-4 right-4 h-8 w-8 text-white/50" />
                 </div>
                 
-                <h3 className="heading-dark-4 mb-4 group-hover:text-foreground transition-colors">{step.title}</h3>
-                <p className="body-dark text-muted-foreground group-hover:text-card-foreground transition-colors leading-relaxed">{step.description}</p>
-                
-                {index < 2 && (
-                  <div className="hidden md:block absolute top-12 left-full w-full z-10">
-                    <div className="flex items-center justify-center">
-                      
-                    </div>
-                  </div>
-                )}
+                <h3 className="text-2xl font-bold text-white mb-3">
+                  {step.title}
+                </h3>
+                <p className="text-slate-400 leading-relaxed">
+                  {step.description}
+                </p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Pricing Section */}
-      <section className="layout-dark-section bg-surface relative overflow-hidden">
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-20 right-20 w-80 h-80 bg-blue-950 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-20 left-20 w-80 h-80 bg-green-950 rounded-full blur-3xl"></div>
-        </div>
-        
-        <div className="layout-dark-container relative">
-          <div className="text-center mb-20">
-            <div className="inline-flex items-center px-6 py-3 bg-gradient-purple text-white rounded-full text-sm font-semibold mb-8">
-              <Star className="h-5 w-5 mr-2" />
-              Transparent Pricing
-            </div>
-            <h2 className="heading-dark-2 mb-6">Choose Your Perfect Plan</h2>
-            <p className="body-dark-large text-card-foreground max-w-3xl mx-auto">
-              Start free and scale as you grow. All plans include our core features with no hidden fees or surprises.
-            </p>
-          </div>
-          
-          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-            {/* Free Plan */}
-            <div className={`dark-card-hover p-10 text-center relative ${
-              isVisible ? 'animate-scale-fade' : ''
-            }`} style={{ animationDelay: '100ms' }}>
-              <div className="mb-8">
-                <div className="inline-flex items-center justify-center w-20 h-20 bg-accent rounded-3xl mb-6">
-                  <Star className="h-10 w-10 text-muted-foreground" />
-                </div>
-                <h3 className="heading-dark-3 mb-3">Starter</h3>
-                <div className="mb-4">
-                  <span className="text-5xl font-bold text-card-foreground">$0</span>
-                  <span className="text-muted-foreground text-lg">/month</span>
-                </div>
-                <p className="text-muted-foreground">Perfect for getting started</p>
-              </div>
-              
-              <div className="space-y-4 mb-10">
-                {[
-                  '10 files per month',
-                  '10MB max file size',
-                  '100MB storage',
-                  'Basic PDF tools',
-                  '5 OCR pages/month'
-                ].map((feature, index) => (
-                  <div key={index} className="flex items-center text-sm">
-                    <CheckCircle className="h-5 w-5 text-green-400 mr-3 flex-shrink-0" />
-                    <span className="text-card-foreground">{feature}</span>
-                  </div>
-                ))}
-              </div>
-              
-              <Button 
-                onClick={() => navigate('/register')} 
-                className="btn-dark-outline w-full text-lg py-4"
-              >
-                Start Free
-              </Button>
-            </div>
 
-            {/* Pro Plan */}
-            <div className={`dark-card-hover p-10 text-center relative border-2 border-blue-800 ${
-              isVisible ? 'animate-scale-fade' : ''
-            }`} style={{ animationDelay: '300ms' }}>
-              <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-                <span className="bg-gradient-blue text-white px-6 py-2 rounded-full text-sm font-semibold shadow-lg">
-                  Most Popular
-                </span>
-              </div>
-              
-              <div className="mb-8">
-                <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-blue rounded-3xl mb-6">
-                  <Zap className="h-10 w-10 text-white" />
-                </div>
-                <h3 className="heading-dark-3 mb-3">Professional</h3>
-                <div className="mb-4">
-                  <span className="text-5xl font-bold text-card-foreground">$1</span>
-                  <span className="text-muted-foreground text-lg">/month</span>
-                </div>
-                <p className="text-muted-foreground">For power users and professionals</p>
-              </div>
-              
-              <div className="space-y-4 mb-10">
-                {[
-                  '500 files per month',
-                  '50MB max file size',
-                  '2GB storage',
-                  'Advanced PDF tools',
-                  '200 OCR pages/month',
-                  '1,000 AI messages/month',
-                  'Batch processing (20 files)'
-                ].map((feature, index) => (
-                  <div key={index} className="flex items-center text-sm">
-                    <CheckCircle className="h-5 w-5 text-green-400 mr-3 flex-shrink-0" />
-                    <span className="text-card-foreground">{feature}</span>
-                  </div>
-                ))}
-              </div>
-              
-              <Button 
-                onClick={() => navigate('/upgrade')} 
-                className="btn-blue w-full text-lg py-4"
-              >
-                Start Pro Trial
-              </Button>
-            </div>
-
-            {/* Premium Plan */}
-            <div className={`dark-card-hover p-10 text-center relative ${
-              isVisible ? 'animate-scale-fade' : ''
-            }`} style={{ animationDelay: '500ms' }}>
-              <div className="mb-8">
-                <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-green rounded-3xl mb-6">
-                  <Sparkles className="h-10 w-10 text-white" />
-                </div>
-                <h3 className="heading-dark-3 mb-3">Enterprise</h3>
-                <div className="mb-4">
-                  <span className="text-5xl font-bold text-card-foreground">$10</span>
-                  <span className="text-muted-foreground text-lg">/month</span>
-                </div>
-                <p className="text-muted-foreground">For teams and enterprises</p>
-              </div>
-              
-              <div className="space-y-4 mb-10">
-                {[
-                  'Unlimited files',
-                  '200MB max file size',
-                  '20GB storage',
-                  'All PDF tools + AI features',
-                  'Unlimited OCR',
-                  'Unlimited AI messages',
-                  'Priority support'
-                ].map((feature, index) => (
-                  <div key={index} className="flex items-center text-sm">
-                    <CheckCircle className="h-5 w-5 text-green-400 mr-3 flex-shrink-0" />
-                    <span className="text-card-foreground">{feature}</span>
-                  </div>
-                ))}
-              </div>
-              
-              <Button 
-                onClick={() => navigate('/upgrade')} 
-                className="btn-green w-full text-lg py-4"
-              >
-                Go Enterprise
-              </Button>
-            </div>
-          </div>
-          
-          <div className="text-center mt-16">
-            <Button 
-              onClick={() => navigate('/upgrade')}
-              className="btn-dark-glass text-card-foreground hover:text-card-foreground"
-            >
-              View detailed comparison →
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="layout-dark-section bg-gradient-accent text-white relative overflow-hidden">
-        <div className="absolute inset-0 bg-black"></div>
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-10 right-10 w-40 h-40 bg-accent rounded-full blur-3xl animate-float"></div>
-          <div className="absolute bottom-10 left-10 w-56 h-56 bg-elevated rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32 bg-accent rounded-full blur-2xl animate-float" style={{ animationDelay: '1s' }}></div>
-        </div>
-        
-        <div className="layout-dark-container text-center relative">
-          <div className={`max-w-4xl mx-auto ${isVisible ? 'animate-scale-fade' : ''}`}>
-            <h2 className="heading-dark-2 mb-8 text-white">
+      {/* Final CTA */}
+      <section className="relative py-32 px-4">
+        <div className="container mx-auto max-w-4xl text-center">
+          <div className={`${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'} transition-all duration-1000`}>
+            <h2 className="text-4xl md:text-6xl font-bold text-white mb-6">
               Ready to Transform Your Workflow?
             </h2>
-            <p className="body-dark-large mb-12 text-card-foreground leading-relaxed">
-              Join millions of users who have revolutionized their document processing. 
-              Start your free journey today and experience the magic of intelligent PDF tools.
+            <p className="text-xl text-slate-300 mb-12 leading-relaxed">
+              Join thousands of users who trust RobotPDF for their document processing needs.
+              Start your free journey today.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-12">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
               {user ? (
                 <Button 
                   onClick={() => navigate('/dashboard')} 
-                  className="bg-white text-grey-900 hover:bg-grey-100 text-xl px-12 py-6 h-auto font-semibold rounded-2xl shadow-2xl transition-all duration-300"
+                  className="group px-10 py-7 text-xl font-semibold rounded-2xl bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-2xl shadow-blue-500/50 hover:shadow-blue-500/60 transition-all duration-300 hover:-translate-y-1"
                 >
-                  <Rocket className="mr-3 h-6 w-6" />
+                  <Rocket className="inline-block mr-2 h-6 w-6" />
                   Launch Dashboard
-                  <ArrowRight className="ml-3 h-6 w-6" />
+                  <ArrowRight className="inline-block ml-2 h-6 w-6 group-hover:translate-x-1 transition-transform" />
                 </Button>
               ) : (
                 <>
                   <Button 
                     onClick={() => navigate('/register')} 
-                    className="bg-white text-grey-900 hover:bg-grey-100 text-xl px-12 py-6 h-auto font-semibold rounded-2xl shadow-2xl transition-all duration-300"
+                    className="group px-10 py-7 text-xl font-semibold rounded-2xl bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-2xl shadow-blue-500/50 hover:shadow-blue-500/60 transition-all duration-300 hover:-translate-y-1"
                   >
-                    <Play className="mr-3 h-6 w-6" />
-                    Start Free Journey
-                    <ArrowRight className="ml-3 h-6 w-6" />
+                    <Play className="inline-block mr-2 h-6 w-6" />
+                    Start Free
+                    <ArrowRight className="inline-block ml-2 h-6 w-6 group-hover:translate-x-1 transition-transform" />
                   </Button>
                   <Button 
-                    onClick={() => navigate('/login')}
-                    className="btn-dark-glass text-white border-border hover:bg-accent text-xl px-12 py-6 h-auto font-semibold"
+                    onClick={() => navigate('/pricing')}
+                    className="px-10 py-7 text-xl font-semibold rounded-2xl bg-white/5 hover:bg-white/10 text-white border border-white/10 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1"
                   >
-                    Sign In
+                    View Pricing
                   </Button>
                 </>
               )}
             </div>
-            
-            <div className="flex flex-wrap items-center justify-center gap-8 text-sm text-card-foreground">
-              <div className="flex items-center">
-                <CheckCircle className="h-5 w-5 mr-2" />
-                No credit card required
-              </div>
-              <div className="flex items-center">
-                <CheckCircle className="h-5 w-5 mr-2" />
-                Free forever plan
-              </div>
-              <div className="flex items-center">
-                <CheckCircle className="h-5 w-5 mr-2" />
-                Bank-level security
-              </div>
-              <div className="flex items-center">
-                <CheckCircle className="h-5 w-5 mr-2" />
-                24/7 AI support
-              </div>
-            </div>
           </div>
         </div>
       </section>
-
     </div>
   )
 }

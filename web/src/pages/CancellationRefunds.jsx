@@ -12,9 +12,9 @@ const CancellationRefunds = () => {
             <div className="w-16 h-16 bg-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
               <RefreshCw className="h-8 w-8 text-white" />
             </div>
-            <h1 className="text-4xl font-bold text-card-foreground mb-4">Cancellation & Refunds</h1>
+            <h1 className="text-3xl font-bold text-card-foreground mb-4">Cancellation & Refunds</h1>
             <p className="text-muted-foreground text-lg">
-              Understand our cancellation and refund policies for PDFPet subscriptions.
+              Understand our cancellation and refund policies for RobotPDF subscriptions.
             </p>
             <p className="text-secondary text-sm mt-2">
               Last updated: {new Date().toLocaleDateString()}
@@ -30,7 +30,7 @@ const CancellationRefunds = () => {
               </div>
               <div className="space-y-4 text-muted-foreground">
                 <p>
-                  You can cancel your PDFPet subscription at any time through your account settings or by contacting our support team.
+                  You can cancel your RobotPDF subscription at any time through your account settings or by contacting our support team.
                 </p>
                 <div className="grid md:grid-cols-2 gap-6 mt-6">
                   <div className="bg-elevated p-6 rounded-lg">
@@ -70,7 +70,7 @@ const CancellationRefunds = () => {
               </div>
               <div className="space-y-6 text-muted-foreground">
                 <p>
-                  We want you to be completely satisfied with PDFPet. Our refund policy is designed to be fair and transparent.
+                  We want you to be completely satisfied with RobotPDF. Our refund policy is designed to be fair and transparent.
                 </p>
                 
                 <div className="grid gap-6">
@@ -133,8 +133,8 @@ const CancellationRefunds = () => {
                       <span className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-semibold mr-4 mt-0.5">1</span>
                       <div>
                         <strong className="text-card-foreground">Contact Support:</strong> Email us at{' '}
-                        <a href="mailto:refunds@pdfpet.com" className="text-blue-400 hover:text-blue-300">
-                          refunds@pdfpet.com
+                        <a href="mailto:refunds@robotpdf.com" className="text-blue-400 hover:text-blue-300">
+                          refunds@robotpdf.com
                         </a>{' '}
                         with your refund request.
                       </div>
@@ -198,12 +198,12 @@ const CancellationRefunds = () => {
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
                     <h3 className="font-semibold text-card-foreground mb-2">Refund Requests</h3>
-                    <p>Email: <a href="mailto:refunds@pdfpet.com" className="text-blue-400 hover:text-blue-300">refunds@pdfpet.com</a></p>
+                    <p>Email: <a href="mailto:refunds@robotpdf.com" className="text-blue-400 hover:text-blue-300">refunds@robotpdf.com</a></p>
                     <p className="text-sm text-secondary mt-1">Response time: 2-3 business days</p>
                   </div>
                   <div>
                     <h3 className="font-semibold text-card-foreground mb-2">General Support</h3>
-                    <p>Email: <a href="mailto:support@pdfpet.com" className="text-blue-400 hover:text-blue-300">support@pdfpet.com</a></p>
+                    <p>Email: <a href="mailto:support@robotpdf.com" className="text-blue-400 hover:text-blue-300">support@robotpdf.com</a></p>
                     <p className="text-sm text-secondary mt-1">Response time: 24 hours</p>
                   </div>
                 </div>

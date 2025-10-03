@@ -134,10 +134,13 @@ const AdvancedTools = () => {
     
     setUploadedFiles(validFiles)
     
-    // Don't auto-process, let user configure settings first
-    // if (validFiles.length >= (selectedTool?.minFiles || 1)) {
-    //   await handleAutoProcess(validFiles)
-    // }
+    // Show processing modal immediately after upload
+    if (validFiles.length >= (selectedTool?.minFiles || 1)) {
+      initializeProcessingSteps(selectedTool.id)
+      setIsProcessing(true)
+      setProcessingProgress(5)
+      setProcessingStage('Files uploaded, ready to process...')
+    }
   }
 
   const validateFilesForTool = (files, tool) => {
@@ -173,9 +176,11 @@ const AdvancedTools = () => {
     console.log('Tool:', selectedTool.id)
     console.log('Settings received:', toolSettings)
     
-    // Initialize processing modal
-    initializeProcessingSteps(selectedTool.id)
-    setIsProcessing(true)
+    // Initialize processing modal if not already shown
+    if (!isProcessing) {
+      initializeProcessingSteps(selectedTool.id)
+      setIsProcessing(true)
+    }
     
     try {
       let uploadedFileIds = []

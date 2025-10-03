@@ -76,7 +76,7 @@ const Contact = () => {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-12">
-          <h1 className="text-4xl sm:text-5xl font-bold text-foreground mb-4">
+          <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
             Get in Touch
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
@@ -99,10 +99,10 @@ const Contact = () => {
                   For general inquiries and support
                 </p>
                 <a 
-                  href="mailto:support@pdfpet.com" 
+                  href="mailto:support@robotpdf.com" 
                   className="text-blue-400 hover:text-blue-300 font-medium"
                 >
-                  support@pdfpet.com
+                  support@robotpdf.com
                 </a>
               </CardContent>
             </Card>

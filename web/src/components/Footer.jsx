@@ -10,14 +10,14 @@ const Footer = () => {
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center space-x-4 mb-4">
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-blue rounded-2xl blur-lg scale-110" />
-                <div className="relative bg-gradient-blue p-3 rounded-2xl shadow-blue">
-                  <FileText className="h-6 w-6 text-white" />
+                <div className="absolute inset-0 bg-gradient-blue rounded-2xl scale-110" />
+                <div className="relative bg-white p-1.5 rounded-2xl ">
+                  <img src="/logo.png" alt="RobotPDF Logo" className="h-7 w-7 object-contain" />
                 </div>
               </div>
               <div>
-                <span className="text-2xl font-bold text-gradient-grey font-poppins">
-                  PDFPet
+                <span className="text-xl font-bold text-gradient-grey font-poppins">
+                  RobotPDF
                 </span>
                 <p className="text-sm text-secondary -mt-1">
                   ✨ AI-Powered Document Magic
@@ -95,7 +95,7 @@ const Footer = () => {
         {/* Bottom */}
         <div className="border-t border-border mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-secondary text-sm">
-            © 2024 PDFPet. All rights reserved.
+            © 2025 RobotPDF. All rights reserved.
           </p>
           <div className="flex items-center space-x-6 mt-4 md:mt-0">
             <span className="text-secondary text-sm">Secure & Private</span>

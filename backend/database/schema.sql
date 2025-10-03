@@ -1,4 +1,4 @@
--- PDFPet Complete Database Schema
+-- RobotPDF Complete Database Schema
 -- Run this in your Supabase SQL editor
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";

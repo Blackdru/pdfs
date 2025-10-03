@@ -76,30 +76,30 @@ const ProcessingModal = ({
   const processingSteps = steps.length > 0 ? steps : defaultSteps
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-2 sm:p-4 z-50 backdrop-blur-sm">
-      <Card className="bg-surface border-border rounded-3xl shadow-2xl w-full max-w-[95vw] sm:max-w-lg max-h-[95vh] sm:max-h-[90vh] overflow-y-auto animate-in fade-in duration-300">
-        <CardHeader className="px-8 py-6 border-b border-border text-center pb-6">
-          <div className={`mx-auto mb-6 p-6 rounded-full transition-all duration-500 ${getBgColor()} ${
+    <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-3 sm:p-4 z-50">
+      <Card className="bg-card border-border rounded-2xl shadow-2xl w-full max-w-[92vw] sm:max-w-md max-h-[90vh] overflow-y-auto">
+        <CardHeader className="px-4 sm:px-6 py-4 sm:py-5 border-b border-border text-center">
+          <div className={`mx-auto mb-3 sm:mb-4 p-3 sm:p-4 rounded-full transition-all duration-500 ${getBgColor()} ${
             !isCompleted && !isError ? 'animate-pulse' : ''
           }`}>
             {isCompleted ? (
-              <CheckCircle className="h-10 w-10 text-green-400" />
+              <CheckCircle className="h-6 w-6 sm:h-8 sm:w-8 text-green-400" />
             ) : isError ? (
-              <AlertCircle className="h-10 w-10 text-red-400" />
+              <AlertCircle className="h-6 w-6 sm:h-8 sm:w-8 text-red-400" />
             ) : (
-              <Icon className={`h-10 w-10 ${getIconColor()}`} />
+              <Icon className={`h-6 w-6 sm:h-8 sm:w-8 ${getIconColor()}`} />
             )}
           </div>
-          <CardTitle className="text-2xl font-bold text-foreground mb-2">{title}</CardTitle>
-          <p className="text-sm text-muted-foreground break-words">
+          <CardTitle className="text-lg sm:text-xl font-bold text-foreground mb-2">{title}</CardTitle>
+          <p className="text-xs sm:text-sm text-muted-foreground break-words px-2">
             {fileName}
           </p>
           
           {/* Time indicators */}
-          <div className="flex justify-center items-center space-x-6 mt-4 text-xs text-secondary">
+          <div className="flex justify-center items-center space-x-3 sm:space-x-4 mt-3 text-xs text-secondary">
             <div className="flex items-center">
               <Clock className="h-3 w-3 mr-1" />
-              <span>Elapsed: {formatTime(elapsedTime)}</span>
+              <span>{formatTime(elapsedTime)}</span>
             </div>
             {estimatedTime && !isCompleted && (
               <div className="flex items-center">
@@ -109,31 +109,28 @@ const ProcessingModal = ({
           </div>
         </CardHeader>
         
-        <CardContent className="px-8 py-6 space-y-6">
+        <CardContent className="px-4 sm:px-6 py-4 sm:py-5 space-y-4 sm:space-y-5">
           {/* Progress Section */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between gap-2">
               <span className="flex items-center flex-1 min-w-0">
                 {!isCompleted && !isError && (
-                  <Loader2 className="h-4 w-4 animate-spin mr-3 flex-shrink-0 text-blue-400" />
+                  <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin mr-2 flex-shrink-0 text-blue-400" />
                 )}
-                <span className="text-sm font-medium text-card-foreground truncate">{stage}</span>
+                <span className="text-xs sm:text-sm font-medium text-card-foreground truncate">{stage}</span>
               </span>
-              <span className={`font-bold text-lg ml-3 ${getIconColor()}`}>
+              <span className={`font-bold text-base sm:text-lg ${getIconColor()}`}>
                 {Math.round(progress)}%
               </span>
             </div>
             
             {/* Enhanced Progress Bar */}
             <div className="relative">
-              <div className="w-full bg-elevated rounded-full h-3 overflow-hidden">
+              <div className="w-full bg-gray-700 rounded-full h-2 sm:h-2.5 overflow-hidden">
                 <div 
-                  className={`h-full bg-gradient-to-r ${getProgressColor()} transition-all duration-500 ease-out relative`}
+                  className={`h-full ${isCompleted ? 'bg-green-600' : isError ? 'bg-red-600' : 'bg-blue-600'} transition-all duration-500 ease-out`}
                   style={{ width: `${Math.min(progress, 100)}%` }}
                 >
-                  {!isCompleted && !isError && (
-                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent opacity-30 animate-pulse"></div>
-                  )}
                 </div>
               </div>
             </div>
@@ -141,41 +138,40 @@ const ProcessingModal = ({
 
           {/* Processing Steps */}
           {processingSteps.length > 0 && (
-            <div className="space-y-3">
-              <h4 className="text-sm font-medium text-card-foreground">Processing Steps</h4>
-              <div className="space-y-2">
+            <div className="space-y-2">
+              <h4 className="text-xs sm:text-sm font-medium text-card-foreground">Steps</h4>
+              <div className="space-y-1.5 sm:space-y-2">
                 {processingSteps.map((step, index) => {
                   const StepIcon = step.icon || FileText
                   const isCurrentStep = index === currentStep
                   const isCompletedStep = index < currentStep || isCompleted
-                  const isFutureStep = index > currentStep && !isCompleted
                   
                   return (
                     <div 
                       key={index}
-                      className={`flex items-center space-x-3 p-2 rounded-lg transition-all duration-300 ${
-                        isCurrentStep ? 'bg-blue-900/30 border border-blue-800' :
-                        isCompletedStep ? 'bg-green-900/20' :
-                        'bg-grey-800/50'
+                      className={`flex items-center space-x-2 sm:space-x-3 p-1.5 sm:p-2 rounded-lg transition-all duration-300 ${
+                        isCurrentStep ? 'bg-blue-600/20 border border-blue-600' :
+                        isCompletedStep ? 'bg-green-600/20 border border-green-600' :
+                        'bg-gray-700/50'
                       }`}
                     >
-                      <div className={`p-1 rounded-full ${
+                      <div className={`p-0.5 sm:p-1 rounded-full ${
                         isCompletedStep ? 'bg-green-600' :
                         isCurrentStep ? 'bg-blue-600' :
-                        'bg-grey-700'
+                        'bg-gray-600'
                       }`}>
                         {isCompletedStep ? (
-                          <CheckCircle className="h-3 w-3 text-white" />
+                          <CheckCircle className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-white" />
                         ) : isCurrentStep ? (
-                          <Loader2 className="h-3 w-3 text-white animate-spin" />
+                          <Loader2 className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-white animate-spin" />
                         ) : (
-                          <StepIcon className="h-3 w-3 text-muted-foreground" />
+                          <StepIcon className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-gray-400" />
                         )}
                       </div>
                       <span className={`text-xs font-medium ${
-                        isCompletedStep ? 'text-green-300' :
-                        isCurrentStep ? 'text-blue-300' :
-                        'text-grey-500'
+                        isCompletedStep ? 'text-green-400' :
+                        isCurrentStep ? 'text-blue-400' :
+                        'text-gray-500'
                       }`}>
                         {step.name}
                       </span>
@@ -188,8 +184,8 @@ const ProcessingModal = ({
 
           {/* Description */}
           {description && (
-            <div className="flex items-center justify-center text-xs text-muted-foreground bg-elevated rounded-xl p-3">
-              <Icon className="h-4 w-4 mr-2 flex-shrink-0" />
+            <div className="flex items-center justify-center text-xs text-muted-foreground bg-gray-700/50 rounded-lg p-2 sm:p-3">
+              <Icon className="h-3 w-3 sm:h-4 sm:w-4 mr-2 flex-shrink-0" />
               <span className="text-center">{description}</span>
             </div>
           )}
@@ -197,31 +193,31 @@ const ProcessingModal = ({
           {/* Status Message */}
           <div className="text-center">
             {isCompleted ? (
-              <div className="text-green-400 font-semibold flex items-center justify-center">
-                <CheckCircle className="h-5 w-5 mr-2" />
-                Processing completed successfully!
+              <div className="text-green-400 text-sm sm:text-base font-semibold flex items-center justify-center">
+                <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                <span className="text-xs sm:text-sm">Completed!</span>
               </div>
             ) : isError ? (
-              <div className="text-red-400 font-semibold flex items-center justify-center">
-                <AlertCircle className="h-5 w-5 mr-2" />
-                Processing failed. Please try again.
+              <div className="text-red-400 text-sm sm:text-base font-semibold flex items-center justify-center">
+                <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                <span className="text-xs sm:text-sm">Failed. Try again.</span>
               </div>
             ) : (
-              <div className="text-blue-400 font-semibold flex items-center justify-center">
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Processing in progress...
+              <div className="text-blue-400 text-sm sm:text-base font-semibold flex items-center justify-center">
+                <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 mr-2 animate-spin" />
+                <span className="text-xs sm:text-sm">Processing...</span>
               </div>
             )}
           </div>
 
           {/* Cancel Button */}
           {onCancel && !isCompleted && !isError && (
-            <div className="text-center pt-2">
+            <div className="text-center pt-1">
               <button
                 onClick={onCancel}
                 className="text-xs text-secondary hover:text-card-foreground transition-colors"
               >
-                Cancel Processing
+                Cancel
               </button>
             </div>
           )}

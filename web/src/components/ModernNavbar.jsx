@@ -67,7 +67,7 @@ const ModernNavbar = () => {
   ]
 
   const publicNavItems = [
-    { path: '/upgrade', label: 'Pricing', icon: DollarSign },
+    { path: '/pricing', label: 'Pricing', icon: DollarSign },
     { path: '/contact', label: 'Contact', icon: Mail },
   ]
 
@@ -85,14 +85,14 @@ const ModernNavbar = () => {
             {/* Logo */}
             <Link to="/" className="flex items-center space-x-4 group">
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-blue rounded-3xl blur-xl scale-110" />
-                <div className="relative bg-gradient-blue p-4 rounded-3xl shadow-blue group-hover:scale-105 transition-transform duration-300">
-                  <FileText className="h-8 w-8 text-white" />
+                <div className="absolute inset-0 bg-gradient-blue rounded-3xl scale-110" />
+                <div className="relative bg-white p-2 rounded-3xl group-hover:scale-105 transition-transform duration-300">
+                  <img src="/logo.png" alt="RobotPDF Logo" className="h-8 w-8 object-contain" />
                 </div>
               </div>
               <div className="flex flex-col">
-                <span className="text-3xl font-bold text-gradient-grey font-poppins">
-                  PDFPet
+                <span className="text-2xl font-bold text-gradient-grey font-poppins">
+                  RobotPDF
                 </span>
                 <span className="text-xs text-secondary -mt-1 font-semibold hidden sm:block">
                   ✨ AI-Powered Document Magic
@@ -319,13 +319,6 @@ const ModernNavbar = () => {
         <div className="mobile-nav-dark md:hidden">
           <div className="mobile-nav-grid-dark">
             <Link
-              to="/dashboard"
-              className={isActivePath('/dashboard') ? 'mobile-nav-item-dark-active' : 'mobile-nav-item-dark'}
-            >
-              <LayoutDashboard className="h-6 w-6" />
-              <span>Dashboard</span>
-            </Link>
-            <Link
               to="/files"
               className={isActivePath('/files') ? 'mobile-nav-item-dark-active' : 'mobile-nav-item-dark'}
             >
@@ -338,6 +331,13 @@ const ModernNavbar = () => {
             >
               <GitMerge className="h-6 w-6" />
               <span>Tools</span>
+            </Link>
+            <Link
+              to="/advanced-tools"
+              className={isActivePath('/advanced-tools') ? 'mobile-nav-item-dark-active' : 'mobile-nav-item-dark'}
+            >
+              <Sparkles className="h-6 w-6" />
+              <span>Pro Tools</span>
             </Link>
             <Link
               to="/profile"

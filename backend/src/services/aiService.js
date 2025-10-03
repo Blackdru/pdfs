@@ -25,7 +25,7 @@ class AIService {
         baseURL: 'https://openrouter.ai/api/v1',
         defaultHeaders: {
           'HTTP-Referer': 'http://localhost:5000',
-          'X-Title': 'PDFPet'
+          'X-Title': 'RobotPDF'
         }
       });
       // Use free models through OpenRouter

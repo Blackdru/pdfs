@@ -9,7 +9,7 @@ async function setupStripeProducts() {
 
     // Create Pro product
     const proProduct = await stripe.products.create({
-      name: 'PDFPet Pro',
+      name: 'RobotPDF Pro',
       description: 'Great for regular users with advanced features',
       metadata: {
         plan: 'pro'
@@ -31,7 +31,7 @@ async function setupStripeProducts() {
 
     // Create Premium product
     const premiumProduct = await stripe.products.create({
-      name: 'PDFPet Premium',
+      name: 'RobotPDF Premium',
       description: 'For power users and teams with unlimited features',
       metadata: {
         plan: 'premium'

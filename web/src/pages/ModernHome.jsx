@@ -137,7 +137,7 @@ const ModernHome = () => {
       </div>
 
       {/* Hero Section */}
-      <section className="relative pt-32 pb-20 px-4">
+      <section className="relative pt-10 pb-10 px-4">
         <div className="container mx-auto max-w-7xl">
           <div className={`text-center transition-all duration-1000 ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'

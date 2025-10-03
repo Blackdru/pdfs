@@ -227,8 +227,8 @@ const ModernNavbar = () => {
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (
-                /* Auth Buttons */
-                <div className="flex items-center space-x-3">
+                /* Auth Buttons - Hidden on mobile */
+                <div className="hidden md:flex items-center space-x-3">
                   <Button variant="ghost" asChild className="btn-dark-outline">
                     <Link to="/login">Sign In</Link>
                   </Button>
@@ -291,7 +291,7 @@ const ModernNavbar = () => {
             {!user && (
               <div className="flex flex-col space-y-4">
                 <Button 
-                  variant="ghost" 
+                 
                   asChild 
                   className="btn-dark-outline justify-start"
                   onClick={() => setIsMobileMenuOpen(false)}

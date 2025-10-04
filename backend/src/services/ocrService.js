@@ -540,16 +540,25 @@ class OCRService {
               console.log('AI enhancement completed. Enhanced text length:', enhancedText.length);
             } else {
               console.warn('AI enhancement returned empty text, using original');
+              result.aiEnhanced = false;
             }
           } else {
             console.warn('AI service not enabled, skipping enhancement');
+            result.aiEnhanced = false;
           }
         } catch (aiError) {
           console.error('AI enhancement failed:', aiError.message);
+          result.aiEnhanced = false;
           // Continue with original text if AI enhancement fails
         }
+      } else if (enhanceWithAI && !extractOriginal) {
+        console.log('Skipping AI enhancement - text too short or empty');
+        result.aiEnhanced = false;
       }
 
+      console.log(`Final OCR result: language=${result.detectedLanguage}, confidence=${result.confidence}, textLength=${result.text.length}`);
+      console.log('AI Enhanced:', result.aiEnhanced);
+      
       return result;
 
     } catch (error) {

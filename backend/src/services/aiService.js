@@ -486,43 +486,62 @@ ${rawText}
 
 Please provide only the cleaned and enhanced text without any explanations or comments:`;
 
-      const response = await this.openai.chat.completions.create({
-        model: this.model,
-        messages: [
-          {
-            role: 'system',
-            content: 'You are a professional OCR text enhancement expert. Clean up OCR-extracted text while preserving all original information exactly. Focus on fixing OCR errors, improving readability, and maintaining document structure. Return only the enhanced text without any explanations.'
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        max_tokens: Math.min(2000, Math.ceil(rawText.length * 1.5)),
-        temperature: 0.1, // Very low temperature for consistent corrections
-      });
-
-      const enhancedText = response.choices[0].message.content.trim();
-      console.log('AI enhancement completed, new length:', enhancedText.length);
+      // Try with primary model first, then fallback models
+      const modelsToTry = this.isUsingOpenRouter && this.fallbackModels 
+        ? [this.model, ...this.fallbackModels] 
+        : [this.model];
       
-      // Validate that the enhanced text is reasonable
-      if (enhancedText.length > rawText.length * 3) {
-        console.warn('AI enhancement produced text that is too long, using original');
-        return rawText;
-      }
+      let lastError;
+      for (const model of modelsToTry) {
+        try {
+          console.log(`Attempting AI enhancement with model: ${model}`);
+          
+          const response = await this.openai.chat.completions.create({
+            model: model,
+            messages: [
+              {
+                role: 'system',
+                content: 'You are a professional OCR text enhancement expert. Clean up OCR-extracted text while preserving all original information exactly. Focus on fixing OCR errors, improving readability, and maintaining document structure. Return only the enhanced text without any explanations.'
+              },
+              {
+                role: 'user',
+                content: prompt
+              }
+            ],
+            max_tokens: Math.min(2000, Math.ceil(rawText.length * 1.5)),
+            temperature: 0.1, // Very low temperature for consistent corrections
+          });
 
-      if (enhancedText.length < rawText.length * 0.3) {
-        console.warn('AI enhancement produced text that is too short, using original');
-        return rawText;
-      }
+          const enhancedText = response.choices[0].message.content.trim();
+          console.log('AI enhancement completed with model:', model, 'new length:', enhancedText.length);
+          
+          // Validate that the enhanced text is reasonable
+          if (enhancedText.length > rawText.length * 3) {
+            console.warn('AI enhancement produced text that is too long, using original');
+            return rawText;
+          }
 
-      // Additional validation for important document information
-      if (this.containsImportantDocumentInfo(rawText) && !this.containsImportantDocumentInfo(enhancedText)) {
-        console.warn('AI enhancement removed important document information, using original');
-        return rawText;
-      }
+          if (enhancedText.length < rawText.length * 0.3) {
+            console.warn('AI enhancement produced text that is too short, using original');
+            return rawText;
+          }
 
-      return enhancedText;
+          // Additional validation for important document information
+          if (this.containsImportantDocumentInfo(rawText) && !this.containsImportantDocumentInfo(enhancedText)) {
+            console.warn('AI enhancement removed important document information, using original');
+            return rawText;
+          }
+
+          return enhancedText;
+        } catch (modelError) {
+          console.error(`AI enhancement failed with model ${model}:`, modelError.message);
+          lastError = modelError;
+          continue;
+        }
+      }
+      
+      // If all models failed, throw the last error
+      throw lastError;
     } catch (error) {
       console.error('Error enhancing text with AI:', error);
       throw error;

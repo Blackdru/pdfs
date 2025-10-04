@@ -1,5 +1,5 @@
 const Stripe = require('stripe');
-const { supabase } = require('../config/supabase');
+const { supabaseAdmin } = require('../config/supabase');
 const { getStripePriceId } = require('../../../shared/currencies');
 
 // Initialize Stripe with secret key
@@ -295,7 +295,7 @@ class StripeService {
     const userId = subscription.metadata.userId;
     if (!userId) return;
 
-    const { error } = await supabase
+    const { error } = await supabaseAdmin
       .from('subscriptions')
       .update({
         status: 'cancelled',
@@ -317,7 +317,7 @@ class StripeService {
     const subscriptionId = invoice.subscription;
     
     // Record payment transaction
-    const { error } = await supabase
+    const { error } = await supabaseAdmin
       .from('payment_transactions')
       .insert({
         user_id: invoice.metadata?.userId,
@@ -345,7 +345,7 @@ class StripeService {
     const subscriptionId = invoice.subscription;
     
     // Record failed payment transaction
-    const { error } = await supabase
+    const { error } = await supabaseAdmin
       .from('payment_transactions')
       .insert({
         user_id: invoice.metadata?.userId,
@@ -367,7 +367,7 @@ class StripeService {
 
     // Update subscription status if needed
     if (subscriptionId) {
-      const { error: subError } = await supabase
+      const { error: subError } = await supabaseAdmin
         .from('subscriptions')
         .update({
           status: 'past_due',
@@ -417,7 +417,7 @@ class StripeService {
     };
 
     // Upsert subscription
-    const { error } = await supabase
+    const { error } = await supabaseAdmin
       .from('subscriptions')
       .upsert(subscriptionData, {
         onConflict: 'user_id',

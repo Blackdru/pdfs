@@ -1,4 +1,4 @@
-const { supabase } = require('../config/supabase');
+const { supabase, supabaseAdmin } = require('../config/supabase');
 const stripeService = require('./stripeService');
 
 // Import plan limits
@@ -107,7 +107,7 @@ class SubscriptionService {
   async createFreeSubscription(userId) {
     try {
       // Check if subscription already exists
-      const { data: existing } = await supabase
+      const { data: existing } = await supabaseAdmin
         .from('subscriptions')
         .select('id')
         .eq('user_id', userId)
@@ -118,7 +118,7 @@ class SubscriptionService {
         return;
       }
       
-      const { error } = await supabase
+      const { error } = await supabaseAdmin
         .from('subscriptions')
         .insert({
           user_id: userId,

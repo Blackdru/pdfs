@@ -121,7 +121,7 @@ router.post('/verify-otp', async (req, res) => {
     }
 
     // Find valid OTP
-    const { data: otpData, error: otpError } = await supabase
+    const { data: otpData, error: otpError } = await supabaseAdmin
       .from('otp_codes')
       .select('*')
       .eq('email', email)
@@ -134,17 +134,18 @@ router.post('/verify-otp', async (req, res) => {
       .single();
 
     if (otpError || !otpData) {
+      console.error('OTP verification failed:', otpError);
       return res.status(400).json({ error: 'Invalid or expired OTP' });
     }
 
     // Mark OTP as used
-    await supabase
+    await supabaseAdmin
       .from('otp_codes')
       .update({ used: true, used_at: new Date().toISOString() })
       .eq('id', otpData.id);
 
     // Update user as verified
-    const { data: user, error: updateError } = await supabase
+    const { data: user, error: updateError } = await supabaseAdmin
       .from('users')
       .update({
         email_verified: true,
@@ -160,7 +161,7 @@ router.post('/verify-otp', async (req, res) => {
     }
 
     // Create subscription for new user
-    const { error: subError } = await supabase
+    const { error: subError } = await supabaseAdmin
       .from('subscriptions')
       .insert([
         {
@@ -183,7 +184,7 @@ router.post('/verify-otp', async (req, res) => {
 
     // Store session
     const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
-    await supabase
+    await supabaseAdmin
       .from('user_sessions')
       .insert([
         {
@@ -502,7 +503,7 @@ router.post('/reset-password', async (req, res) => {
     }
 
     // Find valid OTP
-    const { data: otpData, error: otpError } = await supabase
+    const { data: otpData, error: otpError } = await supabaseAdmin
       .from('otp_codes')
       .select('*')
       .eq('email', email)
@@ -519,7 +520,7 @@ router.post('/reset-password', async (req, res) => {
     }
 
     // Mark OTP as used
-    await supabase
+    await supabaseAdmin
       .from('otp_codes')
       .update({ used: true, used_at: new Date().toISOString() })
       .eq('id', otpData.id);
@@ -528,7 +529,7 @@ router.post('/reset-password', async (req, res) => {
     const passwordHash = await bcrypt.hash(newPassword, 10);
 
     // Update user password
-    const { error: updateError } = await supabase
+    const { error: updateError } = await supabaseAdmin
       .from('users')
       .update({ password_hash: passwordHash })
       .eq('email', email);
@@ -539,14 +540,14 @@ router.post('/reset-password', async (req, res) => {
     }
 
     // Invalidate all existing sessions for this user
-    const { data: user } = await supabase
+    const { data: user } = await supabaseAdmin
       .from('users')
       .select('id')
       .eq('email', email)
       .single();
 
     if (user) {
-      await supabase
+      await supabaseAdmin
         .from('user_sessions')
         .delete()
         .eq('user_id', user.id);

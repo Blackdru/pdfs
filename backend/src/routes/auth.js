@@ -1,7 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { supabase } = require('../config/supabase');
+const { supabase, supabaseAdmin } = require('../config/supabase');
 const { validateRequest, schemas } = require('../middleware/validation');
 const { generateOTP, sendOTPEmail, sendWelcomeEmail } = require('../services/emailService');
 
@@ -49,7 +49,7 @@ router.post('/register', validateRequest(schemas.register), async (req, res) => 
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
     // Store OTP in database
-    const { error: otpError } = await supabase
+    const { error: otpError } = await supabaseAdmin
       .from('otp_codes')
       .insert([
         {
@@ -70,13 +70,13 @@ router.post('/register', validateRequest(schemas.register), async (req, res) => 
 
     // Store user data temporarily (or update if exists)
     if (existingUser) {
-      await supabase
+      await supabaseAdmin
         .from('users')
         .update({ password_hash: passwordHash, name })
         .eq('email', email);
     } else {
       // Create unverified user
-      const { error: userError } = await supabase
+      const { error: userError } = await supabaseAdmin
         .from('users')
         .insert([
           {
@@ -246,7 +246,7 @@ router.post('/resend-otp', async (req, res) => {
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
     // Store OTP
-    const { error: otpError } = await supabase
+    const { error: otpError } = await supabaseAdmin
       .from('otp_codes')
       .insert([
         {
@@ -464,7 +464,7 @@ router.post('/forgot-password', async (req, res) => {
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
     // Store OTP
-    await supabase
+    await supabaseAdmin
       .from('otp_codes')
       .insert([
         {

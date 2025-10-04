@@ -215,17 +215,19 @@ router.post('/create', authenticateUser, async (req, res) => {
     if (plan === 'free') {
       const { error: updateError } = await supabaseAdmin
         .from('subscriptions')
-        .upsert([
+        .upsert(
           {
             user_id: req.user.id,
             plan: 'free',
             status: 'active',
             started_at: new Date().toISOString(),
             metadata: { currency: selectedCurrency }
-          }
-        ]);
+          },
+          { onConflict: 'user_id' }
+        );
 
       if (updateError) {
+        console.error('Subscription creation error:', updateError);
         return res.status(400).json({ error: updateError.message });
       }
 

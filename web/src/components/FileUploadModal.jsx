@@ -63,6 +63,13 @@ const FileUploadModal = ({
     }))
 
     setFiles(prev => [...prev, ...newFiles])
+    
+    // Auto-upload immediately after files are selected
+    if (acceptedFiles.length > 0) {
+      setTimeout(() => {
+        handleUploadImmediate(acceptedFiles)
+      }, 100)
+    }
   }, [maxFiles])
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -87,31 +94,31 @@ const FileUploadModal = ({
     setFiles(prev => prev.filter(f => f.id !== fileId))
   }
 
+  const handleUploadImmediate = async (acceptedFiles) => {
+    setIsUploading(true)
+    
+    try {
+      // Close modal immediately to show processing modal
+      onClose()
+      
+      // Call the upload handler
+      await onFilesUploaded(acceptedFiles)
+      
+    } catch (error) {
+      console.error('Upload error:', error)
+      toast.error('Upload failed: ' + error.message)
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
   const handleUpload = async () => {
     if (files.length === 0) {
       toast.error('Please select at least one file')
       return
     }
 
-    setIsUploading(true)
-    
-    try {
-      // Update file statuses to uploading
-      setFiles(prev => prev.map(f => ({ ...f, status: 'uploading' })))
-      
-      // Close modal immediately to show processing modal
-      onClose()
-      
-      // Call the upload handler
-      await onFilesUploaded(files.map(f => f.file))
-      
-    } catch (error) {
-      console.error('Upload error:', error)
-      setFiles(prev => prev.map(f => ({ ...f, status: 'error' })))
-      toast.error('Upload failed: ' + error.message)
-    } finally {
-      setIsUploading(false)
-    }
+    await handleUploadImmediate(files.map(f => f.file))
   }
 
   const getStatusIcon = (status) => {

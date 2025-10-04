@@ -28,8 +28,17 @@ class AIService {
           'X-Title': 'RobotPDF'
         }
       });
-      // Use free models through OpenRouter
-      this.model = process.env.AI_MODEL || 'meta-llama/llama-3.2-3b-instruct:free';
+      // Use free models through OpenRouter - mistral-nemo is best for document processing
+      this.model = process.env.AI_MODEL || 'mistralai/mistral-nemo:free';
+      // Fallback models if primary fails
+      this.fallbackModels = [
+        'mistralai/mistral-nemo:free',
+        'meta-llama/llama-4-maverick:free',
+        'nousresearch/deephermes-3-llama-3-8b-preview:free',
+        'google/gemma-3-4b-it:free',
+        'meta-llama/llama-3.2-3b-instruct:free',
+        'deepseek/deepseek-chat-v3.1:free'
+      ];
       this.embeddingModel = 'text-embedding-3-small'; // OpenRouter doesn't support embeddings, we'll use a fallback
       this.isUsingOpenRouter = true;
       this.isUsingOpenAI = false;
@@ -102,15 +111,12 @@ class AIService {
   // Get available free models for OpenRouter
   getAvailableFreeModels() {
     return [
-      'x-ai/grok-4-fast:free',
+      'mistralai/mistral-nemo:free',
+      'meta-llama/llama-4-maverick:free',
+      'nousresearch/deephermes-3-llama-3-8b-preview:free',
+      'google/gemma-3-4b-it:free',
       'meta-llama/llama-3.2-3b-instruct:free',
-      'meta-llama/llama-3.2-1b-instruct:free',
-      'microsoft/phi-3-mini-128k-instruct:free',
-      'microsoft/phi-3-medium-128k-instruct:free',
-      'huggingface/zephyr-7b-beta:free',
-      'openchat/openchat-7b:free',
-      'gryphe/mythomist-7b:free',
-      'undi95/toppy-m-7b:free'
+      'deepseek/deepseek-chat-v3.1:free'
     ];
   }
 
@@ -648,7 +654,7 @@ Special focus for general documents:
     try {
       console.log('Translating text to:', targetLanguage, 'Length:', text.length);
       
-      const prompt = `Translate the following text to ${targetLanguage}. This appears to be from an Indian government document (possibly a PAN card or similar). Please:
+      const prompt = `Translate the following text to ${targetLanguage}. Please:
 
 1. Translate accurately while preserving the document structure
 2. Keep all numbers, dates, and official codes exactly as they are
@@ -661,26 +667,44 @@ ${text}
 
 Provide only the translation without any explanations:`;
 
-      const response = await this.openai.chat.completions.create({
-        model: this.model,
-        messages: [
-          {
-            role: 'system',
-            content: `You are a professional translator specializing in Indian government documents. Translate text accurately to ${targetLanguage} while preserving all numbers, codes, and official formatting. Provide only the translation without explanations.`
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        max_tokens: Math.min(2000, Math.ceil(text.length * 2)),
-        temperature: 0.2, // Low temperature for consistent translation
-      });
-
-      const translatedText = response.choices[0].message.content.trim();
-      console.log('Translation completed, new length:', translatedText.length);
+      // Try with primary model first, then fallback models
+      const modelsToTry = this.isUsingOpenRouter && this.fallbackModels 
+        ? [this.model, ...this.fallbackModels] 
+        : [this.model];
       
-      return translatedText;
+      let lastError;
+      for (const model of modelsToTry) {
+        try {
+          console.log(`Attempting translation with model: ${model}`);
+          
+          const response = await this.openai.chat.completions.create({
+            model: model,
+            messages: [
+              {
+                role: 'system',
+                content: `You are a professional translator. Translate text accurately to ${targetLanguage} while preserving all numbers, codes, and official formatting. Provide only the translation without explanations.`
+              },
+              {
+                role: 'user',
+                content: prompt
+              }
+            ],
+            max_tokens: Math.min(2000, Math.ceil(text.length * 2)),
+            temperature: 0.2,
+          });
+
+          const translatedText = response.choices[0].message.content.trim();
+          console.log('Translation completed with model:', model, 'new length:', translatedText.length);
+          
+          return translatedText;
+        } catch (modelError) {
+          console.error(`Translation failed with model ${model}:`, modelError.message);
+          lastError = modelError;
+          continue;
+        }
+      }
+      
+      throw lastError;
     } catch (error) {
       console.error('Error translating text:', error);
       throw new Error(`Translation failed: ${error.message}`);

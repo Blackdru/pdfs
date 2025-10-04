@@ -133,13 +133,11 @@ const AdvancedTools = () => {
     }
     
     setUploadedFiles(validFiles)
+    setShowUploadModal(false)
     
-    // Show processing modal immediately after upload
+    // Auto-process if minimum files requirement is met
     if (validFiles.length >= (selectedTool?.minFiles || 1)) {
-      initializeProcessingSteps(selectedTool.id)
-      setIsProcessing(true)
-      setProcessingProgress(5)
-      setProcessingStage('Files uploaded, ready to process...')
+      await handleAutoProcess(validFiles, toolSettings)
     }
   }
 
@@ -176,41 +174,41 @@ const AdvancedTools = () => {
     console.log('Tool:', selectedTool.id)
     console.log('Settings received:', toolSettings)
     
-    // Initialize processing modal if not already shown
-    if (!isProcessing) {
-      initializeProcessingSteps(selectedTool.id)
-      setIsProcessing(true)
-    }
+    // Initialize processing modal
+    initializeProcessingSteps(selectedTool.id)
+    setIsProcessing(true)
     
     try {
       let uploadedFileIds = []
       
       updateProgress(10, 'Uploading files to server...', 0)
-      toast.success(`Uploading ${files.length} file(s)...`)
       
-      for (const file of files) {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i]
         try {
+          updateProgress(10 + (i / files.length) * 15, `Uploading ${file.name}...`, 0)
           const response = await api.uploadFile(file)
           uploadedFileIds.push(response.file.id)
-          toast.success(`✅ ${file.name} uploaded successfully`)
         } catch (error) {
-          toast.error(`❌ Failed to upload ${file.name}: ${error.message}`)
+          console.error(`Upload failed for ${file.name}:`, error)
+          toast.error(`Failed to upload ${file.name}`)
         }
       }
 
       if (uploadedFileIds.length === 0) {
-        toast.error('No files were uploaded successfully. Please check your connection and try again.')
-        return
+        throw new Error('No files were uploaded successfully')
       }
+      
+      updateProgress(25, `${uploadedFileIds.length} file(s) uploaded successfully`, 1)
 
       let result
       const outputName = `${selectedTool.id}-${Date.now()}`
       
+      updateProgress(30, 'Processing...', 1)
+      
       switch (selectedTool.id) {
         case 'advanced-ocr':
-          updateProgress(30, 'Starting OCR processing...', 1)
           result = await handleAdvancedOCR(uploadedFileIds[0], toolSettings)
-          updateProgress(100, 'OCR processing completed!', 4)
           break
         case 'ai-chat':
           result = await handleAIChat(uploadedFileIds[0], files)
@@ -219,7 +217,9 @@ const AdvancedTools = () => {
           result = await handleSmartSummary(uploadedFileIds[0], toolSettings)
           break
         case 'pro-merge':
+          updateProgress(50, 'Merging PDFs...', 2)
           result = await api.mergePDFs(uploadedFileIds, `${outputName}.pdf`)
+          updateProgress(90, 'Merge complete!', 3)
           break
         case 'precision-split':
           result = await handlePrecisionSplit(uploadedFileIds[0], toolSettings)
@@ -236,6 +236,8 @@ const AdvancedTools = () => {
         default:
           throw new Error('Tool not implemented yet')
       }
+      
+      updateProgress(95, 'Finalizing...', processingSteps.length - 1)
 
       setToolResults({
         type: selectedTool.id,
@@ -277,39 +279,32 @@ const AdvancedTools = () => {
       
     } catch (error) {
       console.error('Processing error:', error)
+      updateProgress(0, 'Processing failed', 0)
       
       if (error.message.includes('No token provided') || error.message.includes('Unauthorized')) {
         toast.error('Please sign in to use this feature')
       } else if (error.message.includes('File not found')) {
         toast.error('File upload failed. Please try again.')
-      } else if (error.message.includes('Network error')) {
-        toast.error('Network error. Please check your connection and try again.')
+      } else if (error.message.includes('Network error') || error.message.includes('timeout')) {
+        toast.error('Request timed out. The file may be too large or the server is busy. Please try again.')
       } else if (error.message.includes('404')) {
         toast.error('Service temporarily unavailable. Please try again later.')
       } else {
         toast.error(`Processing failed: ${error.message}`)
       }
     } finally {
-      setIsProcessing(false)
+      setTimeout(() => setIsProcessing(false), 1000)
     }
   }
 
   // Individual tool handlers
   const handleAdvancedOCR = async (fileId, settings = {}) => {
     console.log('Starting Advanced OCR processing for file ID:', fileId)
-    toast.loading('Checking server connection...', { id: 'ocr-processing' })
     
     try {
-      // Check server health first
-      const isHealthy = await api.healthCheck()
-      if (!isHealthy) {
-        throw new Error('Server is not responding. Please try again later.')
-      }
+      updateProgress(40, 'Processing with AI-enhanced OCR...', 2)
       
-      toast.loading('Processing with AI-enhanced OCR...', { id: 'ocr-processing' })
-      
-      // Use requestWithRetry for better reliability
-      const result = await api.requestWithRetry('/ai/ocr', {
+      const result = await api.request('/ai/ocr', {
         method: 'POST',
         body: JSON.stringify({
           fileId: fileId,
@@ -319,38 +314,27 @@ const AdvancedTools = () => {
           extractOriginal: settings.extractOriginal || false,
           confidenceThreshold: settings.confidenceThreshold || 0.6
         }),
-        timeout: 150000, // 2.5 minutes for OCR
+        timeout: 120000, // 2 minutes for OCR
         headers: {
           'Content-Type': 'application/json'
         }
-      }, 1) // Retry once on failure
+      })
       
-      toast.dismiss('ocr-processing')
-      toast.success('Advanced OCR processing completed! Text extracted with AI enhancement.')
+      updateProgress(90, 'OCR completed, preparing results...', 3)
       
       // Store the result and show the Enhanced OCR Modal
       setEnhancedOCRResult(result.result)
       setCurrentFileId(fileId)
       setShowEnhancedOCRModal(true)
       
+      updateProgress(100, 'Complete!', 4)
+      toast.success('Advanced OCR processing completed!')
+      
       setUploadedFiles([])
-      setIsProcessing(false)
+      setTimeout(() => setIsProcessing(false), 500)
       return result
     } catch (ocrError) {
       console.error('Advanced OCR error:', ocrError)
-      toast.dismiss('ocr-processing')
-      
-      // Provide more specific error messages
-      if (ocrError.message.includes('timeout')) {
-        toast.error('OCR processing timed out. The file may be too large or complex. Please try with a smaller file.')
-      } else if (ocrError.message.includes('Network error')) {
-        toast.error('Network connection issue. Please check your internet connection and try again.')
-      } else if (ocrError.message.includes('File not found')) {
-        toast.error('File upload failed. Please try uploading the file again.')
-      } else {
-        toast.error(`OCR processing failed: ${ocrError.message}`)
-      }
-      
       throw ocrError
     }
   }

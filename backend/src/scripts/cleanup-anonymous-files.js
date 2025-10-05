@@ -13,9 +13,6 @@
  *   - Daily at 2 AM: 0 2 * * *
  */
 
-// Load environment variables first
-require('dotenv').config();
-
 const { supabaseAdmin } = require('../config/supabase');
 
 async function cleanupExpiredAnonymousFiles() {

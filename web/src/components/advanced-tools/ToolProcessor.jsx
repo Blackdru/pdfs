@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '../ui/button'
 import { Crown, Upload, FileText, Info, Rocket } from 'lucide-react'
 import AdvancedSettings from './AdvancedSettings'
@@ -16,7 +16,14 @@ const ToolProcessor = ({
   toolSettings,
   setToolSettings
 }) => {
-  const [showAdvancedSettings, setShowAdvancedSettings] = useState(false)
+  const [showAdvancedSettings, setShowAdvancedSettings] = useState(true)
+
+  // Always show advanced settings when a tool is selected
+  useEffect(() => {
+    if (selectedTool) {
+      setShowAdvancedSettings(true)
+    }
+  }, [selectedTool])
 
   return (
     <div className="bg-surface rounded-3xl border border-border p-8 mb-8">

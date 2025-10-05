@@ -233,6 +233,9 @@ const AdvancedTools = () => {
         case 'images-to-pdf':
           result = await handleImagesToPDF(uploadedFileIds, toolSettings)
           break
+        case 'pdf-to-office':
+          result = await handlePDFToOffice(uploadedFileIds[0], toolSettings)
+          break
         default:
           throw new Error('Tool not implemented yet')
       }
@@ -637,6 +640,77 @@ const AdvancedTools = () => {
     return { file: result.file }
   }
 
+  const handlePDFToOffice = async (fileId, settings = {}) => {
+    console.log('Starting PDF to Office conversion for file ID:', fileId)
+    
+    updateProgress(30, 'Analyzing PDF structure...', 1)
+    
+    try {
+      // Prepare conversion options
+      const options = {
+        outputFormat: settings.outputFormat || 'docx',
+        conversionQuality: settings.conversionQuality || 'high',
+        ocrLanguage: settings.ocrLanguage || 'auto',
+        pageRange: settings.pageRange || '',
+        preserveFormatting: settings.preserveFormatting !== false,
+        preserveImages: settings.preserveImages !== false,
+        preserveTables: settings.preserveTables !== false,
+        preserveHyperlinks: settings.preserveHyperlinks !== false,
+        preserveHeaders: settings.preserveHeaders !== false,
+        preserveBookmarks: settings.preserveBookmarks || false,
+        imageQuality: settings.imageQuality || 90
+      }
+
+      // Add format-specific options
+      if (settings.outputFormat === 'xlsx' || settings.outputFormat === 'xls') {
+        options.detectTables = settings.detectTables !== false
+        options.oneSheetPerPage = settings.oneSheetPerPage || false
+        options.preserveFormulas = settings.preserveFormulas || false
+      } else if (['docx', 'doc', 'rtf', 'odt'].includes(settings.outputFormat)) {
+        options.detectColumns = settings.detectColumns !== false
+        options.preserveFonts = settings.preserveFonts !== false
+        options.preserveColors = settings.preserveColors !== false
+        options.createTOC = settings.createTOC || false
+      }
+
+      console.log('PDF to Office - Settings received:', settings)
+      console.log('PDF to Office - Options being sent:', options)
+
+      updateProgress(50, `Converting to ${options.outputFormat.toUpperCase()}...`, 2)
+
+      const response = await fetch(`${API_BASE_URL}/pdf/advanced/pdf-to-office`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
+        },
+        body: JSON.stringify({
+          fileIds: [fileId],
+          outputFormat: options.outputFormat,
+          options: options
+        })
+      })
+
+      updateProgress(80, 'Finalizing conversion...', 3)
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'PDF to Office conversion failed')
+      }
+
+      const result = await response.json()
+      updateProgress(100, 'Conversion complete!', 4)
+
+      toast.success(`PDF converted to ${options.outputFormat.toUpperCase()} successfully!`)
+      // Backend returns files array, get the first file
+      return { file: result.files && result.files.length > 0 ? result.files[0] : result.file }
+
+    } catch (error) {
+      console.error('PDF to Office conversion error:', error)
+      throw error
+    }
+  }
+
   const sendChatMessage = async (fileId) => {
     if (!currentMessage.trim()) return
 
@@ -683,23 +757,7 @@ const AdvancedTools = () => {
   const canProcess = uploadedFiles.length >= (selectedTool?.minFiles || 1)
   const usageExceeded = usage && usage.current >= usage.limit && subscription?.plan !== 'premium'
 
-  // Check if user has access to advanced tools page
-  useEffect(() => {
-    if (!subscription) return // Wait for subscription to load
-    
-    console.log('AdvancedTools: Checking page access, current plan:', subscription.plan)
-    
-    if (subscription.plan === 'free') {
-      console.log('AdvancedTools: Free user detected, checking access')
-      
-      const hasAccess = checkAccess('advanced-tools', 'Advanced PDF Tools', 'Professional-grade PDF processing with AI-powered tools')
-      
-      if (!hasAccess) {
-        console.log('AdvancedTools: Access denied, upgrade modal should be shown')
-      }
-    }
-  }, [subscription, checkAccess])
-
+  
   return (
     <div className="min-h-screen bg-page relative overflow-hidden">
       {/* Premium Background */}

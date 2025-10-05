@@ -2,7 +2,7 @@ const express = require('express');
 const { supabaseAdmin } = require('../config/supabase');
 const { authenticateUser } = require('../middleware/auth');
 const { PLAN_LIMITS } = require('../../../shared/planLimits.js');
-const stripeService = require('../services/stripeService');
+const paymentService = require('../services/paymentService');
 const currencyService = require('../services/currencyService');
 
 const router = express.Router();
@@ -67,6 +67,7 @@ router.get('/current', authenticateUser, async (req, res) => {
         started_at: subscription?.started_at,
         expires_at: subscription?.expires_at,
         cancel_at_period_end: subscription?.cancel_at_period_end || false,
+        payment_method: subscription?.payment_method || null,
         planLimits: planLimits
       },
       user: userProfile
@@ -119,7 +120,7 @@ router.get('/usage', authenticateUser, async (req, res) => {
       console.error('Error querying files table:', error);
     }
 
-    // Get OCR operations this month (handle table not existing)
+    // Get OCR operations this month
     try {
       const { data: ocrOperations, error: ocrError } = await supabaseAdmin
         .from('ocr_results')
@@ -133,11 +134,11 @@ router.get('/usage', authenticateUser, async (req, res) => {
         ocrCount = ocrOperations?.length || 0;
       }
     } catch (error) {
-      console.error('Error querying ocr_results table (table may not exist):', error);
+      console.error('Error querying ocr_results table:', error);
       ocrCount = 0;
     }
 
-    // Get AI operations this month (summaries + chat messages)
+    // Get AI operations this month
     try {
       const { data: summaries, error: summariesError } = await supabaseAdmin
         .from('summaries')
@@ -151,7 +152,7 @@ router.get('/usage', authenticateUser, async (req, res) => {
         aiOperationsCount += summaries?.length || 0;
       }
     } catch (error) {
-      console.error('Error querying summaries table (table may not exist):', error);
+      console.error('Error querying summaries table:', error);
     }
 
     // Get chat messages this month
@@ -172,7 +173,7 @@ router.get('/usage', authenticateUser, async (req, res) => {
         aiOperationsCount += chatMessages?.length || 0;
       }
     } catch (error) {
-      console.error('Error querying chat_messages table (table may not exist):', error);
+      console.error('Error querying chat_messages table:', error);
     }
 
     res.json({
@@ -181,7 +182,7 @@ router.get('/usage', authenticateUser, async (req, res) => {
         storage_used: totalStorage,
         ocr_operations: ocrCount,
         ai_operations: aiOperationsCount,
-        api_calls: 0 // TODO: Implement API call tracking
+        api_calls: 0
       },
       period: {
         start: startOfMonth.toISOString(),
@@ -194,24 +195,33 @@ router.get('/usage', authenticateUser, async (req, res) => {
   }
 });
 
-// Create subscription (for free plan or upgrade) with currency support
+// Get available payment methods for user's location
+router.get('/payment-methods', authenticateUser, async (req, res) => {
+  try {
+    const countryCode = await currencyService.getCountryFromRequest(req);
+    const paymentMethods = paymentService.getAvailablePaymentMethods(countryCode);
+    
+    res.json({ 
+      paymentMethods,
+      countryCode,
+      recommendedGateway: paymentService.getPaymentGateway(countryCode)
+    });
+  } catch (error) {
+    console.error('Error getting payment methods:', error);
+    res.status(500).json({ error: 'Failed to get payment methods' });
+  }
+});
+
+// Create subscription with automatic gateway selection
 router.post('/create', authenticateUser, async (req, res) => {
   try {
-    const { plan, currency } = req.body;
+    const { plan, currency, countryCode } = req.body;
 
     if (!plan || !PLAN_LIMITS[plan]) {
       return res.status(400).json({ error: 'Invalid plan specified' });
     }
 
-    // Detect currency if not provided
-    const selectedCurrency = currency || await currencyService.getCurrencyFromRequest(req);
-
-    // Validate currency
-    if (!currencyService.isCurrencySupported(selectedCurrency)) {
-      return res.status(400).json({ error: 'Currency not supported' });
-    }
-
-    // For free plan, just update user profile
+    // For free plan, just update database
     if (plan === 'free') {
       const { error: updateError } = await supabaseAdmin
         .from('subscriptions')
@@ -221,7 +231,7 @@ router.post('/create', authenticateUser, async (req, res) => {
             plan: 'free',
             status: 'active',
             started_at: new Date().toISOString(),
-            metadata: { currency: selectedCurrency }
+            payment_method: null
           },
           { onConflict: 'user_id' }
         );
@@ -234,65 +244,100 @@ router.post('/create', authenticateUser, async (req, res) => {
       return res.json({ message: 'Free plan activated successfully' });
     }
 
-    // For paid plans, integrate with Stripe
-    try {
-      // Get user profile for email
-      const { data: userProfile, error: profileError } = await supabaseAdmin
-        .from('users')
-        .select('email, name')
-        .eq('id', req.user.id)
-        .single();
+    // Get user profile
+    const { data: userProfile, error: profileError } = await supabaseAdmin
+      .from('users')
+      .select('email, name')
+      .eq('id', req.user.id)
+      .single();
 
-      if (profileError) {
-        return res.status(400).json({ error: 'User profile not found' });
-      }
-
-      // Check if user already has a Stripe customer ID
-      let customerId;
-      const { data: existingSubscription } = await supabaseAdmin
-        .from('subscriptions')
-        .select('stripe_customer_id')
-        .eq('user_id', req.user.id)
-        .single();
-
-      if (existingSubscription?.stripe_customer_id) {
-        customerId = existingSubscription.stripe_customer_id;
-      } else {
-        // Create new Stripe customer with currency preference
-        const customer = await stripeService.createCustomer(
-          userProfile.email,
-          userProfile.name,
-          req.user.id,
-          selectedCurrency
-        );
-        customerId = customer.id;
-      }
-
-      // Create Stripe subscription with plan and currency
-      const result = await stripeService.createSubscription(
-        customerId,
-        plan,
-        req.user.id,
-        selectedCurrency
-      );
-
-      res.json({
-        success: true,
-        clientSecret: result.clientSecret,
-        subscriptionId: result.subscriptionId,
-        currency: selectedCurrency
-      });
-
-    } catch (stripeError) {
-      console.error('Stripe error:', stripeError);
-      res.status(500).json({ 
-        error: 'Failed to create subscription with payment provider',
-        details: stripeError.message 
-      });
+    if (profileError) {
+      return res.status(400).json({ error: 'User profile not found' });
     }
+
+    // Detect country and currency
+    const detectedCountry = countryCode || await currencyService.getCountryFromRequest(req);
+    const detectedCurrency = currency || await currencyService.getCurrencyFromRequest(req);
+    
+    // Determine payment gateway
+    const gateway = paymentService.getPaymentGateway(detectedCountry, detectedCurrency);
+    
+    console.log(`Creating subscription for user ${req.user.id} with ${gateway} gateway`);
+
+    // Create subscription with appropriate gateway
+    const result = await paymentService.createSubscription(
+      req.user.id,
+      plan,
+      userProfile.email,
+      userProfile.name,
+      detectedCountry,
+      detectedCurrency
+    );
+
+    // Get pricing info
+    const pricing = paymentService.getPlanPricing(plan, gateway, detectedCurrency);
+
+    res.json({
+      success: true,
+      gateway: gateway,
+      subscriptionId: result.subscriptionId,
+      approvalUrl: result.approvalUrl, // For PayPal
+      orderId: result.id, // For Razorpay
+      currency: pricing.currency,
+      amount: pricing.amount,
+      ...result
+    });
+
   } catch (error) {
     console.error('Error creating subscription:', error);
-    res.status(500).json({ error: 'Failed to create subscription' });
+    res.status(500).json({ 
+      error: 'Failed to create subscription',
+      details: error.message 
+    });
+  }
+});
+
+// Verify payment (for Razorpay)
+router.post('/verify-payment', authenticateUser, async (req, res) => {
+  try {
+    const { orderId, paymentId, signature } = req.body;
+
+    if (!orderId || !paymentId || !signature) {
+      return res.status(400).json({ error: 'Missing payment verification data' });
+    }
+
+    const isValid = paymentService.verifyPaymentSignature(orderId, paymentId, signature);
+
+    if (!isValid) {
+      return res.status(400).json({ error: 'Invalid payment signature' });
+    }
+
+    res.json({ success: true, message: 'Payment verified successfully' });
+  } catch (error) {
+    console.error('Error verifying payment:', error);
+    res.status(500).json({ error: 'Failed to verify payment' });
+  }
+});
+
+// Capture PayPal order
+router.post('/capture-paypal-order', authenticateUser, async (req, res) => {
+  try {
+    const { orderId } = req.body;
+
+    if (!orderId) {
+      return res.status(400).json({ error: 'Order ID is required' });
+    }
+
+    const result = await paymentService.capturePayPalOrder(orderId);
+
+    res.json({ 
+      success: true, 
+      message: 'Payment captured successfully',
+      result 
+    });
+  } catch (error) {
+    console.error('Error capturing PayPal order:', error);
+    res.status(500).json({ error: 'Failed to capture payment' });
   }
 });
 
@@ -301,17 +346,37 @@ router.post('/cancel', authenticateUser, async (req, res) => {
   try {
     const { immediate = false } = req.body;
 
-    const { error } = await supabaseAdmin
+    // Get current subscription
+    const { data: subscription, error: subError } = await supabaseAdmin
       .from('subscriptions')
-      .update({
-        status: immediate ? 'cancelled' : 'active',
-        cancel_at_period_end: !immediate,
-        updated_at: new Date().toISOString()
-      })
-      .eq('user_id', req.user.id);
+      .select('*')
+      .eq('user_id', req.user.id)
+      .single();
 
-    if (error) {
-      return res.status(400).json({ error: error.message });
+    if (subError || !subscription) {
+      return res.status(404).json({ error: 'Subscription not found' });
+    }
+
+    const gateway = subscription.payment_method || 'paypal';
+    const subscriptionId = subscription.razorpay_subscription_id || subscription.paypal_subscription_id;
+
+    if (subscriptionId) {
+      // Cancel with payment gateway
+      await paymentService.cancelSubscription(subscriptionId, gateway, immediate);
+    } else {
+      // Just update database for free plans
+      const { error } = await supabaseAdmin
+        .from('subscriptions')
+        .update({
+          status: immediate ? 'cancelled' : 'active',
+          cancel_at_period_end: !immediate,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', req.user.id);
+
+      if (error) {
+        return res.status(400).json({ error: error.message });
+      }
     }
 
     res.json({
@@ -328,6 +393,26 @@ router.post('/cancel', authenticateUser, async (req, res) => {
 // Reactivate subscription
 router.post('/reactivate', authenticateUser, async (req, res) => {
   try {
+    // Get current subscription
+    const { data: subscription, error: subError } = await supabaseAdmin
+      .from('subscriptions')
+      .select('*')
+      .eq('user_id', req.user.id)
+      .single();
+
+    if (subError || !subscription) {
+      return res.status(404).json({ error: 'Subscription not found' });
+    }
+
+    const gateway = subscription.payment_method || 'paypal';
+    const subscriptionId = subscription.paypal_subscription_id;
+
+    if (subscriptionId && gateway === 'paypal') {
+      // Reactivate with PayPal
+      await paymentService.activatePayPalSubscription(subscriptionId, 'Customer reactivation');
+    }
+
+    // Update database
     const { error } = await supabaseAdmin
       .from('subscriptions')
       .update({
@@ -348,10 +433,10 @@ router.post('/reactivate', authenticateUser, async (req, res) => {
   }
 });
 
-// Update subscription plan with currency support
+// Update subscription plan
 router.put('/plan', authenticateUser, async (req, res) => {
   try {
-    const { plan, currency } = req.body;
+    const { plan } = req.body;
 
     if (!plan || !PLAN_LIMITS[plan]) {
       return res.status(400).json({ error: 'Invalid plan specified' });
@@ -368,56 +453,46 @@ router.put('/plan', authenticateUser, async (req, res) => {
       return res.status(404).json({ error: 'Subscription not found' });
     }
 
-    // Get currency from request or use existing
-    const selectedCurrency = currency || currentSub.metadata?.currency || 'USD';
+    // For now, just update the plan in database
+    // In production, you'd need to handle plan changes with payment gateways
+    const { error } = await supabaseAdmin
+      .from('subscriptions')
+      .update({
+        plan: plan,
+        updated_at: new Date().toISOString()
+      })
+      .eq('user_id', req.user.id);
 
-    // If there's a Stripe subscription, update it
-    if (currentSub.stripe_subscription_id) {
-      try {
-        await stripeService.updateSubscriptionPlan(
-          currentSub.stripe_subscription_id,
-          plan,
-          selectedCurrency
-        );
-      } catch (stripeError) {
-        console.error('Stripe update error:', stripeError);
-        return res.status(500).json({ 
-          error: 'Failed to update subscription with payment provider',
-          details: stripeError.message 
-        });
-      }
-    } else {
-      // Update local subscription only
-      const { error } = await supabaseAdmin
-        .from('subscriptions')
-        .update({
-          plan: plan,
-          metadata: { ...currentSub.metadata, currency: selectedCurrency },
-          updated_at: new Date().toISOString()
-        })
-        .eq('user_id', req.user.id);
-
-      if (error) {
-        return res.status(400).json({ error: error.message });
-      }
+    if (error) {
+      return res.status(400).json({ error: error.message });
     }
 
-    res.json({ message: 'Plan updated successfully', currency: selectedCurrency });
+    res.json({ message: 'Plan updated successfully' });
   } catch (error) {
     console.error('Error updating plan:', error);
     res.status(500).json({ error: 'Failed to update plan' });
   }
 });
 
-// Get billing history (placeholder)
+// Get billing history
 router.get('/billing-history', authenticateUser, async (req, res) => {
   try {
-    // This would integrate with Stripe to get actual billing history
-    // For now, return empty array
-    res.json({ history: [] });
+    const { data: transactions, error } = await supabaseAdmin
+      .from('payment_transactions')
+      .select('*')
+      .eq('user_id', req.user.id)
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    if (error) {
+      console.error('Error getting billing history:', error);
+      return res.json({ history: [] });
+    }
+
+    res.json({ history: transactions || [] });
   } catch (error) {
     console.error('Error getting billing history:', error);
-    res.status(500).json({ error: 'Failed to get billing history' });
+    res.json({ history: [] });
   }
 });
 

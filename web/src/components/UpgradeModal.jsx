@@ -29,9 +29,9 @@ const UpgradeModal = ({ isOpen, onClose, requiredPlan = 'pro', toolName = '', to
 
   const getPlanIcon = (planId) => {
     switch (planId) {
-      case 'pro':
+      case 'basic':
         return <Zap className="h-6 w-6 text-purple-500" />
-      case 'premium':
+      case 'pro':
         return <Crown className="h-6 w-6 text-blue-500" />
       default:
         return <Star className="h-6 w-6 text-blue-500" />
@@ -40,9 +40,9 @@ const UpgradeModal = ({ isOpen, onClose, requiredPlan = 'pro', toolName = '', to
 
   const getPlanColor = (planId) => {
     switch (planId) {
-      case 'pro':
+      case 'basic':
         return 'from-purple-500 to-pink-500'
-      case 'premium':
+      case 'pro':
         return 'from-blue-500 to-indigo-500'
       default:
         return 'from-blue-500 to-purple-500'
@@ -53,16 +53,16 @@ const UpgradeModal = ({ isOpen, onClose, requiredPlan = 'pro', toolName = '', to
     if (!plans || plans.length === 0) {
       return [
         {
-          id: 'pro',
-          name: 'Pro',
+          id: 'basic',
+          name: 'Basic',
           price: 1,
-          features: ['500 files/month', 'Advanced OCR', 'AI Chat', 'Batch processing']
+          features: ['50 files/month', '25 OCR pages', '25 AI chat messages', '25 AI summaries', 'All advanced tools']
         },
         {
-          id: 'premium',
-          name: 'Premium',
+          id: 'pro',
+          name: 'Pro',
           price: 10,
-          features: ['Unlimited files', 'All AI features', 'Priority support', 'Advanced analytics']
+          features: ['Unlimited files', 'Unlimited OCR', 'Unlimited AI chat', 'Unlimited AI summaries', 'All advanced tools & settings', 'Priority support']
         }
       ]
     }
@@ -86,7 +86,7 @@ const UpgradeModal = ({ isOpen, onClose, requiredPlan = 'pro', toolName = '', to
                   Upgrade Required
                 </DialogTitle>
                 <DialogDescription className="text-muted-foreground">
-                  {toolName ? `${toolName} requires a Pro or Premium subscription` : 'This feature requires a paid subscription'}
+                  {toolName ? `${toolName} requires a Basic or Pro subscription` : 'This feature requires a paid subscription'}
                 </DialogDescription>
               </div>
             </div>
@@ -120,56 +120,12 @@ const UpgradeModal = ({ isOpen, onClose, requiredPlan = 'pro', toolName = '', to
               )}
               <div className="flex items-center text-sm text-muted-foreground">
                 <Lock className="h-4 w-4 mr-2" />
-                This advanced feature is available with Pro and Premium plans
+                This advanced feature is available with Basic and Pro plans
               </div>
             </div>
           )}
 
-          {/* Benefits */}
-          <div className="bg-gradient-to-br from-purple-900/20 to-pink-900/20 rounded-xl p-6 border border-purple-800/30">
-            <h3 className="text-lg font-semibold text-card-foreground mb-4 flex items-center">
-              <TrendingUp className="h-5 w-5 mr-2 text-purple-400" />
-              Why Upgrade?
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-3">
-                <div className="flex items-center text-foreground">
-                  <Check className="h-4 w-4 mr-3 text-green-400" />
-                  Advanced AI-powered tools
-                </div>
-                <div className="flex items-center text-foreground">
-                  <Check className="h-4 w-4 mr-3 text-green-400" />
-                  Higher processing limits
-                </div>
-                <div className="flex items-center text-foreground">
-                  <Check className="h-4 w-4 mr-3 text-green-400" />
-                  OCR text extraction
-                </div>
-                <div className="flex items-center text-foreground">
-                  <Check className="h-4 w-4 mr-3 text-green-400" />
-                  AI document chat
-                </div>
-              </div>
-              <div className="space-y-3">
-                <div className="flex items-center text-foreground">
-                  <Check className="h-4 w-4 mr-3 text-green-400" />
-                  Batch processing
-                </div>
-                <div className="flex items-center text-foreground">
-                  <Check className="h-4 w-4 mr-3 text-green-400" />
-                  Priority support
-                </div>
-                <div className="flex items-center text-foreground">
-                  <Check className="h-4 w-4 mr-3 text-green-400" />
-                  Advanced security features
-                </div>
-                <div className="flex items-center text-foreground">
-                  <Check className="h-4 w-4 mr-3 text-green-400" />
-                  No ads or watermarks
-                </div>
-              </div>
-            </div>
-          </div>
+          
 
           {/* Plan Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -208,13 +164,13 @@ const UpgradeModal = ({ isOpen, onClose, requiredPlan = 'pro', toolName = '', to
                       <span className="text-sm text-muted-foreground font-normal">/month</span>
                     </div>
                     <p className="text-muted-foreground text-sm">
-                      {plan.id === 'pro' ? 'Perfect for regular users' : 'For power users and teams'}
+                      {plan.id === 'basic' ? 'Perfect for regular users' : 'For power users and teams'}
                     </p>
                   </div>
 
                   {/* Features */}
                   <div className="space-y-2 mb-6">
-                    {(plan.features || []).slice(0, 4).map((feature, index) => (
+                    {(plan.features || []).slice(0, plan.id === 'basic' ? 5 : 6).map((feature, index) => (
                       <div key={index} className="flex items-center text-sm text-foreground">
                         <Check className="h-4 w-4 mr-3 text-green-400 flex-shrink-0" />
                         {feature}
@@ -248,10 +204,6 @@ const UpgradeModal = ({ isOpen, onClose, requiredPlan = 'pro', toolName = '', to
           {/* Footer */}
           <div className="text-center space-y-4 pt-6 border-t border-border">
             <div className="flex items-center justify-center space-x-6 text-sm text-muted-foreground">
-              <div className="flex items-center">
-                <Check className="h-4 w-4 mr-2 text-green-400" />
-                7-day free trial
-              </div>
               <div className="flex items-center">
                 <Check className="h-4 w-4 mr-2 text-green-400" />
                 Cancel anytime

@@ -34,11 +34,11 @@ const Pricing = () => {
       price: 0,
       description: 'Perfect for getting started',
       features: [
-        '10 files per month',
+        'Unlimited use of free tools',
         '10 MB max file size',
-        '100 MB storage',
-        'No OCR or AI features',
-        'Basic PDF tools only'
+        'No storage',
+        'No AI features',
+        'No advanced tools access'
       ]
     },
     {
@@ -48,12 +48,12 @@ const Pricing = () => {
       description: 'Great for regular users',
       popular: true,
       features: [
-        '100 files per month',
+        '50 files per month',
         '50 MB max file size',
         '500 MB storage',
-        '50 OCR pages',
-        '50 AI chat messages',
-        '50 AI summaries',
+        '25 Advanced OCR pages',
+        '25 AI chat messages',
+        '25 AI summaries',
         'Access to all advanced tools'
       ]
     },
@@ -85,9 +85,15 @@ const Pricing = () => {
       pro: '$10/month'
     },
     {
+      feature: 'Free Tools Usage',
+      free: 'Unlimited',
+      basic: 'Unlimited',
+      pro: 'Unlimited'
+    },
+    {
       feature: 'Files per month',
-      free: '10',
-      basic: '100',
+      free: 'Unlimited (Free Tools)',
+      basic: '50',
       pro: 'Unlimited'
     },
     {
@@ -98,30 +104,30 @@ const Pricing = () => {
     },
     {
       feature: 'Storage',
-      free: '100 MB',
+      free: 'No Storage',
       basic: '500 MB',
       pro: 'Unlimited'
     },
     {
-      feature: 'OCR Pages',
+      feature: 'Advanced OCR Pages',
       free: 'None',
-      basic: '50',
+      basic: '25',
       pro: 'Unlimited'
     },
     {
       feature: 'AI Chat Messages',
       free: 'None',
-      basic: '50',
+      basic: '25',
       pro: 'Unlimited'
     },
     {
-      feature: 'AI Summary',
+      feature: 'AI Summaries',
       free: 'None',
-      basic: '50',
+      basic: '25',
       pro: 'Unlimited'
     },
     {
-      feature: 'Advanced Tools',
+      feature: 'Advanced Tools Access',
       free: false,
       basic: true,
       pro: true

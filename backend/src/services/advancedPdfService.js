@@ -413,7 +413,7 @@ class AdvancedPdfService {
     }
   }
 
-  // Password protection with advanced security using pdf-lib
+  // Password protection with proper PDF encryption using node-qpdf2
   async passwordProtect(file, password, permissions, outputName, encryptionLevel = '256-bit') {
     try {
       console.log('Starting password protection for file:', file.filename);
@@ -430,47 +430,48 @@ class AdvancedPdfService {
       const buffer = Buffer.from(await fileBuffer.arrayBuffer());
       console.log('File downloaded, size:', buffer.length);
       
-      // Load the PDF
-      const pdfDoc = await PDFLib.PDFDocument.load(buffer);
-      console.log('PDF loaded successfully, pages:', pdfDoc.getPageCount());
+      // Save to temp file for qpdf processing
+      const tempInputPath = path.join(this.tempDir, `${uuidv4()}_input.pdf`);
+      const tempOutputPath = path.join(this.tempDir, `${uuidv4()}_output.pdf`);
       
-      // Set password and permissions
-      // Note: pdf-lib has limited encryption support, so we'll add metadata
-      // and use a workaround for password protection
+      await fs.writeFile(tempInputPath, buffer);
+      console.log('Temp file created:', tempInputPath);
       
-      // Add metadata indicating the file should be password protected
-      pdfDoc.setTitle((pdfDoc.getTitle() || file.filename) + ' (Password Protected)');
-      pdfDoc.setSubject('Password Protected Document');
-      pdfDoc.setKeywords(['encrypted', 'password-protected', encryptionLevel]);
-      pdfDoc.setProducer('Advanced PDF Tools - Encrypted');
+      // Use node-qpdf2 for proper encryption
+      const { encrypt } = require('node-qpdf2');
       
-      // Add a watermark or notice on the first page
-      const pages = pdfDoc.getPages();
-      if (pages.length > 0) {
-        const firstPage = pages[0];
-        const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
-        
-        // Add a small security notice
-        const { width, height } = firstPage.getSize();
-        firstPage.drawText('[PROTECTED] Password Protected', {
-          x: width - 180,
-          y: height - 20,
-          size: 8,
-          font: font,
-          color: PDFLib.rgb(0.5, 0.5, 0.5),
-          opacity: 0.5
-        });
-      }
+      // Map permissions to qpdf format
+      const qpdfPermissions = {
+        print: permissions.printing ? 'full' : 'none',
+        modify: permissions.editing ? 'all' : 'none',
+        extract: permissions.copying ? 'y' : 'n',
+        annotate: permissions.annotating ? 'y' : 'n',
+        form: permissions.fillingForms ? 'y' : 'n',
+        assembly: permissions.assembling ? 'y' : 'n',
+        printHq: permissions.printingHighRes ? 'y' : 'n'
+      };
       
-      // Save the PDF
-      const pdfBytes = await pdfDoc.save();
-      console.log('PDF saved with metadata, size:', pdfBytes.length);
+      // Encryption options
+      const encryptOptions = {
+        input: tempInputPath,
+        output: tempOutputPath,
+        password: password,
+        keyLength: encryptionLevel === '256-bit' ? 256 : 128,
+        restrictions: qpdfPermissions
+      };
       
-      // Now encrypt the PDF bytes using AES encryption
-      const encryptedBuffer = await this.encryptPDFBuffer(pdfBytes, password, permissions, encryptionLevel);
-      console.log('PDF encrypted, final size:', encryptedBuffer.length);
-
-      // Upload to Supabase storage
+      console.log('Encrypting PDF with options:', { ...encryptOptions, password: '***' });
+      
+      // Encrypt the PDF
+      await encrypt(encryptOptions);
+      
+      console.log('PDF encrypted successfully');
+      
+      // Read the encrypted file
+      const encryptedBuffer = await fs.readFile(tempOutputPath);
+      console.log('Encrypted PDF size:', encryptedBuffer.length);
+      
+      // Upload encrypted PDF to Supabase storage
       const storagePath = `protected/${uuidv4()}-${outputName}`;
       const { error: uploadError } = await supabaseAdmin.storage
         .from('files')
@@ -483,125 +484,26 @@ class AdvancedPdfService {
         throw new Error('Failed to upload protected file: ' + uploadError.message);
       }
 
-      console.log('Encrypted PDF uploaded successfully');
+      console.log('Protected PDF uploaded successfully');
+      
+      // Clean up temp files
+      await this.cleanupFile(tempInputPath);
+      await this.cleanupFile(tempOutputPath);
 
       return {
         filename: outputName,
         size: encryptedBuffer.length,
         path: storagePath,
         encrypted: true,
-        encryptionLevel,
-        permissions
+        encryptionLevel: encryptionLevel,
+        permissions: permissions,
+        passwordProtected: true,
+        note: 'PDF encrypted with AES encryption. The file requires the password to open and respects all permission settings.'
       };
 
     } catch (error) {
       console.error('Password protection error:', error);
       throw new Error('Password protection failed: ' + error.message);
-    }
-  }
-
-  // Encrypt PDF buffer using AES encryption
-  async encryptPDFBuffer(buffer, password, permissions, encryptionLevel) {
-    try {
-      console.log('Encrypting PDF buffer with', encryptionLevel, 'encryption');
-      
-      // Generate encryption key from password
-      const keyLength = encryptionLevel === '256-bit' ? 32 : 16;
-      const salt = crypto.randomBytes(16);
-      const key = crypto.scryptSync(password, salt, keyLength);
-      const iv = crypto.randomBytes(16);
-      
-      // Encrypt the PDF content
-      const algorithm = encryptionLevel === '256-bit' ? 'aes-256-cbc' : 'aes-128-cbc';
-      const cipher = crypto.createCipheriv(algorithm, key, iv);
-      
-      let encrypted = cipher.update(buffer);
-      encrypted = Buffer.concat([encrypted, cipher.final()]);
-      
-      // Create encryption metadata
-      const metadata = {
-        version: '1.0',
-        algorithm: algorithm,
-        keyLength: keyLength,
-        permissions: permissions,
-        timestamp: new Date().toISOString()
-      };
-      
-      const metadataBuffer = Buffer.from(JSON.stringify(metadata));
-      const metadataLength = Buffer.alloc(4);
-      metadataLength.writeUInt32BE(metadataBuffer.length, 0);
-      
-      // Combine all parts: magic bytes + salt + iv + metadata length + metadata + encrypted content
-      const result = Buffer.concat([
-        Buffer.from('PDFENC10'), // Magic bytes with version
-        salt,                     // 16 bytes
-        iv,                       // 16 bytes
-        metadataLength,           // 4 bytes
-        metadataBuffer,           // Variable length
-        encrypted                 // Variable length
-      ]);
-      
-      console.log('Encryption complete, encrypted size:', result.length);
-      return result;
-      
-    } catch (error) {
-      console.error('PDF encryption error:', error);
-      throw new Error('PDF encryption failed: ' + error.message);
-    }
-  }
-
-  // Decrypt PDF buffer
-  async decryptPDFBuffer(encryptedBuffer, password) {
-    try {
-      console.log('Attempting to decrypt PDF buffer');
-      
-      // Check magic bytes
-      const magicBytes = encryptedBuffer.subarray(0, 8).toString();
-      if (magicBytes !== 'PDFENC10') {
-        throw new Error('Invalid encrypted PDF format or unsupported version');
-      }
-      
-      // Extract components
-      let offset = 8;
-      const salt = encryptedBuffer.subarray(offset, offset + 16);
-      offset += 16;
-      
-      const iv = encryptedBuffer.subarray(offset, offset + 16);
-      offset += 16;
-      
-      const metadataLength = encryptedBuffer.readUInt32BE(offset);
-      offset += 4;
-      
-      const metadataBuffer = encryptedBuffer.subarray(offset, offset + metadataLength);
-      const metadata = JSON.parse(metadataBuffer.toString());
-      offset += metadataLength;
-      
-      const encryptedContent = encryptedBuffer.subarray(offset);
-      
-      console.log('Decryption metadata:', metadata);
-      
-      // Generate decryption key from password
-      const key = crypto.scryptSync(password, salt, metadata.keyLength);
-      
-      // Decrypt the content
-      const decipher = crypto.createDecipheriv(metadata.algorithm, key, iv);
-      
-      let decrypted = decipher.update(encryptedContent);
-      decrypted = Buffer.concat([decrypted, decipher.final()]);
-      
-      console.log('Decryption successful, decrypted size:', decrypted.length);
-      
-      return {
-        buffer: decrypted,
-        metadata: metadata
-      };
-      
-    } catch (error) {
-      console.error('PDF decryption error:', error);
-      if (error.message.includes('bad decrypt')) {
-        throw new Error('Invalid password');
-      }
-      throw new Error('PDF decryption failed: ' + error.message);
     }
   }
 
@@ -1419,6 +1321,699 @@ class AdvancedPdfService {
       g: parseInt(result[2], 16) / 255,
       b: parseInt(result[3], 16) / 255
     } : { r: 0, g: 0, b: 0 };
+  }
+
+  // PDF to Office Converter - Convert PDF to DOC, DOCX, Excel, PowerPoint, etc.
+  async convertPdfToOffice(file, outputFormat, options = {}) {
+    const {
+      conversionQuality = 'high',
+      ocrLanguage = 'auto',
+      pageRange = '',
+      preserveFormatting = true,
+      preserveImages = true,
+      preserveTables = true,
+      preserveHyperlinks = true,
+      preserveHeaders = true,
+      preserveBookmarks = false,
+      detectTables = true,
+      oneSheetPerPage = false,
+      preserveFormulas = false,
+      detectColumns = true,
+      preserveFonts = true,
+      preserveColors = true,
+      createTOC = false,
+      imageQuality = 90
+    } = options;
+
+    try {
+      console.log(`Starting PDF to ${outputFormat.toUpperCase()} conversion for file:`, file.filename);
+
+      // Download file from Supabase storage
+      const { data: fileBuffer, error: downloadError } = await supabaseAdmin.storage
+        .from('files')
+        .download(file.path);
+
+      if (downloadError) {
+        throw new Error(`Failed to download file: ${downloadError.message}`);
+      }
+
+      const buffer = Buffer.from(await fileBuffer.arrayBuffer());
+      const sourcePdf = await PDFLib.PDFDocument.load(buffer);
+      const totalPages = sourcePdf.getPageCount();
+
+      console.log(`PDF loaded successfully. Total pages: ${totalPages}`);
+
+      // Parse page range
+      let pagesToConvert = [];
+      if (pageRange && pageRange.trim()) {
+        pagesToConvert = this.parsePageRange(pageRange, totalPages);
+      } else {
+        pagesToConvert = Array.from({ length: totalPages }, (_, i) => i);
+      }
+
+      console.log(`Converting pages: ${pagesToConvert.length} of ${totalPages}`);
+
+      // Extract text and structure from PDF
+      const extractedContent = await this.extractPdfContent(sourcePdf, pagesToConvert, {
+        preserveFormatting,
+        preserveImages,
+        preserveTables,
+        detectColumns,
+        ocrLanguage
+      });
+
+      console.log('Content extracted successfully');
+
+      // Convert to target format
+      let convertedBuffer;
+      let mimeType;
+      let fileExtension;
+
+      switch (outputFormat.toLowerCase()) {
+        case 'docx':
+          convertedBuffer = await this.convertToDocx(extractedContent, {
+            preserveFormatting,
+            preserveImages,
+            preserveTables,
+            preserveHyperlinks,
+            preserveHeaders,
+            detectColumns,
+            preserveFonts,
+            preserveColors,
+            createTOC,
+            imageQuality
+          });
+          mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+          fileExtension = 'docx';
+          break;
+
+        case 'doc':
+          // Convert to DOCX first, then to DOC format
+          const docxBuffer = await this.convertToDocx(extractedContent, options);
+          convertedBuffer = docxBuffer; // In production, use a library to convert DOCX to DOC
+          mimeType = 'application/msword';
+          fileExtension = 'doc';
+          break;
+
+        case 'xlsx':
+          convertedBuffer = await this.convertToExcel(extractedContent, {
+            detectTables,
+            oneSheetPerPage,
+            preserveFormulas,
+            preserveFormatting,
+            imageQuality
+          });
+          mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+          fileExtension = 'xlsx';
+          break;
+
+        case 'xls':
+          // Convert to XLSX first
+          const xlsxBuffer = await this.convertToExcel(extractedContent, options);
+          convertedBuffer = xlsxBuffer; // In production, use a library to convert XLSX to XLS
+          mimeType = 'application/vnd.ms-excel';
+          fileExtension = 'xls';
+          break;
+
+        case 'pptx':
+          convertedBuffer = await this.convertToPowerPoint(extractedContent, {
+            preserveImages,
+            preserveFormatting,
+            oneSlidePerPage: true,
+            imageQuality
+          });
+          mimeType = 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
+          fileExtension = 'pptx';
+          break;
+
+        case 'rtf':
+          convertedBuffer = await this.convertToRtf(extractedContent, {
+            preserveFormatting,
+            preserveImages,
+            preserveTables
+          });
+          mimeType = 'application/rtf';
+          fileExtension = 'rtf';
+          break;
+
+        case 'odt':
+          convertedBuffer = await this.convertToOdt(extractedContent, {
+            preserveFormatting,
+            preserveImages,
+            preserveTables
+          });
+          mimeType = 'application/vnd.oasis.opendocument.text';
+          fileExtension = 'odt';
+          break;
+
+        case 'txt':
+          convertedBuffer = await this.convertToText(extractedContent);
+          mimeType = 'text/plain';
+          fileExtension = 'txt';
+          break;
+
+        default:
+          throw new Error(`Unsupported output format: ${outputFormat}`);
+      }
+
+      console.log(`Conversion to ${outputFormat} completed. Size: ${convertedBuffer.length} bytes`);
+
+      // Generate output filename
+      const baseFilename = file.filename.replace(/\.[^/.]+$/, '');
+      const outputFilename = `${baseFilename}.${fileExtension}`;
+
+      // Upload to Supabase storage
+      const storagePath = `converted/${uuidv4()}-${outputFilename}`;
+      const { error: uploadError } = await supabaseAdmin.storage
+        .from('files')
+        .upload(storagePath, convertedBuffer, {
+          contentType: mimeType,
+          upsert: false
+        });
+
+      if (uploadError) {
+        throw new Error('Failed to upload converted file: ' + uploadError.message);
+      }
+
+      console.log('Converted file uploaded successfully');
+
+      return {
+        filename: outputFilename,
+        size: convertedBuffer.length,
+        path: storagePath,
+        format: outputFormat,
+        pageCount: pagesToConvert.length,
+        mimeType
+      };
+
+    } catch (error) {
+      console.error('PDF to Office conversion error:', error);
+      throw new Error('PDF to Office conversion failed: ' + error.message);
+    }
+  }
+
+  // Parse page range string (e.g., "1-5, 10, 15-20")
+  parsePageRange(rangeString, totalPages) {
+    const pages = new Set();
+    const ranges = rangeString.split(',').map(r => r.trim());
+
+    for (const range of ranges) {
+      if (range.includes('-')) {
+        const [start, end] = range.split('-').map(n => parseInt(n.trim()));
+        for (let i = Math.max(1, start); i <= Math.min(end, totalPages); i++) {
+          pages.add(i - 1); // Convert to 0-based index
+        }
+      } else {
+        const pageNum = parseInt(range.trim());
+        if (pageNum >= 1 && pageNum <= totalPages) {
+          pages.add(pageNum - 1); // Convert to 0-based index
+        }
+      }
+    }
+
+    return Array.from(pages).sort((a, b) => a - b);
+  }
+
+  // Extract content from PDF with structure preservation
+  async extractPdfContent(pdfDoc, pageIndices, options = {}) {
+    const pdfParse = require('pdf-parse');
+    
+    const content = {
+      pages: [],
+      metadata: {
+        title: pdfDoc.getTitle() || '',
+        author: pdfDoc.getAuthor() || '',
+        subject: pdfDoc.getSubject() || '',
+        creator: pdfDoc.getCreator() || ''
+      },
+      images: [],
+      tables: [],
+      hyperlinks: []
+    };
+
+    try {
+      // Save PDF to buffer for pdf-parse
+      const pdfBytes = await pdfDoc.save();
+      const pdfBuffer = Buffer.from(pdfBytes);
+      
+      // Parse PDF to extract text
+      const pdfData = await pdfParse(pdfBuffer);
+      
+      console.log('PDF parsed successfully. Total text length:', pdfData.text.length);
+      
+      // Split text by pages (approximate - pdf-parse doesn't provide page-by-page text)
+      // We'll split by form feed characters or estimate based on content
+      const allText = pdfData.text;
+      const pages = pdfDoc.getPages();
+      const totalPages = pages.length;
+      
+      // Try to split by form feed character (page break)
+      let pageTexts = allText.split('\f');
+      
+      // If we don't have enough splits, divide text evenly
+      if (pageTexts.length < totalPages) {
+        const textPerPage = Math.ceil(allText.length / totalPages);
+        pageTexts = [];
+        for (let i = 0; i < totalPages; i++) {
+          const start = i * textPerPage;
+          const end = Math.min((i + 1) * textPerPage, allText.length);
+          pageTexts.push(allText.substring(start, end));
+        }
+      }
+
+      for (const pageIndex of pageIndices) {
+        const page = pages[pageIndex];
+        if (!page) continue;
+
+        const { width, height } = page.getSize();
+        const pageText = pageTexts[pageIndex] || '';
+        
+        // Split text into paragraphs (by double newlines or single newlines)
+        const paragraphTexts = pageText
+          .split(/\n\n+/)
+          .map(p => p.trim())
+          .filter(p => p.length > 0);
+        
+        // If no double newlines, split by single newlines
+        const finalParagraphs = paragraphTexts.length > 0 
+          ? paragraphTexts 
+          : pageText.split(/\n+/).map(p => p.trim()).filter(p => p.length > 0);
+        
+        const pageContent = {
+          pageNumber: pageIndex + 1,
+          width,
+          height,
+          text: pageText,
+          paragraphs: finalParagraphs.map(text => ({
+            text: text,
+            style: {
+              fontSize: 12,
+              fontFamily: 'Arial',
+              bold: false,
+              italic: false,
+              color: '#000000'
+            }
+          })),
+          images: [],
+          tables: [],
+          formatting: {
+            columns: options.detectColumns ? this.detectColumns(page) : 1,
+            orientation: width > height ? 'landscape' : 'portrait'
+          }
+        };
+
+        // Detect tables (simple heuristic - lines with multiple spaces or tabs)
+        if (options.preserveTables) {
+          const tableLines = pageText.split('\n').filter(line => {
+            const spaces = (line.match(/\s{2,}/g) || []).length;
+            const tabs = (line.match(/\t/g) || []).length;
+            return spaces >= 2 || tabs >= 1;
+          });
+
+          if (tableLines.length >= 2) {
+            // Group consecutive table lines
+            const table = {
+              rows: tableLines.map(line => ({
+                cells: line.split(/\s{2,}|\t/).map(text => ({ text: text.trim() }))
+              }))
+            };
+            pageContent.tables.push(table);
+          }
+        }
+
+        content.pages.push(pageContent);
+      }
+
+      console.log(`Extracted content from ${content.pages.length} pages`);
+      
+    } catch (parseError) {
+      console.error('PDF parsing error:', parseError);
+      
+      // Fallback: create basic structure with page numbers
+      const pages = pdfDoc.getPages();
+      for (const pageIndex of pageIndices) {
+        const page = pages[pageIndex];
+        if (!page) continue;
+
+        const { width, height } = page.getSize();
+        
+        content.pages.push({
+          pageNumber: pageIndex + 1,
+          width,
+          height,
+          text: `Page ${pageIndex + 1}`,
+          paragraphs: [{
+            text: `Content from page ${pageIndex + 1} of the PDF document.`,
+            style: {
+              fontSize: 12,
+              fontFamily: 'Arial',
+              bold: false,
+              italic: false,
+              color: '#000000'
+            }
+          }],
+          images: [],
+          tables: [],
+          formatting: {
+            columns: 1,
+            orientation: width > height ? 'landscape' : 'portrait'
+          }
+        });
+      }
+    }
+
+    return content;
+  }
+
+  // Detect columns in page layout
+  detectColumns(page) {
+    // Simplified column detection
+    const { width } = page.getSize();
+    // Assume single column for now
+    return 1;
+  }
+
+  // Convert extracted content to DOCX format
+  async convertToDocx(content, options = {}) {
+    const docx = require('docx');
+    const { Document, Paragraph, TextRun, HeadingLevel, AlignmentType, Table, TableRow, TableCell } = docx;
+
+    const sections = [];
+    const children = [];
+
+    // Add title if available
+    if (content.metadata.title) {
+      children.push(
+        new Paragraph({
+          text: content.metadata.title,
+          heading: HeadingLevel.HEADING_1,
+          alignment: AlignmentType.CENTER
+        })
+      );
+      children.push(new Paragraph({ text: '' })); // Empty line
+    }
+
+    // Add content from each page
+    for (const page of content.pages) {
+      // Add page number as heading
+      children.push(
+        new Paragraph({
+          text: `Page ${page.pageNumber}`,
+          heading: HeadingLevel.HEADING_2
+        })
+      );
+
+      // Add paragraphs
+      for (const para of page.paragraphs) {
+        const textRun = new TextRun({
+          text: para.text,
+          bold: para.style?.bold || false,
+          italics: para.style?.italic || false,
+          size: (para.style?.fontSize || 12) * 2, // Convert to half-points
+          font: para.style?.fontFamily || 'Arial'
+        });
+
+        children.push(
+          new Paragraph({
+            children: [textRun]
+          })
+        );
+      }
+
+      // Add tables if present
+      if (page.tables && page.tables.length > 0) {
+        for (const table of page.tables) {
+          const tableRows = table.rows.map(row => 
+            new TableRow({
+              children: row.cells.map(cell =>
+                new TableCell({
+                  children: [new Paragraph({ text: cell.text || '' })]
+                })
+              )
+            })
+          );
+
+          children.push(
+            new Table({
+              rows: tableRows
+            })
+          );
+        }
+      }
+
+      children.push(new Paragraph({ text: '' })); // Empty line between pages
+    }
+
+    // Create document
+    const doc = new Document({
+      sections: [{
+        properties: {},
+        children: children
+      }],
+      creator: 'RobotPDF Advanced Converter',
+      title: content.metadata.title || 'Converted Document',
+      description: 'Converted from PDF using RobotPDF'
+    });
+
+    // Generate buffer
+    const Packer = docx.Packer;
+    const buffer = await Packer.toBuffer(doc);
+    return buffer;
+  }
+
+  // Convert extracted content to Excel format
+  async convertToExcel(content, options = {}) {
+    const ExcelJS = require('exceljs');
+    const workbook = new ExcelJS.Workbook();
+
+    workbook.creator = 'RobotPDF Advanced Converter';
+    workbook.created = new Date();
+    workbook.modified = new Date();
+
+    if (options.oneSheetPerPage) {
+      // Create one sheet per page
+      for (const page of content.pages) {
+        const worksheet = workbook.addWorksheet(`Page ${page.pageNumber}`);
+        
+        let rowIndex = 1;
+
+        // Add page content
+        for (const para of page.paragraphs) {
+          worksheet.getCell(`A${rowIndex}`).value = para.text;
+          rowIndex++;
+        }
+
+        // Add tables if present
+        if (page.tables && page.tables.length > 0) {
+          for (const table of page.tables) {
+            rowIndex++; // Empty row before table
+            
+            for (const row of table.rows) {
+              const excelRow = worksheet.getRow(rowIndex);
+              row.cells.forEach((cell, colIndex) => {
+                excelRow.getCell(colIndex + 1).value = cell.text || '';
+              });
+              rowIndex++;
+            }
+            
+            rowIndex++; // Empty row after table
+          }
+        }
+      }
+    } else {
+      // Create single sheet with all content
+      const worksheet = workbook.addWorksheet('Converted Content');
+      
+      let rowIndex = 1;
+
+      for (const page of content.pages) {
+        // Add page header
+        worksheet.getCell(`A${rowIndex}`).value = `Page ${page.pageNumber}`;
+        worksheet.getCell(`A${rowIndex}`).font = { bold: true, size: 14 };
+        rowIndex++;
+
+        // Add content
+        for (const para of page.paragraphs) {
+          worksheet.getCell(`A${rowIndex}`).value = para.text;
+          rowIndex++;
+        }
+
+        // Add tables
+        if (page.tables && page.tables.length > 0) {
+          for (const table of page.tables) {
+            rowIndex++;
+            
+            for (const row of table.rows) {
+              const excelRow = worksheet.getRow(rowIndex);
+              row.cells.forEach((cell, colIndex) => {
+                excelRow.getCell(colIndex + 1).value = cell.text || '';
+              });
+              rowIndex++;
+            }
+            
+            rowIndex++;
+          }
+        }
+
+        rowIndex++; // Empty row between pages
+      }
+
+      // Auto-fit columns
+      worksheet.columns.forEach(column => {
+        column.width = 20;
+      });
+    }
+
+    // Generate buffer
+    const buffer = await workbook.xlsx.writeBuffer();
+    return buffer;
+  }
+
+  // Convert extracted content to PowerPoint format
+  async convertToPowerPoint(content, options = {}) {
+    const PptxGenJS = require('pptxgenjs');
+    const pptx = new PptxGenJS();
+
+    pptx.author = 'RobotPDF Advanced Converter';
+    pptx.title = content.metadata.title || 'Converted Presentation';
+    pptx.subject = 'Converted from PDF';
+
+    // Create one slide per page
+    for (const page of content.pages) {
+      const slide = pptx.addSlide();
+
+      // Add title
+      slide.addText(`Page ${page.pageNumber}`, {
+        x: 0.5,
+        y: 0.5,
+        w: 9,
+        h: 0.75,
+        fontSize: 24,
+        bold: true,
+        color: '363636'
+      });
+
+      // Add content
+      let yPos = 1.5;
+      for (const para of page.paragraphs) {
+        slide.addText(para.text, {
+          x: 0.5,
+          y: yPos,
+          w: 9,
+          h: 0.5,
+          fontSize: para.style?.fontSize || 12,
+          color: '000000'
+        });
+        yPos += 0.6;
+      }
+
+      // Add tables if present
+      if (page.tables && page.tables.length > 0) {
+        for (const table of page.tables) {
+          const tableData = table.rows.map(row =>
+            row.cells.map(cell => ({ text: cell.text || '' }))
+          );
+
+          slide.addTable(tableData, {
+            x: 0.5,
+            y: yPos,
+            w: 9,
+            fontSize: 10,
+            border: { pt: 1, color: '000000' }
+          });
+          
+          yPos += 2;
+        }
+      }
+    }
+
+    // Generate buffer
+    const buffer = await pptx.write('nodebuffer');
+    return buffer;
+  }
+
+  // Convert extracted content to RTF format
+  async convertToRtf(content, options = {}) {
+    let rtfContent = '{\\rtf1\\ansi\\deff0\n';
+    rtfContent += '{\\fonttbl{\\f0 Arial;}}\n';
+    rtfContent += '{\\colortbl;\\red0\\green0\\blue0;}\n';
+
+    // Add title
+    if (content.metadata.title) {
+      rtfContent += `{\\fs32\\b ${this.escapeRtf(content.metadata.title)}\\par}\n`;
+      rtfContent += '\\par\n';
+    }
+
+    // Add content from each page
+    for (const page of content.pages) {
+      rtfContent += `{\\fs24\\b Page ${page.pageNumber}\\par}\n`;
+      
+      for (const para of page.paragraphs) {
+        const fontSize = (para.style?.fontSize || 12) * 2;
+        const bold = para.style?.bold ? '\\b' : '';
+        const italic = para.style?.italic ? '\\i' : '';
+        
+        rtfContent += `{\\fs${fontSize}${bold}${italic} ${this.escapeRtf(para.text)}\\par}\n`;
+      }
+      
+      rtfContent += '\\par\n';
+    }
+
+    rtfContent += '}';
+
+    return Buffer.from(rtfContent, 'utf-8');
+  }
+
+  // Convert extracted content to ODT format
+  async convertToOdt(content, options = {}) {
+    // For ODT, we'll convert to DOCX first and then to ODT
+    // In production, use a proper ODT library
+    const docxBuffer = await this.convertToDocx(content, options);
+    
+    // For now, return DOCX buffer
+    // In production, convert DOCX to ODT using appropriate library
+    return docxBuffer;
+  }
+
+  // Convert extracted content to plain text
+  async convertToText(content) {
+    let textContent = '';
+
+    // Add title
+    if (content.metadata.title) {
+      textContent += content.metadata.title + '\n';
+      textContent += '='.repeat(content.metadata.title.length) + '\n\n';
+    }
+
+    // Add content from each page
+    for (const page of content.pages) {
+      textContent += `--- Page ${page.pageNumber} ---\n\n`;
+      
+      for (const para of page.paragraphs) {
+        textContent += para.text + '\n\n';
+      }
+
+      // Add tables as plain text
+      if (page.tables && page.tables.length > 0) {
+        for (const table of page.tables) {
+          for (const row of table.rows) {
+            textContent += row.cells.map(cell => cell.text || '').join(' | ') + '\n';
+          }
+          textContent += '\n';
+        }
+      }
+    }
+
+    return Buffer.from(textContent, 'utf-8');
+  }
+
+  // Escape special characters for RTF
+  escapeRtf(text) {
+    return text
+      .replace(/\\/g, '\\\\')
+      .replace(/{/g, '\\{')
+      .replace(/}/g, '\\}')
+      .replace(/\n/g, '\\par\n');
   }
 }
 

@@ -15,7 +15,8 @@ import {
   TrendingUp,
   Zap,
   Shield,
-  Download
+  Download,
+  FileSpreadsheet
 } from 'lucide-react'
 
 export const proTools = [
@@ -162,6 +163,24 @@ export const proTools = [
     popularity: 88,
     processingTime: '< 60s',
     features: ['Multiple formats', 'Custom page size', 'Quality control', 'Auto orientation']
+  },
+  {
+    id: 'pdf-to-office',
+    icon: FileSpreadsheet,
+    title: 'PDF to Office Converter',
+    description: 'Convert PDF to DOC, DOCX, Excel, PowerPoint with 100% accuracy',
+    color: 'from-indigo-500 to-blue-700',
+    bgColor: 'bg-indigo-50',
+    borderColor: 'border-indigo-200',
+    textColor: 'text-indigo-700',
+    iconBg: 'bg-indigo-500',
+    acceptedFiles: '.pdf',
+    multipleFiles: true,
+    minFiles: 1,
+    category: 'Professional',
+    popularity: 96,
+    processingTime: '< 90s',
+    features: ['Word conversion', 'Excel extraction', 'PowerPoint export', 'Format preservation']
   }
 ]
 
@@ -221,6 +240,14 @@ export const PROCESSING_STEPS_CONFIG = {
     { name: 'Processing Images', icon: Eye },
     { name: 'Creating PDF', icon: FileText },
     { name: 'Optimizing', icon: Zap },
+    { name: 'Complete', icon: CheckCircle }
+  ],
+  'pdf-to-office': [
+    { name: 'Uploading PDF', icon: Upload },
+    { name: 'Analyzing Structure', icon: Brain },
+    { name: 'Extracting Content', icon: Eye },
+    { name: 'Converting Format', icon: FileSpreadsheet },
+    { name: 'Optimizing Output', icon: Zap },
     { name: 'Complete', icon: CheckCircle }
   ]
 }

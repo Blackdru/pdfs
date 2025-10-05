@@ -3,10 +3,10 @@ const PLAN_LIMITS = {
   free: {
     name: 'Free',
     price: 0,
-    filesPerMonth: 10,
+    filesPerMonth: -1, // unlimited use of free tools
     maxFileSize: 10 * 1024 * 1024, // 10MB
-    storageLimit: 100 * 1024 * 1024, // 100MB
-    aiOperations: 0, // No AI operations in free version
+    storageLimit: 0, // no storage
+    aiOperations: 0, // No AI operations
     apiCalls: 0, // No API access
     batchOperations: 1, // Single file operations only
     features: [
@@ -16,23 +16,23 @@ const PLAN_LIMITS = {
     ],
     restrictions: {
       maxFilesPerBatch: 1,
-      ocrPages: 0, // No OCR in free version
-      ocrFilesPerMonth: 0, // No OCR operations in free version
+      ocrPages: 0, // No OCR
+      ocrFilesPerMonth: 0, // No OCR operations
       summaryLength: 'none', // No AI summaries
-      chatMessages: 0, // No AI chat in free version
-      aiChatAccess: false, // AI chat moved to paid only
-      ocrAccess: false, // OCR moved to paid only
-      advancedTools: false // Advanced tools restricted
+      chatMessages: 0, // No AI chat
+      aiChatAccess: false, // No AI chat
+      ocrAccess: false, // No OCR
+      advancedTools: false // No advanced tools
     }
   },
   basic: {
     name: 'Basic',
     price: 1,
-    filesPerMonth: 100,
+    filesPerMonth: 50,
     maxFileSize: 50 * 1024 * 1024, // 50MB
     storageLimit: 500 * 1024 * 1024, // 500MB
-    aiOperations: 50,
-    apiCalls: 100,
+    aiOperations: 75, // 25 OCR + 25 chat + 25 summaries
+    apiCalls: 0,
     batchOperations: 10,
     features: [
       'basic_pdf_ops',
@@ -49,15 +49,16 @@ const PLAN_LIMITS = {
     ],
     restrictions: {
       maxFilesPerBatch: 10,
-      ocrPages: 50,
-      ocrFilesPerMonth: 100,
+      ocrPages: 25, // 25 Advanced OCR pages
+      ocrFilesPerMonth: 50,
       summaryLength: 'detailed',
-      chatMessages: 50,
+      chatMessages: 25, // 25 AI chat messages
       aiChatAccess: true,
       ocrAccess: true,
-      advancedTools: true,
+      advancedTools: true, // Access to all advanced tools
       encryptAccess: true,
-      digitalSignatureAccess: true
+      digitalSignatureAccess: true,
+      advancedSettings: false // No advanced settings
     }
   },
   pro: {
@@ -80,14 +81,14 @@ const PLAN_LIMITS = {
     ],
     restrictions: {
       maxFilesPerBatch: -1, // unlimited
-      ocrPages: -1, // unlimited
+      ocrPages: -1, // unlimited OCR pages
       ocrFilesPerMonth: -1, // unlimited
       summaryLength: 'comprehensive',
-      chatMessages: -1, // unlimited
+      chatMessages: -1, // unlimited AI chat
       aiChatAccess: true,
       ocrAccess: true,
-      advancedTools: true,
-      advancedSettings: true
+      advancedTools: true, // All advanced tools
+      advancedSettings: true // All advanced settings
     }
   }
 };
@@ -215,9 +216,15 @@ const STRIPE_PRICE_IDS = {
 // Plan comparison data for frontend
 const PLAN_COMPARISON = [
   {
+    feature: 'Free Tools Usage',
+    free: 'Unlimited',
+    basic: 'Unlimited',
+    pro: 'Unlimited'
+  },
+  {
     feature: 'Files per month',
-    free: '10',
-    basic: '100',
+    free: 'Unlimited (Free Tools)',
+    basic: '50',
     pro: 'Unlimited'
   },
   {
@@ -228,30 +235,30 @@ const PLAN_COMPARISON = [
   },
   {
     feature: 'Storage',
-    free: '100 MB',
+    free: 'No Storage',
     basic: '500 MB',
     pro: 'Unlimited'
   },
   {
-    feature: 'OCR Pages',
+    feature: 'Advanced OCR Pages',
     free: 'None',
-    basic: '50',
+    basic: '25',
     pro: 'Unlimited'
   },
   {
     feature: 'AI Chat Messages',
     free: 'None',
-    basic: '50',
+    basic: '25',
     pro: 'Unlimited'
   },
   {
-    feature: 'AI Summary',
+    feature: 'AI Summaries',
     free: 'None',
-    basic: '50',
+    basic: '25',
     pro: 'Unlimited'
   },
   {
-    feature: 'Advanced Tools',
+    feature: 'Advanced Tools Access',
     free: false,
     basic: true,
     pro: true

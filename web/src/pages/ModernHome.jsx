@@ -178,7 +178,7 @@ const ModernHome = () => {
               ) : (
                 <>
                   <Button 
-                    onClick={() => navigate('/register')} 
+                    onClick={() => navigate('/tools')} 
                     className="group relative px-8 py-6 text-lg font-semibold rounded-2xl bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg shadow-blue-500/50 hover:shadow-xl hover:shadow-blue-500/60 transition-all duration-300 hover:-translate-y-1"
                   >
                     <Play className="inline-block mr-2 h-5 w-5" />
@@ -423,7 +423,7 @@ const ModernHome = () => {
               ) : (
                 <>
                   <Button 
-                    onClick={() => navigate('/register')} 
+                    onClick={() => navigate('/tools')} 
                     className="group px-10 py-7 text-xl font-semibold rounded-2xl bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-2xl shadow-blue-500/50 hover:shadow-blue-500/60 transition-all duration-300 hover:-translate-y-1"
                   >
                     <Play className="inline-block mr-2 h-6 w-6" />

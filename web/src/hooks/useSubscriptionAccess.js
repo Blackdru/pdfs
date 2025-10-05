@@ -17,6 +17,8 @@ const TOOL_REQUIREMENTS = {
   'pro-merge': 'pro',
   'precision-split': 'pro',
   'smart-compress': 'pro',
+  'images-to-pdf': 'pro',
+  'pdf-to-office': 'pro',
   
   // Premium tools - require premium
   'encrypt-pro': 'pro',

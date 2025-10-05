@@ -6,6 +6,9 @@ const compression = require('compression');
 const rateLimit = require('express-rate-limit');
 require('dotenv').config();
 
+// Import cleanup scheduler
+const cleanupScheduler = require('./services/cleanupScheduler');
+
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const fileRoutes = require('./routes/files');
@@ -149,11 +152,33 @@ const server = app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📊 Environment: ${process.env.NODE_ENV}`);
   console.log(`🔗 Health check: http://localhost:${PORT}/health`);
+  
+  // Start cleanup scheduler
+  cleanupScheduler.start();
 });
 
 // Increase timeout for long-running operations (OCR, AI processing)
 server.timeout = 300000; // 5 minutes
 server.keepAliveTimeout = 300000; // 5 minutes
 server.headersTimeout = 310000; // Slightly more than keepAliveTimeout
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('SIGTERM signal received: closing HTTP server');
+  cleanupScheduler.stop();
+  server.close(() => {
+    console.log('HTTP server closed');
+    process.exit(0);
+  });
+});
+
+process.on('SIGINT', () => {
+  console.log('SIGINT signal received: closing HTTP server');
+  cleanupScheduler.stop();
+  server.close(() => {
+    console.log('HTTP server closed');
+    process.exit(0);
+  });
+});
 
 module.exports = app;

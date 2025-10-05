@@ -135,41 +135,7 @@ const Tools = () => {
       popularity: 85,
       processingTime: '< 90s'
     },
-    {
-      id: 'ocr',
-      icon: Eye,
-      title: 'OCR Text Extract',
-      description: 'Extract text from scanned PDFs and images',
-      color: 'from-cyan-500 to-cyan-700',
-      bgColor: 'bg-cyan-50',
-      borderColor: 'border-cyan-200',
-      textColor: 'text-cyan-700',
-      iconBg: 'bg-cyan-500',
-      acceptedFiles: '.pdf,.jpg,.jpeg,.png',
-      multipleFiles: false,
-      minFiles: 1,
-      category: 'AI-Powered',
-      popularity: 78,
-      processingTime: '< 120s'
-    },
-    {
-      id: 'ai-chat',
-      icon: MessageSquare,
-      title: 'AI Chat',
-      description: 'Chat with your PDF documents using AI',
-      color: 'from-pink-500 to-pink-700',
-      bgColor: 'bg-pink-50',
-      borderColor: 'border-pink-200',
-      textColor: 'text-pink-700',
-      iconBg: 'bg-pink-500',
-      acceptedFiles: '.pdf',
-      multipleFiles: false,
-      minFiles: 1,
-      category: 'AI-Powered',
-      popularity: 82,
-      processingTime: '< 180s'
-    }
-  ]
+      ]
 
   const categories = ['All', 'Basic', 'Optimization', 'Conversion', 'AI-Powered']
   const [selectedCategory, setSelectedCategory] = useState('All')
@@ -327,8 +293,9 @@ const Tools = () => {
   const handleAutoProcess = async (files) => {
     if (!selectedTool || files.length === 0) return
 
-    // Check plan limits before processing
-    if (usage && usage.current >= usage.limit && subscription?.plan === 'free') {
+    // Free tools don't require authentication
+    // Only check usage limits if user is authenticated
+    if (user && session && usage && usage.current >= usage.limit && subscription?.plan === 'free') {
       toast.error('You have reached your monthly processing limit. Please upgrade to continue.')
       return
     }

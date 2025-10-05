@@ -1,7 +1,7 @@
 const express = require('express');
 const multer = require('multer');
 const { supabaseAdmin } = require('../config/supabase');
-const { authenticateUser } = require('../middleware/auth');
+const { authenticateUser, optionalAuth } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -32,11 +32,11 @@ const extendTimeout = (req, res, next) => {
   next();
 };
 
-// Upload single file
-router.post('/upload', authenticateUser, extendTimeout, upload.single('file'), async (req, res) => {
+// Upload single file - supports both authenticated and anonymous uploads
+router.post('/upload', optionalAuth, extendTimeout, upload.single('file'), async (req, res) => {
   try {
     console.log('=== FILE UPLOAD STARTED ===');
-    console.log('User:', req.user?.id);
+    console.log('User:', req.user?.id || 'anonymous');
     console.log('File:', req.file?.originalname, 'Size:', req.file?.size, 'Type:', req.file?.mimetype);
     
     if (!req.file) {
@@ -45,7 +45,9 @@ router.post('/upload', authenticateUser, extendTimeout, upload.single('file'), a
     }
 
     const file = req.file;
-    const fileName = `${req.user.id}/${Date.now()}-${file.originalname}`;
+    // Use 'anonymous' folder for non-authenticated uploads
+    const userId = req.user?.id || 'anonymous';
+    const fileName = `${userId}/${Date.now()}-${file.originalname}`;
     console.log('Generated filename:', fileName);
 
     // Upload to Supabase Storage
@@ -67,11 +69,13 @@ router.post('/upload', authenticateUser, extendTimeout, upload.single('file'), a
     // Save file metadata to database
     console.log('Step 2: Saving metadata to database...');
     const insertData = {
-      user_id: req.user.id,
+      user_id: req.user?.id || null, // null for anonymous uploads
       filename: file.originalname,
       path: uploadData.path,
       type: file.mimetype,
-      size: file.size
+      size: file.size,
+      is_anonymous: !req.user, // Flag for anonymous uploads
+      expires_at: !req.user ? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() : null // 24 hours expiry for anonymous
     };
     console.log('Insert data:', insertData);
     
@@ -93,7 +97,8 @@ router.post('/upload', authenticateUser, extendTimeout, upload.single('file'), a
     console.log('File upload completed successfully:', fileData);
     res.status(201).json({
       message: 'File uploaded successfully',
-      file: fileData
+      file: fileData,
+      isAnonymous: !req.user
     });
   } catch (error) {
     console.error('Upload error:', error);
@@ -222,19 +227,35 @@ router.get('/:id', authenticateUser, async (req, res) => {
   }
 });
 
-// Download file
-router.get('/:id/download', authenticateUser, async (req, res) => {
+// Download file - allow anonymous downloads for anonymous uploads
+router.get('/:id/download', optionalAuth, async (req, res) => {
   try {
-    // Get file metadata
-    const { data: fileData, error: fileError } = await supabaseAdmin
+    // Get file metadata - allow access if user owns it OR if it's anonymous
+    let query = supabaseAdmin
       .from('files')
       .select('*')
-      .eq('id', req.params.id)
-      .eq('user_id', req.user.id)
-      .single();
+      .eq('id', req.params.id);
+    
+    // If user is authenticated, check ownership
+    if (req.user) {
+      query = query.eq('user_id', req.user.id);
+    } else {
+      // For anonymous, only allow downloading anonymous files
+      query = query.is('user_id', null);
+    }
+    
+    const { data: fileData, error: fileError } = await query.single();
 
     if (fileError || !fileData) {
       return res.status(404).json({ error: 'File not found' });
+    }
+    
+    // Check if anonymous file has expired
+    if (fileData.is_anonymous && fileData.expires_at) {
+      const expiryDate = new Date(fileData.expires_at);
+      if (expiryDate < new Date()) {
+        return res.status(410).json({ error: 'File has expired' });
+      }
     }
 
     // Get file from storage
@@ -256,6 +277,19 @@ router.get('/:id/download', authenticateUser, async (req, res) => {
     });
 
     res.send(buffer);
+    
+    // Schedule cleanup for anonymous files after download
+    if (fileData.is_anonymous) {
+      setTimeout(async () => {
+        try {
+          await supabaseAdmin.storage.from('files').remove([fileData.path]);
+          await supabaseAdmin.from('files').delete().eq('id', fileData.id);
+          console.log(`Cleaned up anonymous file: ${fileData.id}`);
+        } catch (cleanupError) {
+          console.error('Cleanup error:', cleanupError);
+        }
+      }, 5000); // Delete after 5 seconds
+    }
   } catch (error) {
     console.error('Download error:', error);
     res.status(500).json({ error: 'File download failed' });

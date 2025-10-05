@@ -68,11 +68,11 @@ const AppContent = () => {
       },
       '/tools': {
         title: 'PDF Tools — Merge, Split, Compress, Convert | RobotPDF',
-        description: 'Use professional PDF tools to merge, split, compress and convert documents. Requires sign in.'
+        description: 'Use professional PDF tools to merge, split, compress and convert documents. Some features may require sign in.'
       },
       '/advanced-tools': {
         title: 'Advanced AI PDF Tools — RobotPDF',
-        description: 'Advanced AI features for PDFs like OCR, chat with PDF, and batch processing. Requires sign in.'
+        description: 'Advanced AI features for PDFs like OCR, chat with PDF, and batch processing. Upgrade required to use Pro features.'
       },
       '/ai-enhanced-ocr-pdf': {
         title: 'AI-Enhanced OCR for PDF — Extract Text with 99% Accuracy | RobotPDF',
@@ -154,22 +154,8 @@ const AppContent = () => {
                     </ProtectedRoute>
                   } 
                 />
-                <Route 
-                  path="/tools" 
-                  element={
-                    <ProtectedRoute>
-                      <Tools />
-                    </ProtectedRoute>
-                  } 
-                />
-                <Route 
-                  path="/advanced-tools" 
-                  element={
-                    <ProtectedRoute>
-                      <AdvancedTools />
-                    </ProtectedRoute>
-                  } 
-                />
+                <Route path="/tools" element={<Tools />} />
+                <Route path="/advanced-tools" element={<AdvancedTools />} />
                 <Route 
                   path="/files" 
                   element={

@@ -150,9 +150,13 @@ const BillingHistory = () => {
                     <span>{formatDate(transaction.created_at)}</span>
                   </div>
                   
-                  {transaction.stripe_payment_intent_id && (
+                  {(transaction.stripe_payment_intent_id || transaction.razorpay_payment_id || transaction.paypal_payment_id) && (
                     <div className="text-xs text-muted-foreground">
-                      ID: {transaction.stripe_payment_intent_id.slice(-8)}
+                      ID: {(
+                        transaction.razorpay_payment_id || 
+                        transaction.paypal_payment_id || 
+                        transaction.stripe_payment_intent_id
+                      ).slice(-8)}
                     </div>
                   )}
                 </div>

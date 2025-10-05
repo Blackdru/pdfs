@@ -71,6 +71,13 @@ const ModernNavbar = () => {
     { path: '/contact', label: 'Contact', icon: Mail },
   ]
 
+  // Determine which nav items to show based on auth state
+  const getVisibleNavItems = () => {
+    if (user) return navItems
+    // For non-auth users, show everything except Dashboard
+    return navItems.filter(item => item.path !== '/dashboard')
+  }
+
   return (
     <>
       <nav 
@@ -102,7 +109,7 @@ const ModernNavbar = () => {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-2">
-              {user && navItems.map((item) => (
+              {getVisibleNavItems().map((item) => (
                 <Link
                   key={item.path}
                   to={item.path}
@@ -251,7 +258,7 @@ const ModernNavbar = () => {
         <div className="fixed top-20 left-0 right-0 z-40 border-b border-border shadow-lg md:hidden animate-slide-down-fade" style={{ backgroundColor: 'rgb(15, 23, 42)' }}>
           <div className="layout-dark-container py-8">
             <div className="space-y-3 mb-8">
-              {user && navItems.map((item) => (
+              {getVisibleNavItems().map((item) => (
                 <Link
                   key={item.path}
                   to={item.path}
@@ -315,40 +322,73 @@ const ModernNavbar = () => {
       )}
 
       {/* Mobile Bottom Navigation */}
-      {user && (
-        <div className="mobile-nav-dark md:hidden">
-          <div className="mobile-nav-grid-dark">
-            <Link
-              to="/files"
-              className={isActivePath('/files') ? 'mobile-nav-item-dark-active' : 'mobile-nav-item-dark'}
-            >
-              <FolderOpen className="h-6 w-6" />
-              <span>Files</span>
-            </Link>
-            <Link
-              to="/tools"
-              className={isActivePath('/tools') ? 'mobile-nav-item-dark-active' : 'mobile-nav-item-dark'}
-            >
-              <GitMerge className="h-6 w-6" />
-              <span>Tools</span>
-            </Link>
-            <Link
-              to="/advanced-tools"
-              className={isActivePath('/advanced-tools') ? 'mobile-nav-item-dark-active' : 'mobile-nav-item-dark'}
-            >
-              <Sparkles className="h-6 w-6" />
-              <span>Pro Tools</span>
-            </Link>
-            <Link
-              to="/profile"
-              className={isActivePath('/profile') ? 'mobile-nav-item-dark-active' : 'mobile-nav-item-dark'}
-            >
-              <User className="h-6 w-6" />
-              <span>Profile</span>
-            </Link>
-          </div>
+      <div className="mobile-nav-dark md:hidden">
+        <div className="mobile-nav-grid-dark">
+          {user ? (
+            <>
+              <Link
+                to="/files"
+                className={isActivePath('/files') ? 'mobile-nav-item-dark-active' : 'mobile-nav-item-dark'}
+              >
+                <FolderOpen className="h-6 w-6" />
+                <span>Files</span>
+              </Link>
+              <Link
+                to="/tools"
+                className={isActivePath('/tools') ? 'mobile-nav-item-dark-active' : 'mobile-nav-item-dark'}
+              >
+                <GitMerge className="h-6 w-6" />
+                <span>Tools</span>
+              </Link>
+              <Link
+                to="/advanced-tools"
+                className={isActivePath('/advanced-tools') ? 'mobile-nav-item-dark-active' : 'mobile-nav-item-dark'}
+              >
+                <Sparkles className="h-6 w-6" />
+                <span>Pro Tools</span>
+              </Link>
+              <Link
+                to="/profile"
+                className={isActivePath('/profile') ? 'mobile-nav-item-dark-active' : 'mobile-nav-item-dark'}
+              >
+                <User className="h-6 w-6" />
+                <span>Profile</span>
+              </Link>
+            </>
+          ) : (
+            <>
+              <Link
+                to="/"
+                className={isActivePath('/') ? 'mobile-nav-item-dark-active' : 'mobile-nav-item-dark'}
+              >
+                <Home className="h-6 w-6" />
+                <span>Home</span>
+              </Link>
+              <Link
+                to="/tools"
+                className={isActivePath('/tools') ? 'mobile-nav-item-dark-active' : 'mobile-nav-item-dark'}
+              >
+                <GitMerge className="h-6 w-6" />
+                <span>Tools</span>
+              </Link>
+              <Link
+                to="/advanced-tools"
+                className={isActivePath('/advanced-tools') ? 'mobile-nav-item-dark-active' : 'mobile-nav-item-dark'}
+              >
+                <Sparkles className="h-6 w-6" />
+                <span>Pro Tools</span>
+              </Link>
+              <Link
+                to="/contact"
+                className={isActivePath('/contact') ? 'mobile-nav-item-dark-active' : 'mobile-nav-item-dark'}
+              >
+                <Mail className="h-6 w-6" />
+                <span>Contact</span>
+              </Link>
+            </>
+          )}
         </div>
-      )}
+      </div>
 
       {/* Spacer for fixed navbar */}
       <div className="h-20" />

@@ -544,6 +544,260 @@ const AdvancedSettings = ({
             </div>
           )}
 
+          {/* PDF to Office Converter Settings */}
+          {selectedTool.id === 'pdf-to-office' && (
+            <div className="p-4 bg-accent rounded-xl">
+              <h4 className="font-medium text-card-foreground mb-3 flex items-center">
+                <Settings className="h-4 w-4 mr-2" />
+                PDF to Office Conversion Settings
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-card-foreground mb-2">
+                    Output Format
+                  </label>
+                  <select 
+                    className="w-full bg-grey-600 border border-grey-500 text-card-foreground rounded-lg px-3 py-2"
+                    value={toolSettings.outputFormat || 'docx'}
+                    onChange={(e) => setToolSettings(prev => ({ ...prev, outputFormat: e.target.value }))}
+                  >
+                    <option value="docx">Word Document (.docx)</option>
+                    <option value="doc">Word 97-2003 (.doc)</option>
+                    <option value="xlsx">Excel Spreadsheet (.xlsx)</option>
+                    <option value="xls">Excel 97-2003 (.xls)</option>
+                    <option value="pptx">PowerPoint (.pptx)</option>
+                    <option value="rtf">Rich Text Format (.rtf)</option>
+                    <option value="odt">OpenDocument Text (.odt)</option>
+                    <option value="txt">Plain Text (.txt)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-card-foreground mb-2">
+                    Conversion Quality
+                  </label>
+                  <select 
+                    className="w-full bg-grey-600 border border-grey-500 text-card-foreground rounded-lg px-3 py-2"
+                    value={toolSettings.conversionQuality || 'high'}
+                    onChange={(e) => setToolSettings(prev => ({ ...prev, conversionQuality: e.target.value }))}
+                  >
+                    <option value="maximum">Maximum (Slowest, Best Quality)</option>
+                    <option value="high">High Quality (Recommended)</option>
+                    <option value="balanced">Balanced (Fast & Good)</option>
+                    <option value="fast">Fast (Quick Processing)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-card-foreground mb-2">
+                    OCR Language (for scanned PDFs)
+                  </label>
+                  <select 
+                    className="w-full bg-grey-600 border border-grey-500 text-card-foreground rounded-lg px-3 py-2"
+                    value={toolSettings.ocrLanguage || 'auto'}
+                    onChange={(e) => setToolSettings(prev => ({ ...prev, ocrLanguage: e.target.value }))}
+                  >
+                    <option value="auto">🤖 Auto-detect</option>
+                    <option value="eng">English</option>
+                    <option value="eng+tel">English + Telugu</option>
+                    <option value="eng+hin">English + Hindi</option>
+                    <option value="spa">Spanish</option>
+                    <option value="fra">French</option>
+                    <option value="deu">German</option>
+                    <option value="ita">Italian</option>
+                    <option value="por">Portuguese</option>
+                    <option value="rus">Russian</option>
+                    <option value="chi_sim">Chinese (Simplified)</option>
+                    <option value="jpn">Japanese</option>
+                    <option value="kor">Korean</option>
+                    <option value="ara">Arabic</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-card-foreground mb-2">
+                    Page Range
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="All pages (e.g., 1-5, 10, 15-20)"
+                    value={toolSettings.pageRange || ''}
+                    onChange={(e) => setToolSettings(prev => ({ ...prev, pageRange: e.target.value }))}
+                    className="w-full bg-grey-600 border border-grey-500 text-card-foreground rounded-lg px-3 py-2"
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">Leave empty to convert all pages</p>
+                </div>
+              </div>
+
+              <div className="mt-4 space-y-3">
+                <h5 className="text-sm font-medium text-card-foreground">Formatting Options</h5>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      checked={toolSettings.preserveFormatting !== false}
+                      onChange={(e) => setToolSettings(prev => ({ ...prev, preserveFormatting: e.target.checked }))}
+                      className="rounded border-grey-500 text-purple-600 focus:ring-purple-500"
+                    />
+                    <span className="text-sm text-card-foreground">Preserve formatting</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      checked={toolSettings.preserveImages !== false}
+                      onChange={(e) => setToolSettings(prev => ({ ...prev, preserveImages: e.target.checked }))}
+                      className="rounded border-grey-500 text-purple-600 focus:ring-purple-500"
+                    />
+                    <span className="text-sm text-card-foreground">Preserve images</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      checked={toolSettings.preserveTables !== false}
+                      onChange={(e) => setToolSettings(prev => ({ ...prev, preserveTables: e.target.checked }))}
+                      className="rounded border-grey-500 text-purple-600 focus:ring-purple-500"
+                    />
+                    <span className="text-sm text-card-foreground">Preserve tables</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      checked={toolSettings.preserveHyperlinks !== false}
+                      onChange={(e) => setToolSettings(prev => ({ ...prev, preserveHyperlinks: e.target.checked }))}
+                      className="rounded border-grey-500 text-purple-600 focus:ring-purple-500"
+                    />
+                    <span className="text-sm text-card-foreground">Preserve hyperlinks</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      checked={toolSettings.preserveHeaders !== false}
+                      onChange={(e) => setToolSettings(prev => ({ ...prev, preserveHeaders: e.target.checked }))}
+                      className="rounded border-grey-500 text-purple-600 focus:ring-purple-500"
+                    />
+                    <span className="text-sm text-card-foreground">Preserve headers/footers</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      checked={toolSettings.preserveBookmarks || false}
+                      onChange={(e) => setToolSettings(prev => ({ ...prev, preserveBookmarks: e.target.checked }))}
+                      className="rounded border-grey-500 text-purple-600 focus:ring-purple-500"
+                    />
+                    <span className="text-sm text-card-foreground">Preserve bookmarks</span>
+                  </div>
+                </div>
+              </div>
+
+              {(toolSettings.outputFormat === 'xlsx' || toolSettings.outputFormat === 'xls') && (
+                <div className="mt-4">
+                  <h5 className="text-sm font-medium text-card-foreground mb-3">Excel-Specific Options</h5>
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-3">
+                      <input
+                        type="checkbox"
+                        checked={toolSettings.detectTables !== false}
+                        onChange={(e) => setToolSettings(prev => ({ ...prev, detectTables: e.target.checked }))}
+                        className="rounded border-grey-500 text-purple-600 focus:ring-purple-500"
+                      />
+                      <span className="text-sm text-card-foreground">Auto-detect tables</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <input
+                        type="checkbox"
+                        checked={toolSettings.oneSheetPerPage || false}
+                        onChange={(e) => setToolSettings(prev => ({ ...prev, oneSheetPerPage: e.target.checked }))}
+                        className="rounded border-grey-500 text-purple-600 focus:ring-purple-500"
+                      />
+                      <span className="text-sm text-card-foreground">One sheet per PDF page</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <input
+                        type="checkbox"
+                        checked={toolSettings.preserveFormulas || false}
+                        onChange={(e) => setToolSettings(prev => ({ ...prev, preserveFormulas: e.target.checked }))}
+                        className="rounded border-grey-500 text-purple-600 focus:ring-purple-500"
+                      />
+                      <span className="text-sm text-card-foreground">Attempt to preserve formulas</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {(toolSettings.outputFormat === 'docx' || toolSettings.outputFormat === 'doc' || toolSettings.outputFormat === 'rtf' || toolSettings.outputFormat === 'odt') && (
+                <div className="mt-4">
+                  <h5 className="text-sm font-medium text-card-foreground mb-3">Document-Specific Options</h5>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="flex items-center space-x-3">
+                      <input
+                        type="checkbox"
+                        checked={toolSettings.detectColumns !== false}
+                        onChange={(e) => setToolSettings(prev => ({ ...prev, detectColumns: e.target.checked }))}
+                        className="rounded border-grey-500 text-purple-600 focus:ring-purple-500"
+                      />
+                      <span className="text-sm text-card-foreground">Detect columns</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <input
+                        type="checkbox"
+                        checked={toolSettings.preserveFonts !== false}
+                        onChange={(e) => setToolSettings(prev => ({ ...prev, preserveFonts: e.target.checked }))}
+                        className="rounded border-grey-500 text-purple-600 focus:ring-purple-500"
+                      />
+                      <span className="text-sm text-card-foreground">Preserve fonts</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <input
+                        type="checkbox"
+                        checked={toolSettings.preserveColors !== false}
+                        onChange={(e) => setToolSettings(prev => ({ ...prev, preserveColors: e.target.checked }))}
+                        className="rounded border-grey-500 text-purple-600 focus:ring-purple-500"
+                      />
+                      <span className="text-sm text-card-foreground">Preserve colors</span>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <input
+                        type="checkbox"
+                        checked={toolSettings.createTOC || false}
+                        onChange={(e) => setToolSettings(prev => ({ ...prev, createTOC: e.target.checked }))}
+                        className="rounded border-grey-500 text-purple-600 focus:ring-purple-500"
+                      />
+                      <span className="text-sm text-card-foreground">Create table of contents</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-card-foreground mb-2">
+                  Image Quality in Output
+                </label>
+                <div className="flex items-center space-x-4">
+                  <input
+                    type="range"
+                    min="50"
+                    max="100"
+                    step="5"
+                    value={toolSettings.imageQuality || 90}
+                    onChange={(e) => setToolSettings(prev => ({ ...prev, imageQuality: parseInt(e.target.value) }))}
+                    className="flex-1"
+                  />
+                  <span className="text-sm text-card-foreground min-w-[3rem]">
+                    {toolSettings.imageQuality || 90}%
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Higher quality = larger file size</p>
+              </div>
+
+              <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                <p className="text-xs text-blue-700 dark:text-blue-300">
+                  💡 <strong>Pro Tip:</strong> For scanned PDFs, enable OCR for best text extraction. 
+                  For native PDFs, formatting will be preserved automatically.
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Images to PDF Settings */}
           {selectedTool.id === 'images-to-pdf' && (
             <div className="p-4 bg-accent rounded-xl">

@@ -1,10 +1,9 @@
 const { supabase, supabaseAdmin } = require('../config/supabase');
-const stripeService = require('./stripeService');
 
 // Import plan limits
 const path = require('path');
 const planLimitsPath = path.join(__dirname, '../../../shared/planLimits.js');
-const { PLAN_LIMITS, STRIPE_PRICE_IDS, getPlanLimits, hasFeature, isWithinLimit } = require(planLimitsPath);
+const { PLAN_LIMITS, getPlanLimits, hasFeature, isWithinLimit } = require(planLimitsPath);
 
 class SubscriptionService {
   /**
@@ -13,8 +12,7 @@ class SubscriptionService {
   getAvailablePlans() {
     return Object.entries(PLAN_LIMITS).map(([key, plan]) => ({
       id: key,
-      ...plan,
-      priceId: STRIPE_PRICE_IDS[key] || null
+      ...plan
     }));
   }
 
@@ -166,7 +164,7 @@ class SubscriptionService {
   /**
    * Create a new subscription
    */
-  async createSubscription(userId, plan, paymentMethodId = null) {
+  async createSubscription(userId, plan, paymentGateway = 'razorpay', paymentData = {}) {
     try {
       if (plan === 'free') {
         return await this.createFreeSubscription(userId);
@@ -183,29 +181,34 @@ class SubscriptionService {
         throw new Error('User not found');
       }
 
-      // Create or get Stripe customer
-      let customerId;
-      const existingSubscription = await this.getUserSubscription(userId);
-      
-      if (existingSubscription.stripe_customer_id) {
-        customerId = existingSubscription.stripe_customer_id;
-      } else {
-        const customer = await stripeService.createCustomer(user.email, user.name, userId);
-        customerId = customer.id;
-      }
-
-      // Create Stripe subscription
-      const priceId = STRIPE_PRICE_IDS[plan];
-      if (!priceId) {
+      // Validate plan
+      if (!PLAN_LIMITS[plan]) {
         throw new Error('Invalid plan selected');
       }
 
-      const result = await stripeService.createSubscription(customerId, priceId, userId);
+      // Create subscription record in database
+      const { data: subscription, error: subError } = await supabaseAdmin
+        .from('subscriptions')
+        .insert({
+          user_id: userId,
+          plan: plan,
+          status: 'pending',
+          payment_gateway: paymentGateway,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (subError) {
+        throw new Error('Failed to create subscription: ' + subError.message);
+      }
       
       return {
-        subscriptionId: result.subscriptionId,
-        clientSecret: result.clientSecret,
-        status: 'pending'
+        subscriptionId: subscription.id,
+        status: 'pending',
+        plan: plan,
+        paymentGateway: paymentGateway
       };
     } catch (error) {
       console.error('Error creating subscription:', error);
@@ -220,14 +223,28 @@ class SubscriptionService {
     try {
       const subscription = await this.getUserSubscription(userId);
       
-      if (!subscription.stripe_subscription_id) {
+      if (!subscription.subscription_id) {
         throw new Error('No active subscription to cancel');
       }
 
+      // Update subscription status
+      const updateData = {
+        status: immediate ? 'cancelled' : 'active',
+        cancel_at_period_end: !immediate,
+        updated_at: new Date().toISOString()
+      };
+
       if (immediate) {
-        await stripeService.cancelSubscriptionImmediately(subscription.stripe_subscription_id);
-      } else {
-        await stripeService.cancelSubscription(subscription.stripe_subscription_id, true);
+        updateData.cancelled_at = new Date().toISOString();
+      }
+
+      const { error } = await supabaseAdmin
+        .from('subscriptions')
+        .update(updateData)
+        .eq('user_id', userId);
+
+      if (error) {
+        throw new Error('Failed to cancel subscription: ' + error.message);
       }
 
       return { success: true, message: 'Subscription cancelled successfully' };
@@ -244,11 +261,21 @@ class SubscriptionService {
     try {
       const subscription = await this.getUserSubscription(userId);
       
-      if (!subscription.stripe_subscription_id) {
+      if (!subscription.subscription_id) {
         throw new Error('No subscription to reactivate');
       }
 
-      await stripeService.reactivateSubscription(subscription.stripe_subscription_id);
+      const { error } = await supabaseAdmin
+        .from('subscriptions')
+        .update({
+          cancel_at_period_end: false,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', userId);
+
+      if (error) {
+        throw new Error('Failed to reactivate subscription: ' + error.message);
+      }
       
       return { success: true, message: 'Subscription reactivated successfully' };
     } catch (error) {
@@ -264,16 +291,25 @@ class SubscriptionService {
     try {
       const subscription = await this.getUserSubscription(userId);
       
-      if (!subscription.stripe_subscription_id) {
+      if (!subscription.subscription_id) {
         throw new Error('No active subscription to update');
       }
 
-      const newPriceId = STRIPE_PRICE_IDS[newPlan];
-      if (!newPriceId) {
+      if (!PLAN_LIMITS[newPlan]) {
         throw new Error('Invalid plan selected');
       }
 
-      await stripeService.updateSubscriptionPlan(subscription.stripe_subscription_id, newPriceId);
+      const { error } = await supabaseAdmin
+        .from('subscriptions')
+        .update({
+          plan: newPlan,
+          updated_at: new Date().toISOString()
+        })
+        .eq('user_id', userId);
+
+      if (error) {
+        throw new Error('Failed to update subscription plan: ' + error.message);
+      }
       
       return { success: true, message: 'Subscription plan updated successfully' };
     } catch (error) {

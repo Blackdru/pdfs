@@ -122,36 +122,9 @@ const Contact = () => {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <Phone className="h-5 w-5 mr-2 text-purple-400" />
-                  Phone Support
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground text-sm mb-2">
-                  Premium & Enterprise customers
-                </p>
-                <p className="text-foreground font-medium">+1 (555) 123-4567</p>
-              </CardContent>
-            </Card>
+            
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <MapPin className="h-5 w-5 mr-2 text-orange-400" />
-                  Office Location
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground text-sm">
-                  123 PDF Street<br />
-                  Tech City, TC 12345<br />
-                  United States
-                </p>
-              </CardContent>
-            </Card>
+            
           </div>
 
           {/* Contact Form */}

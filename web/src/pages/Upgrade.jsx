@@ -5,7 +5,7 @@ import { Button } from '../components/ui/button'
 import { Badge } from '../components/ui/badge'
 import { useSubscription } from '../contexts/SubscriptionContext'
 import PlanCard from '../components/subscription/PlanCard'
-import SubscriptionModal from '../components/subscription/SubscriptionModal'
+import PaymentModal from '../components/subscription/PaymentModal'
 import { 
   Check, 
   X, 
@@ -36,92 +36,80 @@ const Upgrade = () => {
     {
       feature: 'Monthly Price',
       free: 'Free',
-      pro: '$1/month',
-      premium: '$10/month'
+      basic: '$1/month',
+      pro: '$10/month'
+    },
+    {
+      feature: 'Free Tools Usage',
+      free: 'Unlimited',
+      basic: 'Unlimited',
+      pro: 'Unlimited'
     },
     {
       feature: 'Files per month',
-      free: '10',
-      pro: '500',
-      premium: 'Unlimited'
+      free: 'Unlimited (Free Tools)',
+      basic: '50',
+      pro: 'Unlimited'
     },
     {
       feature: 'Max file size',
       free: '10 MB',
-      pro: '50 MB',
-      premium: '200 MB'
+      basic: '50 MB',
+      pro: '200 MB'
     },
     {
       feature: 'Storage',
-      free: '100 MB',
-      pro: '2 GB',
-      premium: '20 GB'
+      free: 'No Storage',
+      basic: '500 MB',
+      pro: 'Unlimited'
     },
     {
-      feature: 'OCR Processing',
-      free: '5 pages/month',
-      pro: '200 pages/month',
-      premium: 'Unlimited'
+      feature: 'Advanced OCR Pages',
+      free: 'None',
+      basic: '25',
+      pro: 'Unlimited'
     },
     {
       feature: 'AI Chat Messages',
-      free: '10 messages/month',
-      pro: '1,000 messages/month',
-      premium: 'Unlimited'
+      free: 'None',
+      basic: '25',
+      pro: 'Unlimited'
     },
     {
-      feature: 'Advanced OCR Features',
-      free: false,
-      pro: true,
-      premium: true
+      feature: 'AI Summaries',
+      free: 'None',
+      basic: '25',
+      pro: 'Unlimited'
     },
     {
-      feature: 'Advanced AI Models',
+      feature: 'Advanced Tools Access',
       free: false,
-      pro: false,
-      premium: true
+      basic: true,
+      pro: true
+    },
+    {
+      feature: 'Advanced Settings',
+      free: false,
+      basic: false,
+      pro: true
     },
     {
       feature: 'Batch Processing',
       free: 'Single files',
-      pro: 'Up to 20 files',
-      premium: 'Unlimited'
+      basic: 'Up to 10 files',
+      pro: 'Unlimited'
     },
     {
       feature: 'API Access',
       free: false,
-      pro: true,
-      premium: true
-    },
-    {
-      feature: 'Custom Watermarks',
-      free: false,
-      pro: true,
-      premium: true
-    },
-    {
-      feature: 'Advanced Compression',
-      free: false,
-      pro: true,
-      premium: true
-    },
-    {
-      feature: 'Priority Processing',
-      free: false,
-      pro: false,
-      premium: true
+      basic: false,
+      pro: true
     },
     {
       feature: 'Priority Support',
       free: false,
-      pro: false,
-      premium: true
-    },
-    {
-      feature: 'Advanced Analytics',
-      free: false,
-      pro: false,
-      premium: true
+      basic: false,
+      pro: true
     }
   ]
 
@@ -220,14 +208,14 @@ const Upgrade = () => {
                     <th className="text-center py-3 px-4">
                       <div className="flex items-center justify-center gap-2">
                         <Zap className="h-4 w-4 text-purple-400" />
-                        <span className="font-medium text-card-foreground">Pro</span>
+                        <span className="font-medium text-card-foreground">Basic</span>
                         <Badge className="ml-1 badge-purple">Popular</Badge>
                       </div>
                     </th>
                     <th className="text-center py-3 px-4">
                       <div className="flex items-center justify-center gap-2">
                         <Crown className="h-4 w-4 text-blue-400" />
-                        <span className="font-medium text-card-foreground">Premium</span>
+                        <span className="font-medium text-card-foreground">Pro</span>
                         <Badge className="ml-1 badge-blue">Best Value</Badge>
                       </div>
                     </th>
@@ -241,10 +229,10 @@ const Upgrade = () => {
                         {renderFeatureValue(row.free)}
                       </td>
                       <td className="py-3 px-4 text-center text-card-foreground">
-                        {renderFeatureValue(row.pro)}
+                        {renderFeatureValue(row.basic)}
                       </td>
                       <td className="py-3 px-4 text-center text-card-foreground">
-                        {renderFeatureValue(row.premium)}
+                        {renderFeatureValue(row.pro)}
                       </td>
                     </tr>
                   ))}
@@ -306,28 +294,32 @@ const Upgrade = () => {
           <div className="flex justify-center gap-4">
             <Button 
               size="lg"
-              onClick={() => handleSelectPlan('pro')}
+              onClick={() => handleSelectPlan('basic')}
               className="btn-purple"
             >
-              Start Pro Trial
+              Start Basic Plan
             </Button>
             <Button 
               size="lg" 
               variant="outline"
-              onClick={() => handleSelectPlan('premium')}
+              onClick={() => handleSelectPlan('pro')}
               className="btn-dark-outline"
             >
-              Go Premium
+              Go Pro
             </Button>
           </div>
         </div>
       </div>
 
-      {/* Subscription Modal */}
-      <SubscriptionModal
+      {/* Payment Modal */}
+      <PaymentModal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
-        initialTab="plans"
+        plan={plans.find(p => p.id === selectedPlan)}
+        onSuccess={async () => {
+          // Refresh subscription data after successful payment
+          window.location.reload()
+        }}
       />
     </div>
   )

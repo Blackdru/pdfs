@@ -1055,4 +1055,221 @@ router.get('/ocr-languages',
   }
 );
 
+// PDF to Office Converter - Convert PDF to DOC, DOCX, Excel, PowerPoint, etc.
+router.post('/pdf-to-office',
+  authenticateUser,
+  requireProPlan,
+  trackUsage('pdf_operation', 1),
+  validateRequest({
+    body: Joi.object({
+      fileIds: Joi.array().items(Joi.string().uuid()).min(1).required(),
+      outputFormat: Joi.string().valid('docx', 'doc', 'xlsx', 'xls', 'pptx', 'rtf', 'odt', 'txt').required(),
+      options: Joi.object({
+        conversionQuality: Joi.string().valid('maximum', 'high', 'balanced', 'fast').default('high'),
+        ocrLanguage: Joi.string().default('auto'),
+        pageRange: Joi.string().allow('').default(''),
+        preserveFormatting: Joi.boolean().default(true),
+        preserveImages: Joi.boolean().default(true),
+        preserveTables: Joi.boolean().default(true),
+        preserveHyperlinks: Joi.boolean().default(true),
+        preserveHeaders: Joi.boolean().default(true),
+        preserveBookmarks: Joi.boolean().default(false),
+        detectTables: Joi.boolean().default(true),
+        oneSheetPerPage: Joi.boolean().default(false),
+        preserveFormulas: Joi.boolean().default(false),
+        detectColumns: Joi.boolean().default(true),
+        preserveFonts: Joi.boolean().default(true),
+        preserveColors: Joi.boolean().default(true),
+        createTOC: Joi.boolean().default(false),
+        imageQuality: Joi.number().min(50).max(100).default(90)
+      }).default({})
+    })
+  }),
+  async (req, res) => {
+    try {
+      const { fileIds, outputFormat, options } = req.body;
+
+      // Get file metadata
+      const { data: files, error: filesError } = await supabaseAdmin
+        .from('files')
+        .select('*')
+        .in('id', fileIds)
+        .eq('user_id', req.user.id);
+
+      if (filesError || !files || files.length !== fileIds.length) {
+        return res.status(404).json({ error: 'One or more files not found' });
+      }
+
+      // Validate all files are PDFs
+      const nonPdfFiles = files.filter(file => file.type !== 'application/pdf');
+      if (nonPdfFiles.length > 0) {
+        return res.status(400).json({ 
+          error: 'All files must be PDFs for conversion',
+          invalidFiles: nonPdfFiles.map(f => f.filename)
+        });
+      }
+
+      const convertedFiles = [];
+
+      // Convert each file
+      for (const file of files) {
+        try {
+          console.log(`Converting ${file.filename} to ${outputFormat}`);
+          
+          // Perform conversion
+          const result = await advancedPdfService.convertPdfToOffice(file, outputFormat, options);
+
+          // Save converted file to database
+          const { data: convertedFile, error: saveError } = await supabaseAdmin
+            .from('files')
+            .insert([{
+              user_id: req.user.id,
+              filename: result.filename,
+              original_name: result.filename,
+              type: result.mimeType,
+              size: result.size,
+              path: result.path,
+              metadata: {
+                operation: 'pdf-to-office',
+                source_file: { id: file.id, filename: file.filename },
+                output_format: outputFormat,
+                page_count: result.pageCount,
+                options: options,
+                created_at: new Date().toISOString()
+              }
+            }])
+            .select()
+            .single();
+
+          if (saveError) {
+            console.error(`Failed to save converted file ${result.filename}:`, saveError.message);
+            continue;
+          }
+
+          convertedFiles.push(convertedFile);
+
+          // Log operation
+          await supabaseAdmin
+            .from('history')
+            .insert([{
+              user_id: req.user.id,
+              file_id: convertedFile.id,
+              action: 'pdf_to_office',
+              metadata: { 
+                source_file: file.id,
+                output_format: outputFormat,
+                page_count: result.pageCount,
+                options
+              }
+            }]);
+
+        } catch (conversionError) {
+          console.error(`Error converting ${file.filename}:`, conversionError.message);
+          // Continue with other files
+        }
+      }
+
+      if (convertedFiles.length === 0) {
+        return res.status(500).json({ error: 'Failed to convert any files' });
+      }
+
+      res.json({
+        message: `Successfully converted ${convertedFiles.length} file(s) to ${outputFormat.toUpperCase()}`,
+        files: convertedFiles,
+        outputFormat: outputFormat,
+        totalConverted: convertedFiles.length,
+        totalRequested: files.length
+      });
+
+    } catch (error) {
+      console.error('PDF to Office conversion error:', error);
+      res.status(500).json({ error: error.message || 'PDF to Office conversion failed' });
+    }
+  }
+);
+
+// Get supported output formats for PDF to Office conversion
+router.get('/pdf-to-office/formats',
+  authenticateUser,
+  async (req, res) => {
+    try {
+      const formats = [
+        {
+          id: 'docx',
+          name: 'Word Document (.docx)',
+          description: 'Microsoft Word 2007 and later',
+          mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+          category: 'Document',
+          recommended: true
+        },
+        {
+          id: 'doc',
+          name: 'Word 97-2003 (.doc)',
+          description: 'Legacy Microsoft Word format',
+          mimeType: 'application/msword',
+          category: 'Document',
+          recommended: false
+        },
+        {
+          id: 'xlsx',
+          name: 'Excel Spreadsheet (.xlsx)',
+          description: 'Microsoft Excel 2007 and later',
+          mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+          category: 'Spreadsheet',
+          recommended: true
+        },
+        {
+          id: 'xls',
+          name: 'Excel 97-2003 (.xls)',
+          description: 'Legacy Microsoft Excel format',
+          mimeType: 'application/vnd.ms-excel',
+          category: 'Spreadsheet',
+          recommended: false
+        },
+        {
+          id: 'pptx',
+          name: 'PowerPoint (.pptx)',
+          description: 'Microsoft PowerPoint 2007 and later',
+          mimeType: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+          category: 'Presentation',
+          recommended: true
+        },
+        {
+          id: 'rtf',
+          name: 'Rich Text Format (.rtf)',
+          description: 'Universal document format',
+          mimeType: 'application/rtf',
+          category: 'Document',
+          recommended: false
+        },
+        {
+          id: 'odt',
+          name: 'OpenDocument Text (.odt)',
+          description: 'Open standard document format',
+          mimeType: 'application/vnd.oasis.opendocument.text',
+          category: 'Document',
+          recommended: false
+        },
+        {
+          id: 'txt',
+          name: 'Plain Text (.txt)',
+          description: 'Simple text file without formatting',
+          mimeType: 'text/plain',
+          category: 'Text',
+          recommended: false
+        }
+      ];
+
+      res.json({
+        message: 'Supported output formats retrieved successfully',
+        formats
+      });
+
+    } catch (error) {
+      console.error('Get output formats error:', error);
+      res.status(500).json({ error: error.message || 'Failed to get output formats' });
+    }
+  }
+);
+
 module.exports = router;

@@ -69,51 +69,41 @@ const CancellationRefunds = () => {
                 <h2 className="text-2xl font-semibold text-card-foreground">Refund Policy</h2>
               </div>
               <div className="space-y-6 text-muted-foreground">
-                <p>
-                  We want you to be completely satisfied with RobotPDF. Our refund policy is designed to be fair and transparent.
-                </p>
+                <div className="bg-red-950 border border-red-800 p-6 rounded-lg">
+                  <div className="flex items-center mb-4">
+                    <AlertCircle className="h-6 w-6 text-red-400 mr-3" />
+                    <h3 className="text-xl font-semibold text-red-200">No Refund Policy</h3>
+                  </div>
+                  <p className="text-red-100 mb-4">
+                    All subscription payments are final and non-refundable once successfully processed. You can cancel your subscription at any time, but no refunds will be issued for the current billing period.
+                  </p>
+                  <ul className="space-y-2 text-red-100">
+                    <li>• No refunds after successful subscription payment</li>
+                    <li>• You can cancel anytime, but no refund for unused time</li>
+                    <li>• Access continues until the end of current billing period</li>
+                    <li>• No partial refunds for early cancellation</li>
+                  </ul>
+                </div>
                 
-                <div className="grid gap-6">
-                  <div className="bg-green-950 border border-green-800 p-6 rounded-lg">
-                    <div className="flex items-center mb-4">
-                      <CheckCircle className="h-6 w-6 text-green-400 mr-3" />
-                      <h3 className="text-xl font-semibold text-green-200">Eligible for Refund</h3>
-                    </div>
-                    <ul className="space-y-3 text-green-100">
-                      <li className="flex items-start">
-                        <Badge variant="outline" className="border-green-600 text-green-400 mr-3 mt-0.5">7 Days</Badge>
-                        <div>
-                          <strong>New Subscriptions:</strong> Full refund within 7 days of initial purchase if you're not satisfied with the service.
-                        </div>
-                      </li>
-                      <li className="flex items-start">
-                        <Badge variant="outline" className="border-green-600 text-green-400 mr-3 mt-0.5">24 Hours</Badge>
-                        <div>
-                          <strong>Technical Issues:</strong> Full refund if our service is unavailable for more than 24 consecutive hours.
-                        </div>
-                      </li>
-                      <li className="flex items-start">
-                        <Badge variant="outline" className="border-green-600 text-green-400 mr-3 mt-0.5">Always</Badge>
-                        <div>
-                          <strong>Billing Errors:</strong> Immediate refund for any incorrect charges or duplicate payments.
-                        </div>
-                      </li>
-                    </ul>
+                <div className="bg-green-950 border border-green-800 p-6 rounded-lg">
+                  <div className="flex items-center mb-4">
+                    <CheckCircle className="h-6 w-6 text-green-400 mr-3" />
+                    <h3 className="text-xl font-semibold text-green-200">Exceptions - Payment Issues Only</h3>
                   </div>
-
-                  <div className="bg-red-950 border border-red-800 p-6 rounded-lg">
-                    <div className="flex items-center mb-4">
-                      <XCircle className="h-6 w-6 text-red-400 mr-3" />
-                      <h3 className="text-xl font-semibold text-red-200">Not Eligible for Refund</h3>
-                    </div>
-                    <ul className="space-y-2 text-red-100">
-                      <li>• Subscriptions cancelled after the 7-day trial period</li>
-                      <li>• Partial refunds for unused subscription time</li>
-                      <li>• Refunds due to change of mind after 7 days</li>
-                      <li>• Account suspensions due to terms of service violations</li>
-                      <li>• Refunds for free plan limitations</li>
-                    </ul>
-                  </div>
+                  <ul className="space-y-3 text-green-100">
+                    <li className="flex items-start">
+                      <Badge variant="outline" className="border-green-600 text-green-400 mr-3 mt-0.5">Always</Badge>
+                      <div>
+                        <strong>Billing Errors:</strong> Immediate refund for incorrect charges or duplicate payments.
+                      </div>
+                    </li>
+                    <li className="flex items-start">
+                      <Badge variant="outline" className="border-green-600 text-green-400 mr-3 mt-0.5">Always</Badge>
+                      <div>
+                        <strong>Payment Issues:</strong> Refund if payment was processed but subscription was not activated due to technical errors.
+                      </div>
+                    </li>
+                  </ul>
                 </div>
               </div>
             </Card>
@@ -121,11 +111,11 @@ const CancellationRefunds = () => {
             <Card className="bg-surface border-border p-8">
               <div className="flex items-center mb-6">
                 <RefreshCw className="h-6 w-6 text-purple-400 mr-3" />
-                <h2 className="text-2xl font-semibold text-card-foreground">How to Request a Refund</h2>
+                <h2 className="text-2xl font-semibold text-card-foreground">How to Report Payment Issues</h2>
               </div>
               <div className="space-y-4 text-muted-foreground">
                 <p>
-                  To request a refund, please follow these steps:
+                  If you experienced a payment issue (duplicate charge, billing error, or payment processed without subscription activation), please contact us:
                 </p>
                 <div className="bg-elevated p-6 rounded-lg">
                   <ol className="space-y-4">
@@ -133,28 +123,28 @@ const CancellationRefunds = () => {
                       <span className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-semibold mr-4 mt-0.5">1</span>
                       <div>
                         <strong className="text-card-foreground">Contact Support:</strong> Email us at{' '}
-                        <a href="mailto:refunds@robotpdf.com" className="text-blue-400 hover:text-blue-300">
-                          refunds@robotpdf.com
+                        <a href="mailto:support@robotpdf.com" className="text-blue-400 hover:text-blue-300">
+                          support@robotpdf.com
                         </a>{' '}
-                        with your refund request.
+                        with details of the payment issue.
                       </div>
                     </li>
                     <li className="flex items-start">
                       <span className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-semibold mr-4 mt-0.5">2</span>
                       <div>
-                        <strong className="text-card-foreground">Provide Information:</strong> Include your account email, subscription details, and reason for the refund request.
+                        <strong className="text-card-foreground">Provide Information:</strong> Include your account email, transaction ID, and description of the issue.
                       </div>
                     </li>
                     <li className="flex items-start">
                       <span className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-semibold mr-4 mt-0.5">3</span>
                       <div>
-                        <strong className="text-card-foreground">Review Process:</strong> We'll review your request within 2-3 business days and respond with our decision.
+                        <strong className="text-card-foreground">Review Process:</strong> We'll investigate within 2-3 business days and resolve the issue.
                       </div>
                     </li>
                     <li className="flex items-start">
                       <span className="bg-blue-600 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm font-semibold mr-4 mt-0.5">4</span>
                       <div>
-                        <strong className="text-card-foreground">Processing:</strong> Approved refunds are processed within 5-7 business days to your original payment method.
+                        <strong className="text-card-foreground">Resolution:</strong> Valid payment issues are resolved within 5-7 business days.
                       </div>
                     </li>
                   </ol>
@@ -162,32 +152,7 @@ const CancellationRefunds = () => {
               </div>
             </Card>
 
-            <Card className="bg-surface border-border p-8">
-              <div className="flex items-center mb-6">
-                <AlertCircle className="h-6 w-6 text-orange-400 mr-3" />
-                <h2 className="text-2xl font-semibold text-card-foreground">Special Circumstances</h2>
-              </div>
-              <div className="space-y-4 text-muted-foreground">
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <h3 className="font-semibold text-card-foreground mb-3">Annual Subscriptions</h3>
-                    <ul className="space-y-2 text-sm">
-                      <li>• 14-day refund window instead of 7 days</li>
-                      <li>• Pro-rated refunds for technical issues</li>
-                      <li>• No partial refunds after 14 days</li>
-                    </ul>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-card-foreground mb-3">Enterprise Plans</h3>
-                    <ul className="space-y-2 text-sm">
-                      <li>• Custom refund terms in contract</li>
-                      <li>• Dedicated account manager assistance</li>
-                      <li>• Flexible cancellation options</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </Card>
+
 
             <Card className="bg-surface border-border p-8">
               <h2 className="text-2xl font-semibold text-card-foreground mb-6">Contact Us</h2>
@@ -197,8 +162,8 @@ const CancellationRefunds = () => {
                 </p>
                 <div className="grid md:grid-cols-2 gap-6">
                   <div>
-                    <h3 className="font-semibold text-card-foreground mb-2">Refund Requests</h3>
-                    <p>Email: <a href="mailto:refunds@robotpdf.com" className="text-blue-400 hover:text-blue-300">refunds@robotpdf.com</a></p>
+                    <h3 className="font-semibold text-card-foreground mb-2">Payment Issues</h3>
+                    <p>Email: <a href="mailto:support@robotpdf.com" className="text-blue-400 hover:text-blue-300">support@robotpdf.com</a></p>
                     <p className="text-sm text-secondary mt-1">Response time: 2-3 business days</p>
                   </div>
                   <div>

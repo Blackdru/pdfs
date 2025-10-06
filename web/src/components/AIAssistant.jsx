@@ -214,20 +214,20 @@ const AIAssistant = ({ fileId, fileName, onClose, isMinimized, onToggleMinimize 
   }
 
   return (
-    <div className="fixed inset-0 bg-black/80 z-50 flex items-end sm:items-center justify-center">
-      <Card className="bg-card border-border flex flex-col h-[100vh] sm:h-[85vh] sm:rounded-2xl w-full sm:max-w-2xl lg:max-w-3xl sm:mx-4">
+    <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-0 sm:p-4">
+      <Card className="bg-card border-border flex flex-col h-[75vh] w-full sm:h-[75vh] sm:max-w-2xl lg:max-w-4xl rounded-2xl overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between p-3 sm:p-4 border-b border-border">
-        <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
-          <div className="w-7 h-7 sm:w-8 sm:h-8 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
-            <Bot className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-white" />
+      <div className="flex items-center justify-between p-3 sm:p-4 border-b border-border shrink-0">
+        <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1 pr-2">
+          <div className="w-8 h-8 sm:w-9 sm:h-9 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
+            <Bot className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
           </div>
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <h3 className="text-sm sm:text-base font-semibold text-card-foreground">AI Assistant</h3>
-            <p className="text-xs text-muted-foreground truncate max-w-[120px] sm:max-w-[200px]">{fileName}</p>
+            <p className="text-xs text-muted-foreground truncate">{fileName}</p>
           </div>
         </div>
-        <div className="flex items-center space-x-1 sm:space-x-2">
+        <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
           {aiAvailable ? (
             <Badge variant="outline" className="border-green-600 text-green-400 text-xs hidden sm:flex">
               <Zap className="h-3 w-3 mr-1" />
@@ -241,30 +241,30 @@ const AIAssistant = ({ fileId, fileName, onClose, isMinimized, onToggleMinimize 
           )}
           <Button
             variant="ghost"
-            size="sm"
+            size="icon"
             onClick={onToggleMinimize}
-            className="text-muted-foreground hover:text-card-foreground h-8 w-8 p-0 hidden sm:flex"
+            className="text-muted-foreground hover:text-card-foreground h-9 w-9 hidden sm:flex"
           >
-            <Minimize2 className="h-4 w-4" />
+            <Minimize2 className="h-5 w-5" />
           </Button>
           <Button
             variant="ghost"
-            size="sm"
+            size="icon"
             onClick={onClose}
-            className="text-muted-foreground hover:text-card-foreground h-8 w-8 p-0"
+            className="text-muted-foreground hover:text-card-foreground hover:bg-destructive/10 h-10 w-10"
           >
-            <X className="h-4 w-4" />
+            <X className="h-5 w-5" />
           </Button>
         </div>
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4">
+      <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-3 sm:space-y-4 min-h-0 max-h-full">
         {!isInitialized ? (
-          <div className="flex items-center justify-center h-full">
+          <div className="flex items-center justify-center h-full min-h-[200px]">
             <div className="text-center">
-              <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 animate-spin text-blue-400 mx-auto mb-2" />
-              <p className="text-xs sm:text-sm text-muted-foreground">Initializing AI chat...</p>
+              <Loader2 className="h-8 w-8 sm:h-10 sm:w-10 animate-spin text-blue-400 mx-auto mb-3" />
+              <p className="text-sm sm:text-base text-muted-foreground">Initializing AI chat...</p>
             </div>
           </div>
         ) : (
@@ -275,7 +275,7 @@ const AIAssistant = ({ fileId, fileName, onClose, isMinimized, onToggleMinimize 
                 className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
               >
                 <div
-                  className={`max-w-[90%] sm:max-w-[85%] md:max-w-[70%] px-3 py-2 sm:px-4 sm:py-3 rounded-lg ${
+                  className={`max-w-[85%] sm:max-w-[80%] md:max-w-[75%] px-3 py-2.5 sm:px-4 sm:py-3 rounded-2xl ${
                     message.role === 'user'
                       ? 'bg-blue-600 text-white'
                       : message.error
@@ -287,19 +287,19 @@ const AIAssistant = ({ fileId, fileName, onClose, isMinimized, onToggleMinimize 
                 >
                   <div className="flex items-start space-x-2">
                     {message.role === 'assistant' && (
-                      <div className="flex-shrink-0 mt-0.5 sm:mt-1">
+                      <div className="flex-shrink-0 mt-1">
                         {message.error ? (
-                          <AlertCircle className="h-3 w-3 sm:h-4 sm:w-4" />
+                          <AlertCircle className="h-4 w-4" />
                         ) : message.fallback ? (
-                          <Brain className="h-3 w-3 sm:h-4 sm:w-4" />
+                          <Brain className="h-4 w-4" />
                         ) : (
-                          <Bot className="h-3 w-3 sm:h-4 sm:w-4" />
+                          <Bot className="h-4 w-4" />
                         )}
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs sm:text-sm whitespace-pre-wrap break-words">{message.content}</p>
-                      <p className="text-[10px] sm:text-xs opacity-70 mt-1">
+                      <p className="text-sm sm:text-sm whitespace-pre-wrap break-words leading-relaxed">{message.content}</p>
+                      <p className="text-xs opacity-70 mt-1.5">
                         {new Date(message.timestamp).toLocaleTimeString()}
                       </p>
                     </div>
@@ -309,13 +309,13 @@ const AIAssistant = ({ fileId, fileName, onClose, isMinimized, onToggleMinimize 
             ))}
             {isLoading && (
               <div className="flex justify-start">
-                <div className="bg-gray-700 text-card-foreground px-3 py-2 sm:px-4 sm:py-2 rounded-lg">
+                <div className="bg-gray-700 text-card-foreground px-4 py-3 rounded-2xl">
                   <div className="flex items-center space-x-2">
-                    <Bot className="h-3 w-3 sm:h-4 sm:w-4" />
+                    <Bot className="h-4 w-4" />
                     <div className="flex space-x-1">
-                      <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-400 rounded-full animate-bounce"></div>
-                      <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                      <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                     </div>
                   </div>
                 </div>
@@ -327,7 +327,7 @@ const AIAssistant = ({ fileId, fileName, onClose, isMinimized, onToggleMinimize 
       </div>
 
       {/* Input */}
-      <div className="p-3 sm:p-4 border-t border-border bg-card">
+      <div className="p-3 sm:p-4 border-t border-border bg-card shrink-0">
         <div className="flex space-x-2">
           <Input
             value={inputMessage}
@@ -335,21 +335,21 @@ const AIAssistant = ({ fileId, fileName, onClose, isMinimized, onToggleMinimize 
             onKeyPress={handleKeyPress}
             placeholder="Ask about your document..."
             disabled={isLoading || !isInitialized}
-            className="flex-1 bg-gray-700 border-border text-card-foreground placeholder-gray-400 text-sm h-9 sm:h-10"
+            className="flex-1 bg-gray-700 border-border text-card-foreground placeholder-gray-400 text-sm h-11 sm:h-11"
           />
           <Button
             onClick={sendMessage}
             disabled={isLoading || !inputMessage.trim() || !isInitialized}
-            className="bg-blue-600 hover:bg-blue-700 text-white h-9 w-9 sm:h-10 sm:w-10 p-0"
+            className="bg-blue-600 hover:bg-blue-700 text-white h-11 w-11 sm:h-11 sm:w-11 p-0 flex-shrink-0"
           >
             {isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="h-5 w-5 animate-spin" />
             ) : (
-              <Send className="h-4 w-4" />
+              <Send className="h-5 w-5" />
             )}
           </Button>
         </div>
-        <div className="flex items-center justify-between mt-2 text-[10px] sm:text-xs text-secondary">
+        <div className="flex items-center justify-between mt-2 text-xs text-secondary">
           <span className="hidden sm:inline">Press Enter to send</span>
           <span className="sm:hidden">Tap to send</span>
           {sessionId && (

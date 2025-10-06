@@ -181,17 +181,30 @@ const AdvancedTools = () => {
     try {
       let uploadedFileIds = []
       
-      updateProgress(10, 'Uploading files to server...', 0)
+      // Step 1: Upload files with detailed progress
+      updateProgress(5, 'Preparing files for upload...', 0)
+      await new Promise(resolve => setTimeout(resolve, 300)) // Brief pause for UI update
       
       for (let i = 0; i < files.length; i++) {
         const file = files[i]
+        const fileNum = i + 1
+        const totalFiles = files.length
+        
         try {
-          updateProgress(10 + (i / files.length) * 15, `Uploading ${file.name}...`, 0)
+          // Calculate progress: 5% to 25% for uploads
+          const uploadProgress = 5 + ((fileNum - 1) / totalFiles) * 20
+          updateProgress(uploadProgress, `Uploading file ${fileNum}/${totalFiles}: ${file.name}...`, 0)
+          
           const response = await api.uploadFile(file)
           uploadedFileIds.push(response.file.id)
+          
+          // Show completion for this file
+          const completedProgress = 5 + (fileNum / totalFiles) * 20
+          updateProgress(completedProgress, `Uploaded ${fileNum}/${totalFiles} files`, 0)
+          await new Promise(resolve => setTimeout(resolve, 200)) // Brief pause for UI update
         } catch (error) {
           console.error(`Upload failed for ${file.name}:`, error)
-          toast.error(`Failed to upload ${file.name}`)
+          toast.error(`Failed to upload ${file.name}: ${error.message}`)
         }
       }
 
@@ -199,12 +212,15 @@ const AdvancedTools = () => {
         throw new Error('No files were uploaded successfully')
       }
       
-      updateProgress(25, `${uploadedFileIds.length} file(s) uploaded successfully`, 1)
+      updateProgress(30, `All ${uploadedFileIds.length} file(s) uploaded successfully`, 1)
+      await new Promise(resolve => setTimeout(resolve, 500)) // Brief pause for UI update
 
       let result
       const outputName = `${selectedTool.id}-${Date.now()}`
       
-      updateProgress(30, 'Processing...', 1)
+      // Step 2: Process files with detailed progress
+      updateProgress(35, 'Initializing processing...', 1)
+      await new Promise(resolve => setTimeout(resolve, 300))
       
       switch (selectedTool.id) {
         case 'advanced-ocr':
@@ -217,9 +233,11 @@ const AdvancedTools = () => {
           result = await handleSmartSummary(uploadedFileIds[0], toolSettings)
           break
         case 'pro-merge':
-          updateProgress(50, 'Merging PDFs...', 2)
+          updateProgress(40, 'Analyzing PDF structures...', 2)
+          await new Promise(resolve => setTimeout(resolve, 500))
+          updateProgress(55, 'Merging PDFs...', 2)
           result = await api.mergePDFs(uploadedFileIds, `${outputName}.pdf`)
-          updateProgress(90, 'Merge complete!', 3)
+          updateProgress(85, 'Merge complete!', 2)
           break
         case 'precision-split':
           result = await handlePrecisionSplit(uploadedFileIds[0], toolSettings)
@@ -240,7 +258,9 @@ const AdvancedTools = () => {
           throw new Error('Tool not implemented yet')
       }
       
-      updateProgress(95, 'Finalizing...', processingSteps.length - 1)
+      // Step 3: Finalize
+      updateProgress(90, 'Preparing download...', processingSteps.length - 1)
+      await new Promise(resolve => setTimeout(resolve, 300))
 
       setToolResults({
         type: selectedTool.id,
@@ -249,32 +269,45 @@ const AdvancedTools = () => {
         toolName: selectedTool.title
       })
 
-      // Handle file downloads
+      // Step 4: Handle file downloads with progress
       if (result.file) {
         try {
+          updateProgress(95, 'Downloading result...', processingSteps.length - 1)
           const blob = await api.downloadFile(result.file.id)
           downloadBlob(blob, result.file.filename)
+          updateProgress(100, 'Complete!', processingSteps.length - 1)
           toast.success('Processing completed! File downloaded.')
         } catch (downloadError) {
           toast.error('File processed but download failed. Please try again.')
         }
       } else if (result.files && result.files.length > 0) {
         let downloadCount = 0
-        for (const file of result.files) {
+        const totalFiles = result.files.length
+        
+        for (let i = 0; i < result.files.length; i++) {
+          const file = result.files[i]
           try {
+            const downloadProgress = 90 + ((i + 1) / totalFiles) * 10
+            updateProgress(downloadProgress, `Downloading file ${i + 1}/${totalFiles}...`, processingSteps.length - 1)
+            
             const blob = await api.downloadFile(file.id)
             downloadBlob(blob, file.filename)
             downloadCount++
+            await new Promise(resolve => setTimeout(resolve, 200))
           } catch (downloadError) {
             console.error('Download error for file:', file.filename, downloadError)
           }
         }
+        
+        updateProgress(100, 'Complete!', processingSteps.length - 1)
+        
         if (downloadCount > 0) {
           toast.success(`Processing completed! ${downloadCount} file(s) downloaded.`)
         } else {
           toast.error('Files processed but downloads failed. Please try again.')
         }
       } else {
+        updateProgress(100, 'Complete!', processingSteps.length - 1)
         toast.success('Processing completed successfully!')
       }
       
@@ -284,19 +317,28 @@ const AdvancedTools = () => {
       console.error('Processing error:', error)
       updateProgress(0, 'Processing failed', 0)
       
-      if (error.message.includes('No token provided') || error.message.includes('Unauthorized')) {
-        toast.error('Please sign in to use this feature')
-      } else if (error.message.includes('File not found')) {
-        toast.error('File upload failed. Please try again.')
-      } else if (error.message.includes('Network error') || error.message.includes('timeout')) {
-        toast.error('Request timed out. The file may be too large or the server is busy. Please try again.')
-      } else if (error.message.includes('404')) {
+      // Enhanced error messages
+      const errorMsg = error?.message || String(error)
+      
+      if (errorMsg.includes('File too large') || errorMsg.includes('File size exceeds')) {
+        toast.error(errorMsg, { duration: 6000 })
+      } else if (errorMsg.includes('No token provided') || errorMsg.includes('Unauthorized')) {
+        toast.error('Authentication required. Please sign in to use this feature.')
+      } else if (errorMsg.includes('File not found')) {
+        toast.error('File upload failed. Please check your connection and try again.')
+      } else if (errorMsg.includes('Invalid file type')) {
+        toast.error('Invalid file type. Please upload supported file formats only.')
+      } else if (errorMsg.includes('Network error') || errorMsg.includes('timeout') || errorMsg.includes('Upload timeout')) {
+        toast.error('Upload timeout. The file may be too large or your connection is slow. Please try with a smaller file or check your internet connection.', { duration: 6000 })
+      } else if (errorMsg.includes('404')) {
         toast.error('Service temporarily unavailable. Please try again later.')
+      } else if (errorMsg.includes('Too many requests')) {
+        toast.error('Rate limit exceeded. Please wait a moment and try again.')
       } else {
-        toast.error(`Processing failed: ${error.message}`)
+        toast.error(`Processing failed: ${errorMsg}`, { duration: 5000 })
       }
     } finally {
-      setTimeout(() => setIsProcessing(false), 1000)
+      setTimeout(() => setIsProcessing(false), 1500)
     }
   }
 
@@ -433,9 +475,11 @@ const AdvancedTools = () => {
     console.log('Starting smart summary for fileId:', fileId)
     
     updateProgress(30, 'Analyzing document text...', 1)
-    updateProgress(50, 'Generating AI summary...', 2)
     
     try {
+      // First, check if the file needs OCR
+      updateProgress(35, 'Checking document text availability...', 1)
+      
       const result = await api.smartSummary(fileId, {
         includeKeyPoints: settings.includeKeyPoints !== false,
         includeSentiment: settings.includeSentiment !== false,
@@ -458,7 +502,12 @@ const AdvancedTools = () => {
         filename: result.fileInfo?.filename || 'document'
       })
       
-      toast.success('Smart summary generated with AI insights!')
+      if (result.ocrPerformed) {
+        toast.success('Text extracted and smart summary generated with AI insights!')
+      } else {
+        toast.success('Smart summary generated with AI insights!')
+      }
+      
       setUploadedFiles([])
       setIsProcessing(false)
       return result
@@ -466,7 +515,19 @@ const AdvancedTools = () => {
     } catch (error) {
       console.error('Smart summary error:', error)
       updateProgress(0, 'Failed to generate summary', 0)
-      throw new Error(`Smart summary failed: ${error.message}`)
+      
+      const errorMsg = error?.message || String(error)
+      
+      // Provide specific error messages
+      if (errorMsg.includes('Failed to extract text') || errorMsg.includes('not contain readable text')) {
+        throw new Error('Unable to extract text from this document. The file may be an image-only PDF or contain no readable text. Please try using the Advanced OCR tool first.')
+      } else if (errorMsg.includes('ocrFailed')) {
+        throw new Error('Text extraction failed. The document may not contain readable text or may be corrupted.')
+      } else if (errorMsg.includes('needsOCR')) {
+        throw new Error('This document needs text extraction. Please run OCR first using the Advanced OCR tool.')
+      } else {
+        throw new Error(`Smart summary failed: ${errorMsg}`)
+      }
     }
   }
 
@@ -768,38 +829,40 @@ const AdvancedTools = () => {
       </div>
 
       <div className="relative z-10">
-        {/* Usage Warning */}
+        {/* Usage Warning - Mobile First */}
         {usageExceeded && (
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-            <div className="bg-red-900 border border-red-800 rounded-2xl p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center">
-              <AlertCircle className="h-6 w-6 text-red-400 mr-0 sm:mr-4 mb-3 sm:mb-0 flex-shrink-0" />
-              <div className="flex-1">
-                <h3 className="font-semibold text-red-300 mb-1">Usage Limit Reached</h3>
-                <p className="text-red-400 text-sm sm:text-base">You've reached your monthly processing limit. Upgrade to Premium for unlimited access.</p>
+          <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-3 sm:py-4">
+            <div className="bg-red-900 border border-red-800 rounded-2xl p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4">
+              <AlertCircle className="h-5 w-5 sm:h-6 sm:w-6 text-red-400 flex-shrink-0" />
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-red-300 mb-1 text-sm sm:text-base">Usage Limit Reached</h3>
+                <p className="text-red-400 text-xs sm:text-sm">You've reached your monthly processing limit. Upgrade to Premium for unlimited access.</p>
               </div>
-              <Button className="mt-3 sm:mt-0 sm:ml-auto bg-red-700 hover:bg-red-600 text-white w-full sm:w-auto">
+              <Button className="w-full sm:w-auto bg-red-700 hover:bg-red-600 text-white text-sm sm:text-base mobile-touch-target">
                 Upgrade Now
               </Button>
             </div>
           </div>
         )}
 
-        {/* Category Filter */}
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-          <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-8 sm:mb-12">
-            {categories.map((category) => (
-              <button
-                key={category}
-                onClick={() => setSelectedCategory(category)}
-                className={`px-4 sm:px-6 py-2 sm:py-3 rounded-full font-medium transition-all duration-300 text-sm sm:text-base ${
-                  selectedCategory === category
-                    ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-600/30'
-                    : 'bg-grey-800 text-grey-300 hover:bg-accent hover:text-foreground'
-                }`}
-              >
-                {category}
-              </button>
-            ))}
+        {/* Category Filter - Mobile First */}
+        <div className="max-w-7xl mx-auto mobile-container py-6 sm:py-8">
+          <div className="mobile-overflow-x pb-2 mb-6 sm:mb-8 lg:mb-12">
+            <div className="flex justify-center gap-2 sm:gap-3 min-w-max px-2">
+              {categories.map((category) => (
+                <button
+                  key={category}
+                  onClick={() => setSelectedCategory(category)}
+                  className={`px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 md:py-3 rounded-full font-medium transition-all duration-300 text-xs sm:text-sm md:text-base whitespace-nowrap mobile-touch-target ${
+                    selectedCategory === category
+                      ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-600/30'
+                      : 'bg-grey-800 text-grey-300 hover:bg-accent hover:text-foreground'
+                  }`}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Tools Grid */}

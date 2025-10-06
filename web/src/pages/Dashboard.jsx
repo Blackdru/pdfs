@@ -145,56 +145,56 @@ const Dashboard = () => {
         {/* Stats Cards */}
         {stats && (
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Files</CardTitle>
-              <Files className="h-4 w-4 text-muted-foreground" />
+          <Card className="mobile-card-compact overflow-hidden">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium truncate pr-2">Total Files</CardTitle>
+              <Files className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalFiles}</div>
-              <p className="text-xs text-muted-foreground">
-                {stats.filesLimit - stats.totalFiles} remaining
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <div className="text-base sm:text-lg lg:text-2xl font-bold">{stats.totalFiles}</div>
+              <p className="text-xs text-muted-foreground truncate">
+                {stats.filesLimit - stats.totalFiles} left
               </p>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Storage Used</CardTitle>
-              <HardDrive className="h-4 w-4 text-muted-foreground" />
+          <Card className="mobile-card-compact overflow-hidden">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium truncate pr-2">Storage</CardTitle>
+              <HardDrive className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{formatFileSize(stats.totalStorage)}</div>
-              <p className="text-xs text-muted-foreground">
-                of {formatFileSize(stats.storageLimit)} used
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <div className="text-base sm:text-lg lg:text-2xl font-bold truncate">{formatFileSize(stats.totalStorage)}</div>
+              <p className="text-xs text-muted-foreground truncate">
+                / {formatFileSize(stats.storageLimit)}
               </p>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">AI Processed</CardTitle>
-              <Bot className="h-4 w-4 text-muted-foreground" />
+          <Card className="mobile-card-compact overflow-hidden">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium truncate pr-2">AI Files</CardTitle>
+              <Bot className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <div className="text-base sm:text-lg lg:text-2xl font-bold">
                 {files.filter(f => f.has_ocr || f.has_summary || f.has_embeddings).length}
               </div>
-              <p className="text-xs text-muted-foreground">
-                files with AI features
+              <p className="text-xs text-muted-foreground truncate">
+                Enhanced
               </p>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Recent Activity</CardTitle>
-              <Activity className="h-4 w-4 text-muted-foreground" />
+          <Card className="mobile-card-compact overflow-hidden">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
+              <CardTitle className="text-xs sm:text-sm font-medium truncate pr-2">Activity</CardTitle>
+              <Activity className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.recentActivity}</div>
-              <p className="text-xs text-muted-foreground">
-                operations this month
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <div className="text-base sm:text-lg lg:text-2xl font-bold">{stats.recentActivity}</div>
+              <p className="text-xs text-muted-foreground truncate">
+                this month
               </p>
             </CardContent>
           </Card>
@@ -203,21 +203,21 @@ const Dashboard = () => {
 
       {/* Main Content */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4 sm:space-y-6">
-          <div className="overflow-x-auto">
-            <TabsList className="grid w-full grid-cols-4 min-w-[320px] h-auto p-1">
-              <TabsTrigger value="overview" className="flex flex-col sm:flex-row items-center justify-center px-2 py-2 sm:py-3 text-xs sm:text-sm">
+          <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+            <TabsList className="grid w-full grid-cols-4 h-auto p-1">
+              <TabsTrigger value="overview" className="flex flex-col sm:flex-row items-center justify-center px-1 sm:px-2 py-2 sm:py-3 text-xs sm:text-sm">
                 <Activity className="h-3 w-3 sm:h-4 sm:w-4 mb-1 sm:mb-0 sm:mr-2 flex-shrink-0" />
                 <span className="truncate">Overview</span>
               </TabsTrigger>
-              <TabsTrigger value="files" className="flex flex-col sm:flex-row items-center justify-center px-2 py-2 sm:py-3 text-xs sm:text-sm">
+              <TabsTrigger value="files" className="flex flex-col sm:flex-row items-center justify-center px-1 sm:px-2 py-2 sm:py-3 text-xs sm:text-sm">
                 <FolderOpen className="h-3 w-3 sm:h-4 sm:w-4 mb-1 sm:mb-0 sm:mr-2 flex-shrink-0" />
                 <span className="truncate">Files</span>
               </TabsTrigger>
-              <TabsTrigger value="ai" className="flex flex-col sm:flex-row items-center justify-center px-2 py-2 sm:py-3 text-xs sm:text-sm">
+              <TabsTrigger value="ai" className="flex flex-col sm:flex-row items-center justify-center px-1 sm:px-2 py-2 sm:py-3 text-xs sm:text-sm">
                 <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 mb-1 sm:mb-0 sm:mr-2 flex-shrink-0" />
                 <span className="truncate">AI</span>
               </TabsTrigger>
-              <TabsTrigger value="recent" className="flex flex-col sm:flex-row items-center justify-center px-2 py-2 sm:py-3 text-xs sm:text-sm">
+              <TabsTrigger value="recent" className="flex flex-col sm:flex-row items-center justify-center px-1 sm:px-2 py-2 sm:py-3 text-xs sm:text-sm">
                 <Clock className="h-3 w-3 sm:h-4 sm:w-4 mb-1 sm:mb-0 sm:mr-2 flex-shrink-0" />
                 <span className="truncate">Recent</span>
               </TabsTrigger>
@@ -226,64 +226,64 @@ const Dashboard = () => {
 
         <TabsContent value="overview" className="space-y-6">
           {/* Quick Actions */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Quick Actions</CardTitle>
-              <CardDescription>Common tasks and workflows</CardDescription>
+          <Card className="mobile-card">
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-base sm:text-lg">Quick Actions</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">Common tasks and workflows</CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <Button variant="outline" className="h-20 flex-col" onClick={() => setShowUpload(true)}>
-                  <Upload className="h-6 w-6 mb-2" />
-                  Upload Files
+            <CardContent className="p-4 sm:p-6 pt-0">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+                <Button variant="outline" className="h-16 sm:h-20 flex-col mobile-touch-target text-xs sm:text-sm" onClick={() => setShowUpload(true)}>
+                  <Upload className="h-4 w-4 sm:h-6 sm:w-6 mb-1 sm:mb-2" />
+                  <span className="truncate">Upload</span>
                 </Button>
-                <Button variant="outline" className="h-20 flex-col" onClick={() => setActiveTab('files')}>
-                  <FolderOpen className="h-6 w-6 mb-2" />
-                  Browse Files
+                <Button variant="outline" className="h-16 sm:h-20 flex-col mobile-touch-target text-xs sm:text-sm" onClick={() => setActiveTab('files')}>
+                  <FolderOpen className="h-4 w-4 sm:h-6 sm:w-6 mb-1 sm:mb-2" />
+                  <span className="truncate">Browse</span>
                 </Button>
-                <Button variant="outline" className="h-20 flex-col" onClick={() => setShowBatchProcessor(true)}>
-                  <Zap className="h-6 w-6 mb-2" />
-                  Batch Process
+                <Button variant="outline" className="h-16 sm:h-20 flex-col mobile-touch-target text-xs sm:text-sm" onClick={() => setShowBatchProcessor(true)}>
+                  <Zap className="h-4 w-4 sm:h-6 sm:w-6 mb-1 sm:mb-2" />
+                  <span className="truncate">Batch</span>
                 </Button>
-                <Button variant="outline" className="h-20 flex-col" onClick={() => setActiveTab('ai')}>
-                  <Bot className="h-6 w-6 mb-2" />
-                  AI Tools
+                <Button variant="outline" className="h-16 sm:h-20 flex-col mobile-touch-target text-xs sm:text-sm" onClick={() => setActiveTab('ai')}>
+                  <Bot className="h-4 w-4 sm:h-6 sm:w-6 mb-1 sm:mb-2" />
+                  <span className="truncate">AI Tools</span>
                 </Button>
               </div>
             </CardContent>
           </Card>
 
           {/* Recent Files */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Files</CardTitle>
-              <CardDescription>Your recently uploaded and processed files</CardDescription>
+          <Card className="mobile-card">
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-base sm:text-lg">Recent Files</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">Your recently uploaded and processed files</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 sm:p-6 pt-0">
               {files.length === 0 ? (
-                <div className="text-center py-8">
-                  <FileText className="mx-auto h-8 w-8 text-muted-foreground mb-2" />
-                  <p className="text-sm text-muted-foreground mb-3">No files yet</p>
-                  <Button size="sm" onClick={() => setShowUpload(true)}>
+                <div className="text-center py-6 sm:py-8">
+                  <FileText className="mx-auto h-6 w-6 sm:h-8 sm:w-8 text-muted-foreground mb-2" />
+                  <p className="text-xs sm:text-sm text-muted-foreground mb-3">No files yet</p>
+                  <Button size="sm" onClick={() => setShowUpload(true)} className="mobile-btn-sm mobile-touch-target">
                     Upload Your First File
                   </Button>
                 </div>
               ) : (
                 <div className="space-y-2">
                   {files.slice(0, 5).map((file) => (
-                    <div key={file.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50">
-                      <div className="flex items-center space-x-3">
-                        <div className="text-xl">{getFileIcon(file.type)}</div>
-                        <div>
-                          <p className="font-medium text-sm">{file.filename}</p>
-                          <div className="flex items-center space-x-2">
-                            <p className="text-xs text-muted-foreground">
+                    <div key={file.id} className="flex items-center justify-between p-2 sm:p-3 border rounded-lg hover:bg-muted/50 mobile-touch-target">
+                      <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
+                        <div className="text-base sm:text-xl flex-shrink-0">{getFileIcon(file.type)}</div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium text-xs sm:text-sm truncate">{file.filename}</p>
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
+                            <p className="text-xs text-muted-foreground truncate">
                               {formatFileSize(file.size)} • {formatDate(file.created_at)}
                             </p>
-                            <div className="flex space-x-1">
-                              {file.has_ocr && <Badge variant="secondary" className="text-xs">OCR</Badge>}
-                              {file.has_summary && <Badge variant="secondary" className="text-xs">Summary</Badge>}
-                              {file.has_embeddings && <Badge variant="secondary" className="text-xs">Chat</Badge>}
+                            <div className="flex space-x-1 mt-1 sm:mt-0">
+                              {file.has_ocr && <Badge variant="secondary" className="text-xs px-1 py-0">OCR</Badge>}
+                              {file.has_summary && <Badge variant="secondary" className="text-xs px-1 py-0">Summary</Badge>}
+                              {file.has_embeddings && <Badge variant="secondary" className="text-xs px-1 py-0">Chat</Badge>}
                             </div>
                           </div>
                         </div>
@@ -292,13 +292,14 @@ const Dashboard = () => {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleOpenAIAssistant(file)}
+                        className="ml-2 flex-shrink-0 mobile-touch-target"
                       >
-                        <Bot className="h-4 w-4" />
+                        <Bot className="h-3 w-3 sm:h-4 sm:w-4" />
                       </Button>
                     </div>
                   ))}
                   {files.length > 5 && (
-                    <Button variant="outline" className="w-full" onClick={() => setActiveTab('files')}>
+                    <Button variant="outline" className="w-full mobile-btn-sm mobile-touch-target" onClick={() => setActiveTab('files')}>
                       View All Files ({files.length})
                     </Button>
                   )}
@@ -314,7 +315,7 @@ const Dashboard = () => {
 
         <TabsContent value="ai" className="space-y-6">
           {/* AI Features Overview */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center">

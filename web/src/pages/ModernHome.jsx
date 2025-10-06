@@ -137,20 +137,20 @@ const ModernHome = () => {
       </div>
 
       {/* Hero Section */}
-      <section className="relative pt-10 pb-10 px-4">
+      <section className="relative pt-6 sm:pt-10 pb-8 sm:pb-10 px-3 sm:px-4">
         <div className="container mx-auto max-w-7xl">
           <div className={`text-center transition-all duration-1000 ${
             isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
           }`}>
             {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 backdrop-blur-sm mb-8">
-              <Sparkles className="h-4 w-4 text-blue-400" />
-              <span className="text-sm font-medium text-blue-200">AI-Powered PDF Suite</span>
-              <ChevronRight className="h-4 w-4 text-blue-400" />
+            <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 backdrop-blur-sm mb-4 sm:mb-8">
+              <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 text-blue-400" />
+              <span className="text-xs sm:text-sm font-medium text-blue-200">AI-Powered PDF Suite</span>
+              <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4 text-blue-400" />
             </div>
             
             {/* Main Heading */}
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-6 leading-tight">
+            <h1 className="text-3xl sm:text-5xl md:text-7xl lg:text-8xl font-bold mb-4 sm:mb-6 leading-tight px-2">
               <span className="text-white">Transform PDFs with</span>
               <br />
               <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent animate-gradient">
@@ -159,35 +159,35 @@ const ModernHome = () => {
             </h1>
             
             {/* Subtitle */}
-            <p className="text-xl md:text-2xl text-slate-300 mb-12 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-base sm:text-xl md:text-2xl text-slate-300 mb-8 sm:mb-12 max-w-3xl mx-auto leading-relaxed px-4">
               The most powerful PDF toolkit powered by artificial intelligence. 
               Merge, split, compress, and chat with your documents in seconds.
             </p>
             
             {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-stretch sm:items-center mb-8 sm:mb-16 px-4">
               {user ? (
                 <Button 
                   onClick={() => navigate('/dashboard')} 
-                  className="group relative px-8 py-6 text-lg font-semibold rounded-2xl bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg shadow-blue-500/50 hover:shadow-xl hover:shadow-blue-500/60 transition-all duration-300 hover:-translate-y-1"
+                  className="group relative px-6 sm:px-8 py-4 sm:py-6 text-base sm:text-lg font-semibold rounded-xl sm:rounded-2xl bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg shadow-blue-500/50 hover:shadow-xl hover:shadow-blue-500/60 transition-all duration-300 hover:-translate-y-1 w-full sm:w-auto"
                 >
-                  <Rocket className="inline-block mr-2 h-5 w-5" />
+                  <Rocket className="inline-block mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                   Go to Dashboard
-                  <ArrowRight className="inline-block ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="inline-block ml-2 h-4 w-4 sm:h-5 sm:w-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
               ) : (
                 <>
                   <Button 
                     onClick={() => navigate('/tools')} 
-                    className="group relative px-8 py-6 text-lg font-semibold rounded-2xl bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg shadow-blue-500/50 hover:shadow-xl hover:shadow-blue-500/60 transition-all duration-300 hover:-translate-y-1"
+                    className="group relative px-6 sm:px-8 py-4 sm:py-6 text-base sm:text-lg font-semibold rounded-xl sm:rounded-2xl bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-lg shadow-blue-500/50 hover:shadow-xl hover:shadow-blue-500/60 transition-all duration-300 hover:-translate-y-1 w-full sm:w-auto"
                   >
-                    <Play className="inline-block mr-2 h-5 w-5" />
+                    <Play className="inline-block mr-2 h-4 w-4 sm:h-5 sm:w-5" />
                     Start Free
-                    <ArrowRight className="inline-block ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                    <ArrowRight className="inline-block ml-2 h-4 w-4 sm:h-5 sm:w-5 group-hover:translate-x-1 transition-transform" />
                   </Button>
                   <Button 
                     onClick={() => navigate('/login')}
-                    className="px-8 py-6 text-lg font-semibold rounded-2xl bg-white/5 hover:bg-white/10 text-white border border-white/10 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1"
+                    className="px-6 sm:px-8 py-4 sm:py-6 text-base sm:text-lg font-semibold rounded-xl sm:rounded-2xl bg-white/5 hover:bg-white/10 text-white border border-white/10 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 w-full sm:w-auto"
                   >
                     Sign In
                   </Button>
@@ -196,17 +196,17 @@ const ModernHome = () => {
             </div>
 
             {/* Trust Indicators */}
-            <div className="flex flex-wrap items-center justify-center gap-8 text-sm text-slate-400">
+            <div className="flex flex-col sm:flex-row flex-wrap items-center justify-center gap-4 sm:gap-8 text-xs sm:text-sm text-slate-400 px-4">
               <div className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-emerald-400" />
+                <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-400 flex-shrink-0" />
                 <span>No credit card required</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-emerald-400" />
+                <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-400 flex-shrink-0" />
                 <span>Free forever plan</span>
               </div>
               <div className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-emerald-400" />
+                <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 text-emerald-400 flex-shrink-0" />
                 <span>Cancel anytime</span>
               </div>
             </div>
@@ -215,9 +215,9 @@ const ModernHome = () => {
       </section>
 
       {/* Stats Section */}
-      <section className="relative py-16 px-4">
+      <section className="relative py-8 sm:py-16 px-3 sm:px-4">
         <div className="container mx-auto max-w-7xl">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-8">
             {stats.map((stat, index) => (
               <div 
                 key={index}
@@ -226,9 +226,9 @@ const ModernHome = () => {
                 }`}
                 style={{ transitionDelay: `${index * 100}ms` }}
               >
-                <stat.icon className={`h-8 w-8 ${stat.color} mx-auto mb-3`} />
-                <div className="text-4xl md:text-5xl font-bold text-white mb-2">{stat.number}</div>
-                <div className="text-slate-400">{stat.label}</div>
+                <stat.icon className={`h-6 w-6 sm:h-8 sm:w-8 ${stat.color} mx-auto mb-2 sm:mb-3`} />
+                <div className="text-2xl sm:text-4xl md:text-5xl font-bold text-white mb-1 sm:mb-2">{stat.number}</div>
+                <div className="text-xs sm:text-sm text-slate-400">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -236,44 +236,44 @@ const ModernHome = () => {
       </section>
 
       {/* Features Section */}
-      <section className="relative py-20 px-4">
+      <section className="relative py-10 sm:py-20 px-3 sm:px-4">
         <div className="container mx-auto max-w-7xl">
           {/* Section Header */}
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 backdrop-blur-sm mb-6">
-              <Layers className="h-4 w-4 text-purple-400" />
-              <span className="text-sm font-medium text-purple-200">Powerful Features</span>
+          <div className="text-center mb-8 sm:mb-16">
+            <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 backdrop-blur-sm mb-4 sm:mb-6">
+              <Layers className="h-3 w-3 sm:h-4 sm:w-4 text-purple-400" />
+              <span className="text-xs sm:text-sm font-medium text-purple-200">Powerful Features</span>
             </div>
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+            <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold text-white mb-3 sm:mb-4 px-4">
               Everything You Need
             </h2>
-            <p className="text-xl text-slate-300 max-w-2xl mx-auto">
+            <p className="text-base sm:text-xl text-slate-300 max-w-2xl mx-auto px-4">
               Professional-grade PDF tools powered by cutting-edge AI technology
             </p>
           </div>
           
           {/* Features Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {features.map((feature, index) => (
               <div 
                 key={index}
-                className={`group relative p-8 rounded-3xl bg-gradient-to-br from-slate-900/50 to-slate-800/50 border border-slate-700/50 backdrop-blur-sm hover:border-slate-600/50 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl ${
+                className={`group relative p-5 sm:p-8 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-slate-900/50 to-slate-800/50 border border-slate-700/50 backdrop-blur-sm hover:border-slate-600/50 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl ${
                   isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
                 }`}
                 style={{ transitionDelay: `${index * 100}ms` }}
               >
                 {/* Gradient Overlay */}
-                <div className={`absolute inset-0 rounded-3xl bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-10 transition-opacity duration-500`}></div>
+                <div className={`absolute inset-0 rounded-2xl sm:rounded-3xl bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-10 transition-opacity duration-500`}></div>
                 
                 {/* Content */}
                 <div className="relative">
-                  <div className={`inline-flex items-center justify-center w-14 h-14 rounded-2xl ${feature.iconBg} mb-6 group-hover:scale-110 transition-transform duration-300`}>
-                    <feature.icon className={`h-7 w-7 ${feature.iconColor}`} />
+                  <div className={`inline-flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl ${feature.iconBg} mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                    <feature.icon className={`h-6 w-6 sm:h-7 sm:w-7 ${feature.iconColor}`} />
                   </div>
-                  <h3 className="text-2xl font-bold text-white mb-3 group-hover:text-blue-300 transition-colors">
+                  <h3 className="text-lg sm:text-2xl font-bold text-white mb-2 sm:mb-3 group-hover:text-blue-300 transition-colors">
                     {feature.title}
                   </h3>
-                  <p className="text-slate-400 leading-relaxed">
+                  <p className="text-sm sm:text-base text-slate-400 leading-relaxed">
                     {feature.description}
                   </p>
                 </div>
@@ -284,24 +284,24 @@ const ModernHome = () => {
       </section>
 
       {/* Benefits Section */}
-      <section className="relative py-20 px-4 bg-gradient-to-b from-transparent via-blue-950/20 to-transparent">
+      <section className="relative py-10 sm:py-20 px-3 sm:px-4 bg-gradient-to-b from-transparent via-blue-950/20 to-transparent">
         <div className="container mx-auto max-w-7xl">
           {/* Section Header */}
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-500/20 backdrop-blur-sm mb-6">
-              <Award className="h-4 w-4 text-emerald-400" />
-              <span className="text-sm font-medium text-emerald-200">Why Choose Us</span>
+          <div className="text-center mb-8 sm:mb-16">
+            <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border border-emerald-500/20 backdrop-blur-sm mb-4 sm:mb-6">
+              <Award className="h-3 w-3 sm:h-4 sm:w-4 text-emerald-400" />
+              <span className="text-xs sm:text-sm font-medium text-emerald-200">Why Choose Us</span>
             </div>
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+            <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold text-white mb-3 sm:mb-4 px-4">
               Built for Performance
             </h2>
-            <p className="text-xl text-slate-300 max-w-2xl mx-auto">
+            <p className="text-base sm:text-xl text-slate-300 max-w-2xl mx-auto px-4">
               Experience the perfect blend of speed, security, and intelligence
             </p>
           </div>
           
           {/* Benefits Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8">
             {benefits.map((benefit, index) => (
               <div 
                 key={index}
@@ -310,13 +310,13 @@ const ModernHome = () => {
                 }`}
                 style={{ transitionDelay: `${index * 150}ms` }}
               >
-                <div className={`inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-gradient-to-br ${benefit.gradient} mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg`}>
-                  <benefit.icon className="h-10 w-10 text-white" />
+                <div className={`inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-xl sm:rounded-2xl bg-gradient-to-br ${benefit.gradient} mb-4 sm:mb-6 group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg`}>
+                  <benefit.icon className="h-8 w-8 sm:h-10 sm:w-10 text-white" />
                 </div>
-                <h3 className="text-xl font-bold text-white mb-3">
+                <h3 className="text-base sm:text-xl font-bold text-white mb-2 sm:mb-3 px-2">
                   {benefit.title}
                 </h3>
-                <p className="text-slate-400">
+                <p className="text-xs sm:text-sm text-slate-400 px-2">
                   {benefit.description}
                 </p>
               </div>
@@ -326,24 +326,24 @@ const ModernHome = () => {
       </section>
 
       {/* How It Works */}
-      <section className="relative py-20 px-4">
+      <section className="relative py-10 sm:py-20 px-3 sm:px-4">
         <div className="container mx-auto max-w-7xl">
           {/* Section Header */}
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/20 backdrop-blur-sm mb-6">
-              <Zap className="h-4 w-4 text-orange-400" />
-              <span className="text-sm font-medium text-orange-200">Simple Process</span>
+          <div className="text-center mb-8 sm:mb-16">
+            <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/20 backdrop-blur-sm mb-4 sm:mb-6">
+              <Zap className="h-3 w-3 sm:h-4 sm:w-4 text-orange-400" />
+              <span className="text-xs sm:text-sm font-medium text-orange-200">Simple Process</span>
             </div>
-            <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
+            <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold text-white mb-3 sm:mb-4 px-4">
               Three Steps to Success
             </h2>
-            <p className="text-xl text-slate-300 max-w-2xl mx-auto">
+            <p className="text-base sm:text-xl text-slate-300 max-w-2xl mx-auto px-4">
               Transform your documents in just three simple steps
             </p>
           </div>
           
           {/* Steps */}
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 max-w-5xl mx-auto">
             {[
               {
                 icon: Upload,
@@ -376,19 +376,19 @@ const ModernHome = () => {
               >
                 {/* Connector Line */}
                 {index < 2 && (
-                  <div className="hidden md:block absolute top-16 left-full w-full h-0.5 bg-gradient-to-r from-slate-700 to-transparent"></div>
+                  <div className="hidden sm:block absolute top-12 sm:top-16 left-full w-full h-0.5 bg-gradient-to-r from-slate-700 to-transparent"></div>
                 )}
                 
                 {/* Step Number */}
-                <div className={`relative inline-flex items-center justify-center w-32 h-32 rounded-3xl bg-gradient-to-br ${step.gradient} mb-6 shadow-2xl`}>
-                  <span className="text-5xl font-bold text-white">{step.number}</span>
-                  <step.icon className="absolute bottom-4 right-4 h-8 w-8 text-white/50" />
+                <div className={`relative inline-flex items-center justify-center w-24 h-24 sm:w-32 sm:h-32 rounded-2xl sm:rounded-3xl bg-gradient-to-br ${step.gradient} mb-4 sm:mb-6 shadow-2xl`}>
+                  <span className="text-3xl sm:text-5xl font-bold text-white">{step.number}</span>
+                  <step.icon className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 h-6 w-6 sm:h-8 sm:w-8 text-white/50" />
                 </div>
                 
-                <h3 className="text-2xl font-bold text-white mb-3">
+                <h3 className="text-lg sm:text-2xl font-bold text-white mb-2 sm:mb-3 px-4">
                   {step.title}
                 </h3>
-                <p className="text-slate-400 leading-relaxed">
+                <p className="text-sm sm:text-base text-slate-400 leading-relaxed px-4">
                   {step.description}
                 </p>
               </div>
@@ -399,40 +399,40 @@ const ModernHome = () => {
 
 
       {/* Final CTA */}
-      <section className="relative py-32 px-4">
+      <section className="relative py-16 sm:py-32 px-3 sm:px-4 mb-16 sm:mb-0">
         <div className="container mx-auto max-w-4xl text-center">
           <div className={`${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'} transition-all duration-1000`}>
-            <h2 className="text-4xl md:text-6xl font-bold text-white mb-6">
+            <h2 className="text-2xl sm:text-4xl md:text-6xl font-bold text-white mb-4 sm:mb-6 px-4">
               Ready to Transform Your Workflow?
             </h2>
-            <p className="text-xl text-slate-300 mb-12 leading-relaxed">
+            <p className="text-base sm:text-xl text-slate-300 mb-8 sm:mb-12 leading-relaxed px-4">
               Join thousands of users who trust RobotPDF for their document processing needs.
               Start your free journey today.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-stretch sm:items-center px-4">
               {user ? (
                 <Button 
                   onClick={() => navigate('/dashboard')} 
-                  className="group px-10 py-7 text-xl font-semibold rounded-2xl bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-2xl shadow-blue-500/50 hover:shadow-blue-500/60 transition-all duration-300 hover:-translate-y-1"
+                  className="group px-8 sm:px-10 py-5 sm:py-7 text-lg sm:text-xl font-semibold rounded-xl sm:rounded-2xl bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-2xl shadow-blue-500/50 hover:shadow-blue-500/60 transition-all duration-300 hover:-translate-y-1 w-full sm:w-auto"
                 >
-                  <Rocket className="inline-block mr-2 h-6 w-6" />
+                  <Rocket className="inline-block mr-2 h-5 w-5 sm:h-6 sm:w-6" />
                   Launch Dashboard
-                  <ArrowRight className="inline-block ml-2 h-6 w-6 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="inline-block ml-2 h-5 w-5 sm:h-6 sm:w-6 group-hover:translate-x-1 transition-transform" />
                 </Button>
               ) : (
                 <>
                   <Button 
                     onClick={() => navigate('/tools')} 
-                    className="group px-10 py-7 text-xl font-semibold rounded-2xl bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-2xl shadow-blue-500/50 hover:shadow-blue-500/60 transition-all duration-300 hover:-translate-y-1"
+                    className="group px-8 sm:px-10 py-5 sm:py-7 text-lg sm:text-xl font-semibold rounded-xl sm:rounded-2xl bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-2xl shadow-blue-500/50 hover:shadow-blue-500/60 transition-all duration-300 hover:-translate-y-1 w-full sm:w-auto"
                   >
-                    <Play className="inline-block mr-2 h-6 w-6" />
+                    <Play className="inline-block mr-2 h-5 w-5 sm:h-6 sm:w-6" />
                     Start Free
-                    <ArrowRight className="inline-block ml-2 h-6 w-6 group-hover:translate-x-1 transition-transform" />
+                    <ArrowRight className="inline-block ml-2 h-5 w-5 sm:h-6 sm:w-6 group-hover:translate-x-1 transition-transform" />
                   </Button>
                   <Button 
                     onClick={() => navigate('/pricing')}
-                    className="px-10 py-7 text-xl font-semibold rounded-2xl bg-white/5 hover:bg-white/10 text-white border border-white/10 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1"
+                    className="px-8 sm:px-10 py-5 sm:py-7 text-lg sm:text-xl font-semibold rounded-xl sm:rounded-2xl bg-white/5 hover:bg-white/10 text-white border border-white/10 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 w-full sm:w-auto"
                   >
                     View Pricing
                   </Button>

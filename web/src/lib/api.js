@@ -313,24 +313,71 @@ class ApiClient {
     const formData = new FormData()
     formData.append('file', file)
 
-    return this.request('/files/upload', {
-      method: 'POST',
-      headers: {}, // Remove Content-Type to let browser set it for FormData
-      body: formData,
-      timeout: 300000, // 5 minutes for large file uploads
-    })
+    try {
+      return await this.request('/files/upload', {
+        method: 'POST',
+        headers: {}, // Remove Content-Type to let browser set it for FormData
+        body: formData,
+        timeout: 600000, // 10 minutes for large file uploads
+      })
+    } catch (error) {
+      // Enhanced error handling for file uploads
+      const errorMsg = error?.message || String(error)
+      
+      if (errorMsg.includes('File size exceeds')) {
+        // Extract size limit and upgrade info from error
+        const match = errorMsg.match(/(\d+)MB/)
+        const limit = match ? match[1] : '10'
+        throw new Error(`File too large. Maximum size: ${limit}MB. ${errorMsg.includes('Upgrade') ? 'Upgrade to Premium for larger files.' : ''}`)
+      }
+      
+      if (errorMsg.includes('Invalid file type')) {
+        throw new Error('Invalid file type. Please upload a supported file format (PDF, images, Word, Excel).')
+      }
+      
+      if (errorMsg.includes('timeout') || errorMsg.includes('aborted')) {
+        throw new Error('Upload timeout. The file may be too large or your connection is slow. Please try again.')
+      }
+      
+      if (errorMsg.includes('Network error') || errorMsg.includes('Failed to fetch')) {
+        throw new Error('Network error during upload. Please check your connection and try again.')
+      }
+      
+      throw error
+    }
   }
 
   async uploadMultipleFiles(files) {
     const formData = new FormData()
     files.forEach(file => formData.append('files', file))
 
-    return this.request('/files/upload-multiple', {
-      method: 'POST',
-      headers: {}, // Remove Content-Type to let browser set it for FormData
-      body: formData,
-      timeout: 300000, // 5 minutes for large file uploads
-    })
+    try {
+      return await this.request('/files/upload-multiple', {
+        method: 'POST',
+        headers: {}, // Remove Content-Type to let browser set it for FormData
+        body: formData,
+        timeout: 600000, // 10 minutes for large file uploads
+      })
+    } catch (error) {
+      // Enhanced error handling for file uploads
+      const errorMsg = error?.message || String(error)
+      
+      if (errorMsg.includes('File size exceeds') || errorMsg.includes('exceed')) {
+        const match = errorMsg.match(/(\d+)MB/)
+        const limit = match ? match[1] : '10'
+        throw new Error(`One or more files too large. Maximum size: ${limit}MB per file. ${errorMsg.includes('Upgrade') ? 'Upgrade to Premium for larger files.' : ''}`)
+      }
+      
+      if (errorMsg.includes('Invalid file type')) {
+        throw new Error('Invalid file type detected. Please upload only supported file formats.')
+      }
+      
+      if (errorMsg.includes('timeout') || errorMsg.includes('aborted')) {
+        throw new Error('Upload timeout. Files may be too large or connection is slow. Try uploading fewer files.')
+      }
+      
+      throw error
+    }
   }
 
   async getFiles(page = 1, limit = 20, options = {}) {

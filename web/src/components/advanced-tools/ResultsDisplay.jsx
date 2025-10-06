@@ -190,49 +190,49 @@ const ResultsDisplay = ({
   }
 
   return (
-    <div className="space-y-8 mb-8">
-      {/* Smart Summary Results */}
+    <div className="space-y-6 sm:space-y-8 mb-6 sm:mb-8">
+      {/* Smart Summary Results - Mobile First */}
       {toolResults && toolResults.type === 'smart-summary' && (
-        <div className="bg-surface rounded-3xl border border-border p-8">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-semibold text-card-foreground flex items-center">
-              <Sparkles className="h-5 w-5 mr-2" />
-              AI Summary Complete
+        <div className="bg-surface rounded-2xl sm:rounded-3xl border border-border p-4 sm:p-6 lg:p-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3">
+            <h3 className="text-base sm:text-lg lg:text-xl font-semibold text-card-foreground flex items-center">
+              <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 mr-2 flex-shrink-0" />
+              <span>AI Summary Complete</span>
             </h3>
-            <div className="flex items-center space-x-2">
-              <div className="bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">
+            <div className="flex items-center gap-2">
+              <div className="bg-green-600 text-white text-xs font-bold px-2 sm:px-3 py-1 rounded-full">
                 Ready
               </div>
               <Button
                 onClick={onClearToolResults}
                 size="sm"
                 variant="outline"
-                className="border-border text-card-foreground hover:bg-accent"
+                className="border-border text-card-foreground hover:bg-accent mobile-touch-target"
               >
-                <X className="h-4 w-4" />
+                <X className="h-3 w-3 sm:h-4 sm:w-4" />
               </Button>
             </div>
           </div>
           
-          <div className="text-center space-y-6">
-            <div className="p-8 bg-elevated rounded-xl">
-              <Sparkles className="h-16 w-16 text-yellow-400 mx-auto mb-4" />
-              <h4 className="text-2xl font-bold text-card-foreground mb-2">
+          <div className="text-center space-y-4 sm:space-y-6">
+            <div className="p-4 sm:p-6 lg:p-8 bg-elevated rounded-xl">
+              <Sparkles className="h-12 w-12 sm:h-14 sm:w-14 lg:h-16 lg:w-16 text-yellow-400 mx-auto mb-3 sm:mb-4" />
+              <h4 className="text-lg sm:text-xl lg:text-2xl font-bold text-card-foreground mb-2">
                 AI Summary Generated Successfully!
               </h4>
-              <p className="text-muted-foreground mb-6">
+              <p className="text-xs sm:text-sm text-muted-foreground mb-4 sm:mb-6 px-2">
                 Your document has been analyzed with AI insights, key points extraction, and sentiment analysis.
               </p>
               
               <Button
                 onClick={() => generateSummaryReport(toolResults)}
-                className="bg-gradient-to-r from-yellow-500 to-orange-600 text-white px-8 py-4 text-lg font-semibold hover:shadow-lg transition-all duration-300"
+                className="bg-gradient-to-r from-yellow-500 to-orange-600 text-white px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base lg:text-lg font-semibold hover:shadow-lg transition-all duration-300 w-full sm:w-auto mobile-touch-target"
               >
-                <FileText className="h-5 w-5 mr-2" />
+                <FileText className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
                 View Report
               </Button>
               
-              <p className="text-xs text-secondary mt-4">
+              <p className="text-xs text-secondary mt-3 sm:mt-4">
                 Click to open your comprehensive AI summary report in a new window
               </p>
             </div>
@@ -240,58 +240,58 @@ const ResultsDisplay = ({
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* OCR Results */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
+        {/* OCR Results - Mobile First */}
         {ocrResults && (
-          <div className="bg-surface rounded-3xl border border-border p-8">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-semibold text-card-foreground flex items-center">
-                <Eye className="h-5 w-5 mr-2" />
-                OCR Results
+          <div className="bg-surface rounded-2xl sm:rounded-3xl border border-border p-4 sm:p-6 lg:p-8">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3">
+              <h3 className="text-base sm:text-lg lg:text-xl font-semibold text-card-foreground flex items-center">
+                <Eye className="h-4 w-4 sm:h-5 sm:w-5 mr-2 flex-shrink-0" />
+                <span>OCR Results</span>
               </h3>
-              <div className="flex items-center space-x-2">
-                <div className="bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">
-                  {Math.round(ocrResults.confidence || 0)}% confidence
+              <div className="flex items-center gap-2">
+                <div className="bg-green-600 text-white text-xs font-bold px-2 sm:px-3 py-1 rounded-full">
+                  {Math.round(ocrResults.confidence || 0)}%
                 </div>
                 <Button
                   onClick={onClearOCR}
                   size="sm"
                   variant="outline"
-                  className="border-border text-card-foreground hover:bg-accent"
+                  className="border-border text-card-foreground hover:bg-accent mobile-touch-target"
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-3 w-3 sm:h-4 sm:w-4" />
                 </Button>
               </div>
             </div>
             
-            <div className="space-y-4">
-              <div className="p-4 bg-elevated rounded-xl">
-                <h4 className="font-medium text-card-foreground mb-2">{ocrResults.filename}</h4>
+            <div className="space-y-3 sm:space-y-4">
+              <div className="p-3 sm:p-4 bg-elevated rounded-xl">
+                <h4 className="font-medium text-card-foreground mb-2 text-sm sm:text-base truncate">{ocrResults.filename}</h4>
                 <textarea
                   value={ocrResults.text}
                   readOnly
-                  className="w-full bg-accent border border-border text-card-foreground rounded-lg p-3 h-32 resize-none"
+                  className="w-full bg-accent border border-border text-card-foreground rounded-lg p-2 sm:p-3 h-24 sm:h-32 resize-none text-xs sm:text-sm"
                 />
-                <div className="flex justify-between items-center mt-3">
-                  <span className="text-xs text-muted-foreground">
-                    {ocrResults.pageCount || 0} pages • {ocrResults.detectedLanguage || 'Multiple languages'}
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mt-3 gap-2">
+                  <span className="text-xs text-muted-foreground truncate">
+                    {ocrResults.pageCount || 0} pages • {ocrResults.detectedLanguage || 'Multiple'}
                   </span>
                   <Button
                     onClick={() => navigator.clipboard.writeText(ocrResults.text)}
                     size="sm"
                     variant="outline"
-                    className="border-border text-card-foreground hover:bg-accent"
+                    className="border-border text-card-foreground hover:bg-accent w-full sm:w-auto mobile-touch-target"
                   >
-                    <Copy className="h-4 w-4 mr-1" />
+                    <Copy className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                     Copy
                   </Button>
                 </div>
               </div>
               
               {ocrResults.entities && ocrResults.entities.length > 0 && (
-                <div className="p-4 bg-elevated rounded-xl">
-                  <h4 className="font-medium text-card-foreground mb-2">Detected Entities</h4>
-                  <div className="flex flex-wrap gap-2">
+                <div className="p-3 sm:p-4 bg-elevated rounded-xl">
+                  <h4 className="font-medium text-card-foreground mb-2 text-sm sm:text-base">Detected Entities</h4>
+                  <div className="flex flex-wrap gap-1 sm:gap-2">
                     {ocrResults.entities.map((entity, index) => (
                       <span key={index} className="bg-blue-600 text-white text-xs px-2 py-1 rounded-full">
                         {entity}
@@ -304,39 +304,39 @@ const ResultsDisplay = ({
           </div>
         )}
 
-        {/* AI Chat */}
+        {/* AI Chat - Mobile First */}
         {Object.keys(chatSessions).length > 0 && (
-          <div className="bg-surface rounded-3xl border border-border p-8">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-semibold text-card-foreground flex items-center">
-                <MessageSquare className="h-5 w-5 mr-2" />
-                AI Chat
+          <div className="bg-surface rounded-2xl sm:rounded-3xl border border-border p-4 sm:p-6 lg:p-8">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3">
+              <h3 className="text-base sm:text-lg lg:text-xl font-semibold text-card-foreground flex items-center">
+                <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5 mr-2 flex-shrink-0" />
+                <span>AI Chat</span>
               </h3>
               <Button
                 onClick={onClearChat}
                 size="sm"
                 variant="outline"
-                className="border-border text-card-foreground hover:bg-accent"
+                className="border-border text-card-foreground hover:bg-accent w-full sm:w-auto mobile-touch-target"
               >
-                <X className="h-4 w-4 mr-1" />
+                <X className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                 Close Chat
               </Button>
             </div>
             
             {Object.entries(chatSessions).map(([fileId, session]) => (
-              <div key={fileId} className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <h4 className="font-medium text-card-foreground">{session.filename}</h4>
-                  <div className="bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">
+              <div key={fileId} className="space-y-3 sm:space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                  <h4 className="font-medium text-card-foreground text-sm sm:text-base truncate">{session.filename}</h4>
+                  <div className="bg-green-600 text-white text-xs font-bold px-2 sm:px-3 py-1 rounded-full self-start sm:self-auto">
                     Active
                   </div>
                 </div>
                 
-                <div className="h-48 overflow-y-auto bg-elevated rounded-xl p-4 space-y-3">
+                <div className="h-40 sm:h-48 overflow-y-auto bg-elevated rounded-xl p-3 sm:p-4 space-y-2 sm:space-y-3">
                   {session.messages.length === 0 ? (
-                    <div className="text-center text-muted-foreground py-8">
-                      <MessageSquare className="h-8 w-8 mx-auto mb-2 opacity-50" />
-                      <p>Start a conversation with your document!</p>
+                    <div className="text-center text-muted-foreground py-6 sm:py-8">
+                      <MessageSquare className="h-6 w-6 sm:h-8 sm:w-8 mx-auto mb-2 opacity-50" />
+                      <p className="text-xs sm:text-sm">Start a conversation with your document!</p>
                     </div>
                   ) : (
                     session.messages.map((message, index) => (
@@ -345,13 +345,13 @@ const ResultsDisplay = ({
                         className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                       >
                         <div
-                          className={`max-w-xs px-4 py-2 rounded-xl ${
+                          className={`max-w-[85%] sm:max-w-xs px-3 sm:px-4 py-2 rounded-xl ${
                             message.role === 'user'
                               ? 'bg-blue-600 text-white'
                               : 'bg-grey-700 text-grey-200'
                           }`}
                         >
-                          <p className="text-sm">{message.content}</p>
+                          <p className="text-xs sm:text-sm break-words">{message.content}</p>
                           {message.confidence && (
                             <p className="text-xs opacity-75 mt-1">
                               Confidence: {Math.round(message.confidence || 0)}%
@@ -363,19 +363,19 @@ const ResultsDisplay = ({
                   )}
                 </div>
                 
-                <div className="flex space-x-2">
+                <div className="flex gap-2">
                   <input
                     value={currentMessage}
                     onChange={(e) => setCurrentMessage(e.target.value)}
                     placeholder="Ask about this document..."
-                    className="flex-1 bg-elevated border border-border text-card-foreground rounded-lg px-3 py-2"
+                    className="flex-1 bg-elevated border border-border text-card-foreground rounded-lg px-3 py-2 text-sm mobile-touch-target"
                     onKeyPress={(e) => e.key === 'Enter' && onSendMessage(fileId)}
                   />
                   <Button
                     onClick={() => onSendMessage(fileId)}
-                    className="bg-blue-600 hover:bg-blue-700"
+                    className="bg-blue-600 hover:bg-blue-700 mobile-touch-target flex-shrink-0"
                   >
-                    <MessageSquare className="h-4 w-4" />
+                    <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4" />
                   </Button>
                 </div>
               </div>
@@ -384,62 +384,62 @@ const ResultsDisplay = ({
         )}
       </div>
 
-      {/* AI Chat Results Display */}
+      {/* AI Chat Results Display - Mobile First */}
       {toolResults && toolResults.type === 'ai-chat' && (
-        <div className="bg-surface rounded-3xl border border-border p-8 mb-8">
-          <div className="flex items-center justify-between mb-6">
+        <div className="bg-surface rounded-2xl sm:rounded-3xl border border-border p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3">
             <div className="flex items-center">
-              <MessageSquare className="h-6 w-6 text-pink-400 mr-3" />
-              <h3 className="text-xl font-semibold text-card-foreground">AI Chat Initialized</h3>
+              <MessageSquare className="h-5 w-5 sm:h-6 sm:w-6 text-pink-400 mr-2 sm:mr-3 flex-shrink-0" />
+              <h3 className="text-base sm:text-lg lg:text-xl font-semibold text-card-foreground">AI Chat Initialized</h3>
             </div>
-            <div className="bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">
+            <div className="bg-green-600 text-white text-xs font-bold px-2 sm:px-3 py-1 rounded-full self-start sm:self-auto">
               Ready
             </div>
           </div>
           
-          <div className="bg-elevated rounded-xl p-6 text-center">
-            <MessageSquare className="h-12 w-12 text-pink-400 mx-auto mb-4" />
-            <h4 className="text-lg font-semibold text-card-foreground mb-2">
+          <div className="bg-elevated rounded-xl p-4 sm:p-6 text-center">
+            <MessageSquare className="h-10 w-10 sm:h-12 sm:w-12 text-pink-400 mx-auto mb-3 sm:mb-4" />
+            <h4 className="text-base sm:text-lg font-semibold text-card-foreground mb-2">
               AI Chat is Ready!
             </h4>
-            <p className="text-muted-foreground mb-4">
+            <p className="text-xs sm:text-sm text-muted-foreground mb-4 px-2">
               Your document has been processed and is ready for AI-powered conversations.
               You can now ask questions about the content.
             </p>
-            <Button className="bg-pink-600 hover:bg-pink-700 text-white">
-              <MessageSquare className="h-4 w-4 mr-2" />
+            <Button className="bg-pink-600 hover:bg-pink-700 text-white w-full sm:w-auto mobile-touch-target">
+              <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
               Start Chatting
             </Button>
           </div>
         </div>
       )}
 
-      {/* Tool Results Display */}
+      {/* Tool Results Display - Mobile First */}
       {toolResults && !['smart-summary', 'ai-chat'].includes(toolResults.type) && (
-        <div className="bg-surface rounded-3xl border border-border p-8 mb-8">
-          <div className="flex items-center justify-between mb-6">
+        <div className="bg-surface rounded-2xl sm:rounded-3xl border border-border p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3">
             <div className="flex items-center">
-              <CheckCircle className="h-6 w-6 text-green-400 mr-3" />
-              <h3 className="text-xl font-semibold text-card-foreground">Processing Complete</h3>
+              <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-green-400 mr-2 sm:mr-3 flex-shrink-0" />
+              <h3 className="text-base sm:text-lg lg:text-xl font-semibold text-card-foreground">Processing Complete</h3>
             </div>
-            <div className="bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">
+            <div className="bg-green-600 text-white text-xs font-bold px-2 sm:px-3 py-1 rounded-full self-start sm:self-auto">
               Success
             </div>
           </div>
           
-          <div className="bg-elevated rounded-xl p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="text-lg font-semibold text-card-foreground mb-1">
+          <div className="bg-elevated rounded-xl p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <div className="flex-1">
+                <h4 className="text-base sm:text-lg font-semibold text-card-foreground mb-1">
                   {toolResults.toolName} Completed
                 </h4>
-                <p className="text-muted-foreground">
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   Your files have been processed successfully and downloaded.
                 </p>
               </div>
-              <div className="text-right">
-                <div className="text-sm text-muted-foreground">
-                  Processed at: {new Date(toolResults.timestamp).toLocaleString()}
+              <div className="text-left sm:text-right">
+                <div className="text-xs sm:text-sm text-muted-foreground">
+                  {new Date(toolResults.timestamp).toLocaleString()}
                 </div>
               </div>
             </div>

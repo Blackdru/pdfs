@@ -5,11 +5,11 @@ const { authenticateUser, optionalAuth } = require('../middleware/auth');
 
 const router = express.Router();
 
-// Configure multer for file uploads with better error handling
-const upload = multer({
+// Configure multer for free tools (10MB limit)
+const uploadFree = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 50 * 1024 * 1024, // 50MB limit
+    fileSize: 10 * 1024 * 1024, // 10MB limit for free tools
     files: 10, // Max 10 files at once
   },
   fileFilter: (req, file, cb) => {
@@ -25,6 +25,54 @@ const upload = multer({
   }
 });
 
+// Configure multer for advanced tools (100MB limit)
+const uploadAdvanced = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 100 * 1024 * 1024, // 100MB limit for advanced tools
+    files: 10, // Max 10 files at once
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/bmp', 'image/webp', 'image/tiff', 'image/tif',
+                         'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                         'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
+    
+    if (allowedTypes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Invalid file type. Only PDF, images (JPG, PNG, GIF, BMP, WebP, TIFF), Word, and Excel files are allowed.'));
+    }
+  }
+});
+
+// Middleware to determine which upload handler to use based on user subscription
+const dynamicUpload = (req, res, next) => {
+  // Check if user has premium/pro subscription
+  const isAdvancedUser = req.user && (req.user.subscription === 'premium' || req.user.subscription === 'pro');
+  
+  // Use advanced upload for premium users, free upload for others
+  const uploadHandler = isAdvancedUser ? uploadAdvanced : uploadFree;
+  
+  uploadHandler.single('file')(req, res, (err) => {
+    if (err) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        const maxSize = isAdvancedUser ? '100MB' : '10MB';
+        const upgradeMsg = isAdvancedUser ? '' : ' Upgrade to Premium for files up to 100MB.';
+        return res.status(400).json({ 
+          error: `File size exceeds ${maxSize} limit.${upgradeMsg}`,
+          maxSize: isAdvancedUser ? 100 : 10,
+          requiresUpgrade: !isAdvancedUser
+        });
+      }
+      return next(err);
+    }
+    next();
+  });
+};
+
+// Legacy upload for backward compatibility
+const upload = uploadFree;
+
 // Middleware to extend timeout for file uploads
 const extendTimeout = (req, res, next) => {
   req.setTimeout(300000); // 5 minutes
@@ -33,7 +81,7 @@ const extendTimeout = (req, res, next) => {
 };
 
 // Upload single file - supports both authenticated and anonymous uploads
-router.post('/upload', optionalAuth, extendTimeout, upload.single('file'), async (req, res) => {
+router.post('/upload', optionalAuth, extendTimeout, dynamicUpload, async (req, res) => {
   try {
     console.log('=== FILE UPLOAD STARTED ===');
     console.log('User:', req.user?.id || 'anonymous');
@@ -42,6 +90,62 @@ router.post('/upload', optionalAuth, extendTimeout, upload.single('file'), async
     if (!req.file) {
       console.log('ERROR: No file provided');
       return res.status(400).json({ error: 'No file provided' });
+    }
+
+    // If user is authenticated, verify they exist in the database
+    if (req.user?.id) {
+      console.log('Verifying user exists in database...');
+      const { data: userExists, error: userCheckError } = await supabaseAdmin
+        .from('users')
+        .select('id, email, name')
+        .eq('id', req.user.id)
+        .single();
+
+      if (userCheckError || !userExists) {
+        console.log('User not found in database, creating profile...');
+        
+        // Try to create user profile automatically
+        try {
+          const { data: newUser, error: createError } = await supabaseAdmin
+            .from('users')
+            .insert([{
+              id: req.user.id,
+              email: req.user.email || 'unknown@example.com',
+              name: req.user.name || req.user.email?.split('@')[0] || 'User',
+              role: 'user'
+            }])
+            .select()
+            .single();
+
+          if (createError) {
+            console.error('Failed to create user profile:', createError);
+            return res.status(400).json({ 
+              error: 'User profile not found and could not be created. Please log out and log in again.' 
+            });
+          }
+
+          console.log('User profile created successfully:', newUser.id);
+
+          // Create free subscription for new user
+          await supabaseAdmin
+            .from('subscriptions')
+            .insert([{
+              user_id: newUser.id,
+              plan: 'free',
+              status: 'active',
+              started_at: new Date().toISOString()
+            }]);
+
+          console.log('Free subscription created for user:', newUser.id);
+        } catch (createErr) {
+          console.error('Error creating user profile:', createErr);
+          return res.status(400).json({ 
+            error: 'User profile not found. Please log out and log in again.' 
+          });
+        }
+      } else {
+        console.log('User verified:', userExists.id);
+      }
     }
 
     const file = req.file;
@@ -106,8 +210,27 @@ router.post('/upload', optionalAuth, extendTimeout, upload.single('file'), async
   }
 });
 
-// Upload multiple files
-router.post('/upload-multiple', authenticateUser, extendTimeout, upload.array('files', 10), async (req, res) => {
+// Upload multiple files - with dynamic size limits
+router.post('/upload-multiple', authenticateUser, extendTimeout, (req, res, next) => {
+  const isAdvancedUser = req.user && (req.user.subscription === 'premium' || req.user.subscription === 'pro');
+  const uploadHandler = isAdvancedUser ? uploadAdvanced : uploadFree;
+  
+  uploadHandler.array('files', 10)(req, res, (err) => {
+    if (err) {
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        const maxSize = isAdvancedUser ? '100MB' : '10MB';
+        const upgradeMsg = isAdvancedUser ? '' : ' Upgrade to Premium for files up to 100MB.';
+        return res.status(400).json({ 
+          error: `One or more files exceed ${maxSize} limit.${upgradeMsg}`,
+          maxSize: isAdvancedUser ? 100 : 10,
+          requiresUpgrade: !isAdvancedUser
+        });
+      }
+      return next(err);
+    }
+    next();
+  });
+}, async (req, res) => {
   try {
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ error: 'No files provided' });

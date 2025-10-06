@@ -4,7 +4,7 @@ const PDFKit = require('pdfkit');
 const sharp = require('sharp');
 const archiver = require('archiver');
 const { supabaseAdmin } = require('../config/supabase');
-const { authenticateUser } = require('../middleware/auth');
+const { authenticateUser, optionalAuth } = require('../middleware/auth');
 const { 
   enforceFileLimit, 
   trackUsage, 
@@ -28,8 +28,9 @@ const getFileBuffer = async (filePath) => {
 };
 
 // Helper function to save processed file
-const saveProcessedFile = async (userId, buffer, filename, mimetype) => {
-  const filePath = `${userId}/processed/${Date.now()}-${filename}`;
+const saveProcessedFile = async (userId, buffer, filename, mimetype, isAnonymous = false) => {
+  const userFolder = userId || 'anonymous';
+  const filePath = `${userFolder}/processed/${Date.now()}-${filename}`;
 
   // Upload to storage
   const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
@@ -48,11 +49,13 @@ const saveProcessedFile = async (userId, buffer, filename, mimetype) => {
     .from('files')
     .insert([
       {
-        user_id: userId,
+        user_id: userId || null,
         filename: filename,
         path: uploadData.path,
         type: mimetype,
-        size: buffer.length
+        size: buffer.length,
+        is_anonymous: isAnonymous,
+        expires_at: isAnonymous ? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() : null
       }
     ])
     .select()
@@ -80,32 +83,42 @@ const logOperation = async (userId, fileId, action) => {
     ]);
 };
 
-// Merge PDFs
+// Merge PDFs - supports both authenticated and anonymous users
 router.post('/merge', 
-  authenticateUser, 
-  enforceFileLimit,
-  enforceBatchLimit,
-  trackUsage('file_processed', (req) => req.body.fileIds?.length || 1, (req, data) => ({ 
-    action: 'merge', 
-    file_id: data.file?.id 
-  })),
+  optionalAuth,
   async (req, res) => {
   try {
     const { fileIds, outputName = 'merged.pdf' } = req.body;
+    const isAnonymous = !req.user;
+
+    console.log('=== MERGE PDF REQUEST ===');
+    console.log('User:', req.user?.id || 'anonymous');
+    console.log('File IDs:', fileIds);
 
     if (!fileIds || !Array.isArray(fileIds) || fileIds.length < 2) {
       return res.status(400).json({ error: 'At least 2 files are required for merging' });
     }
 
-    // Get file metadata
-    const { data: files, error: filesError } = await supabaseAdmin
+    // Get file metadata - different query for authenticated vs anonymous
+    let query = supabaseAdmin
       .from('files')
       .select('*')
-      .in('id', fileIds)
-      .eq('user_id', req.user.id);
+      .in('id', fileIds);
+
+    if (req.user) {
+      // Authenticated user - check ownership
+      query = query.eq('user_id', req.user.id);
+    } else {
+      // Anonymous user - check for anonymous files
+      query = query.is('user_id', null);
+    }
+
+    const { data: files, error: filesError } = await query;
 
     if (filesError || !files || files.length !== fileIds.length) {
-      return res.status(404).json({ error: 'One or more files not found' });
+      console.log('Files error:', filesError);
+      console.log('Found files:', files?.length, 'Expected:', fileIds.length);
+      return res.status(404).json({ error: 'One or more files not found or access denied' });
     }
 
     // Verify all files are PDFs
@@ -128,18 +141,24 @@ router.post('/merge',
 
     // Save merged file
     const savedFile = await saveProcessedFile(
-      req.user.id,
+      req.user?.id || null,
       mergedBuffer,
       outputName,
-      'application/pdf'
+      'application/pdf',
+      isAnonymous
     );
 
-    // Log operation
-    await logOperation(req.user.id, savedFile.id, 'merge');
+    // Log operation (only for authenticated users)
+    if (req.user) {
+      await logOperation(req.user.id, savedFile.id, 'merge');
+    }
+
+    console.log('Merge completed successfully:', savedFile.id);
 
     res.json({
       message: 'PDFs merged successfully',
-      file: savedFile
+      file: savedFile,
+      isAnonymous: isAnonymous
     });
   } catch (error) {
     console.error('Merge error:', error);
@@ -147,25 +166,37 @@ router.post('/merge',
   }
 });
 
-// Split PDF
-router.post('/split', authenticateUser, async (req, res) => {
+// Split PDF - supports both authenticated and anonymous users
+router.post('/split', optionalAuth, async (req, res) => {
   try {
     const { fileId, pages, outputName = 'split.pdf' } = req.body;
+    const isAnonymous = !req.user;
+
+    console.log('=== SPLIT PDF REQUEST ===');
+    console.log('User:', req.user?.id || 'anonymous');
+    console.log('File ID:', fileId);
 
     if (!fileId) {
       return res.status(400).json({ error: 'File ID is required' });
     }
 
-    // Get file metadata
-    const { data: file, error: fileError } = await supabaseAdmin
+    // Get file metadata - different query for authenticated vs anonymous
+    let query = supabaseAdmin
       .from('files')
       .select('*')
-      .eq('id', fileId)
-      .eq('user_id', req.user.id)
-      .single();
+      .eq('id', fileId);
+
+    if (req.user) {
+      query = query.eq('user_id', req.user.id);
+    } else {
+      query = query.is('user_id', null);
+    }
+
+    const { data: file, error: fileError } = await query.single();
 
     if (fileError || !file) {
-      return res.status(404).json({ error: 'File not found' });
+      console.log('File error:', fileError);
+      return res.status(404).json({ error: 'File not found or access denied' });
     }
 
     if (file.type !== 'application/pdf') {
@@ -196,9 +227,12 @@ router.post('/split', authenticateUser, async (req, res) => {
         archive.append(splitBuffer, { name: fileName });
       }
 
-      // Log operation
-      await logOperation(req.user.id, file.id, 'split');
+      // Log operation (only for authenticated users)
+      if (req.user) {
+        await logOperation(req.user.id, file.id, 'split');
+      }
       
+      console.log('Split completed successfully (zip)');
       await archive.finalize();
       return;
     }
@@ -216,18 +250,24 @@ router.post('/split', authenticateUser, async (req, res) => {
 
     const splitBuffer = Buffer.from(await newPdf.save());
     const savedFile = await saveProcessedFile(
-      req.user.id,
+      req.user?.id || null,
       splitBuffer,
       outputName,
-      'application/pdf'
+      'application/pdf',
+      isAnonymous
     );
 
-    // Log operation
-    await logOperation(req.user.id, savedFile.id, 'split');
+    // Log operation (only for authenticated users)
+    if (req.user) {
+      await logOperation(req.user.id, savedFile.id, 'split');
+    }
+
+    console.log('Split completed successfully:', savedFile.id);
 
     res.json({
       message: 'PDF split successfully',
-      file: savedFile
+      file: savedFile,
+      isAnonymous: isAnonymous
     });
   } catch (error) {
     console.error('Split error:', error);
@@ -235,25 +275,37 @@ router.post('/split', authenticateUser, async (req, res) => {
   }
 });
 
-// Compress PDF (basic compression)
-router.post('/compress', authenticateUser, async (req, res) => {
+// Compress PDF - supports both authenticated and anonymous users
+router.post('/compress', optionalAuth, async (req, res) => {
   try {
     const { fileId, quality = 0.7, outputName = 'compressed.pdf' } = req.body;
+    const isAnonymous = !req.user;
+
+    console.log('=== COMPRESS PDF REQUEST ===');
+    console.log('User:', req.user?.id || 'anonymous');
+    console.log('File ID:', fileId);
 
     if (!fileId) {
       return res.status(400).json({ error: 'File ID is required' });
     }
 
-    // Get file metadata
-    const { data: file, error: fileError } = await supabaseAdmin
+    // Get file metadata - different query for authenticated vs anonymous
+    let query = supabaseAdmin
       .from('files')
       .select('*')
-      .eq('id', fileId)
-      .eq('user_id', req.user.id)
-      .single();
+      .eq('id', fileId);
+
+    if (req.user) {
+      query = query.eq('user_id', req.user.id);
+    } else {
+      query = query.is('user_id', null);
+    }
+
+    const { data: file, error: fileError } = await query.single();
 
     if (fileError || !file) {
-      return res.status(404).json({ error: 'File not found' });
+      console.log('File error:', fileError);
+      return res.status(404).json({ error: 'File not found or access denied' });
     }
 
     if (file.type !== 'application/pdf') {
@@ -305,13 +357,19 @@ router.post('/compress', authenticateUser, async (req, res) => {
     if (!compressionWorked || compressedBuffer.length >= fileBuffer.length) {
       // Return original file as "compressed" with a note
       const savedFile = await saveProcessedFile(
-        req.user.id,
+        req.user?.id || null,
         fileBuffer,
         outputName.replace('.pdf', '_already_optimized.pdf'),
-        'application/pdf'
+        'application/pdf',
+        isAnonymous
       );
       
-      await logOperation(req.user.id, savedFile.id, 'compress');
+      // Log operation (only for authenticated users)
+      if (req.user) {
+        await logOperation(req.user.id, savedFile.id, 'compress');
+      }
+      
+      console.log('Compress completed (already optimized):', savedFile.id);
       
       return res.json({
         message: 'PDF is already well optimized. Original file returned.',
@@ -319,28 +377,35 @@ router.post('/compress', authenticateUser, async (req, res) => {
         originalSize: file.size,
         compressedSize: file.size,
         compressionRatio: '0%',
-        note: 'File was already optimized'
+        note: 'File was already optimized',
+        isAnonymous: isAnonymous
       });
     }
 
     const savedFile = await saveProcessedFile(
-      req.user.id,
+      req.user?.id || null,
       compressedBuffer,
       outputName,
-      'application/pdf'
+      'application/pdf',
+      isAnonymous
     );
 
-    // Log operation
-    await logOperation(req.user.id, savedFile.id, 'compress');
+    // Log operation (only for authenticated users)
+    if (req.user) {
+      await logOperation(req.user.id, savedFile.id, 'compress');
+    }
 
     const compressionRatio = ((file.size - compressedBuffer.length) / file.size * 100).toFixed(1);
+
+    console.log('Compress completed successfully:', savedFile.id);
 
     res.json({
       message: 'PDF compressed successfully',
       file: savedFile,
       originalSize: file.size,
       compressedSize: compressedBuffer.length,
-      compressionRatio: `${compressionRatio}%`
+      compressionRatio: `${compressionRatio}%`,
+      isAnonymous: isAnonymous
     });
   } catch (error) {
     console.error('Compress error:', error);
@@ -348,24 +413,38 @@ router.post('/compress', authenticateUser, async (req, res) => {
   }
 });
 
-// Convert images to PDF
-router.post('/convert/images-to-pdf', authenticateUser, async (req, res) => {
+// Convert images to PDF - supports both authenticated and anonymous users
+router.post('/convert/images-to-pdf', optionalAuth, async (req, res) => {
   try {
     const { fileIds, outputName = 'converted.pdf' } = req.body;
+    const isAnonymous = !req.user;
+
+    console.log('=== CONVERT IMAGES TO PDF REQUEST ===');
+    console.log('User:', req.user?.id || 'anonymous');
+    console.log('File IDs:', fileIds);
 
     if (!fileIds || !Array.isArray(fileIds) || fileIds.length === 0) {
       return res.status(400).json({ error: 'At least 1 image file is required' });
     }
 
-    // Get file metadata
-    const { data: files, error: filesError } = await supabaseAdmin
+    // Get file metadata - different query for authenticated vs anonymous
+    let query = supabaseAdmin
       .from('files')
       .select('*')
-      .in('id', fileIds)
-      .eq('user_id', req.user.id);
+      .in('id', fileIds);
+
+    if (req.user) {
+      query = query.eq('user_id', req.user.id);
+    } else {
+      query = query.is('user_id', null);
+    }
+
+    const { data: files, error: filesError } = await query;
 
     if (filesError || !files || files.length !== fileIds.length) {
-      return res.status(404).json({ error: 'One or more files not found' });
+      console.log('Files error:', filesError);
+      console.log('Found files:', files?.length, 'Expected:', fileIds.length);
+      return res.status(404).json({ error: 'One or more files not found or access denied' });
     }
 
     // Verify all files are images
@@ -412,18 +491,24 @@ router.post('/convert/images-to-pdf', authenticateUser, async (req, res) => {
     const pdfBuffer = Buffer.from(await pdf.save());
 
     const savedFile = await saveProcessedFile(
-      req.user.id,
+      req.user?.id || null,
       pdfBuffer,
       outputName,
-      'application/pdf'
+      'application/pdf',
+      isAnonymous
     );
 
-    // Log operation
-    await logOperation(req.user.id, savedFile.id, 'convert');
+    // Log operation (only for authenticated users)
+    if (req.user) {
+      await logOperation(req.user.id, savedFile.id, 'convert');
+    }
+
+    console.log('Convert completed successfully:', savedFile.id);
 
     res.json({
       message: 'Images converted to PDF successfully',
-      file: savedFile
+      file: savedFile,
+      isAnonymous: isAnonymous
     });
   } catch (error) {
     console.error('Convert images error:', error);

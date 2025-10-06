@@ -97,98 +97,101 @@ const Register = () => {
   ]
 
   return (
-    <div className="min-h-screen flex items-center justify-center py-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden bg-gradient-to-br from-background via-background to-muted/30">
+    <div className="min-h-screen flex items-center justify-center py-8 sm:py-16 px-3 sm:px-4 md:px-6 lg:px-8 relative overflow-hidden bg-gradient-to-br from-background via-background to-muted/30">
       {/* Animated Background Elements - Matching Home Page */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-gradient-to-r from-blue-400 to-purple-600 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
-        <div className="absolute top-40 right-10 w-72 h-72 bg-gradient-to-r from-purple-400 to-pink-600 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
-        <div className="absolute bottom-20 left-20 w-72 h-72 bg-gradient-to-r from-cyan-400 to-blue-600 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
+        <div className="absolute top-20 left-10 w-48 h-48 sm:w-72 sm:h-72 bg-gradient-to-r from-blue-400 to-purple-600 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
+        <div className="absolute top-40 right-10 w-48 h-48 sm:w-72 sm:h-72 bg-gradient-to-r from-purple-400 to-pink-600 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
+        <div className="absolute bottom-20 left-20 w-48 h-48 sm:w-72 sm:h-72 bg-gradient-to-r from-cyan-400 to-blue-600 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
       </div>
       
       <div className={`max-w-6xl w-full relative z-10 transition-all duration-1000 ${
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
       }`}>
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left Side - Branding & Benefits */}
-          <div className="hidden lg:block space-y-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-12 items-center">
+          {/* Left Side - Branding & Benefits - Hidden on mobile */}
+          <div className="hidden lg:block space-y-6 xl:space-y-8">
             {/* Logo */}
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3 xl:space-x-4">
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl blur-lg opacity-50"></div>
-                <div className="relative bg-white p-3 rounded-2xl shadow-xl">
-                  <img src="/logo.png" alt="RobotPDF Logo" className="h-16 w-16 object-contain" />
+                <div className="relative bg-white p-2 xl:p-3 rounded-2xl shadow-xl">
+                  <img src="/logo.png" alt="RobotPDF Logo" className="h-12 w-12 xl:h-16 xl:w-16 object-contain" />
                 </div>
               </div>
               <div>
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                <h1 className="text-3xl xl:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                   RobotPDF
                 </h1>
-                <p className="text-muted-foreground">Your PDF companion</p>
+                <p className="text-sm xl:text-base text-muted-foreground">Your PDF companion</p>
               </div>
             </div>
 
             {/* Welcome Message */}
-            <div className="space-y-4">
-              <div className="inline-flex items-center px-4 py-2 rounded-full bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/20 dark:to-purple-900/20 mb-4">
-                <Sparkles className="h-4 w-4 text-blue-600 mr-2" />
-                <span className="text-sm font-medium text-blue-600">Start Free Today</span>
+            <div className="space-y-3 xl:space-y-4">
+              <div className="inline-flex items-center px-3 xl:px-4 py-1.5 xl:py-2 rounded-full bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/20 dark:to-purple-900/20 mb-3 xl:mb-4">
+                <Sparkles className="h-3 w-3 xl:h-4 xl:w-4 text-blue-600 mr-2" />
+                <span className="text-xs xl:text-sm font-medium text-blue-600">Start Free Today</span>
               </div>
-              <h2 className="text-4xl font-bold text-foreground">
+              <h2 className="text-2xl xl:text-4xl font-bold text-foreground leading-tight">
                 Join 50,000+ users transforming their PDFs
               </h2>
-              <p className="text-xl text-muted-foreground">
+              <p className="text-base xl:text-xl text-muted-foreground">
                 Create your free account and unlock the most powerful PDF toolkit available.
               </p>
             </div>
 
             {/* Benefits Grid */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3 xl:gap-4">
               {benefits.map((benefit, index) => (
-                <div key={index} className="flex items-start space-x-3 p-4 rounded-xl bg-gradient-to-br from-white to-gray-50 dark:from-gray-800/50 dark:to-gray-900/50 border border-gray-100 dark:border-gray-800 hover:shadow-lg transition-shadow">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center text-white shadow-lg">
+                <div key={index} className="flex items-start space-x-2 xl:space-x-3 p-3 xl:p-4 rounded-lg xl:rounded-xl bg-gradient-to-br from-white to-gray-50 dark:from-gray-800/50 dark:to-gray-900/50 border border-gray-100 dark:border-gray-800 hover:shadow-lg transition-shadow">
+                  <div className="flex-shrink-0 w-8 h-8 xl:w-10 xl:h-10 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center text-white shadow-lg">
                     {benefit.icon}
                   </div>
-                  <span className="text-sm text-foreground font-medium pt-2">{benefit.text}</span>
+                  <span className="text-xs xl:text-sm text-foreground font-medium pt-1 xl:pt-2">{benefit.text}</span>
                 </div>
               ))}
             </div>
 
             {/* Social Proof */}
-            <div className="flex items-center space-x-8 pt-8">
+            <div className="flex items-center space-x-6 xl:space-x-8 pt-6 xl:pt-8">
               <div className="text-center">
-                <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                <div className="text-2xl xl:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                   4.9/5
                 </div>
-                <div className="text-sm text-muted-foreground">User Rating</div>
+                <div className="text-xs xl:text-sm text-muted-foreground">User Rating</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                <div className="text-2xl xl:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                   1M+
                 </div>
-                <div className="text-sm text-muted-foreground">Files Processed</div>
+                <div className="text-xs xl:text-sm text-muted-foreground">Files Processed</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                <div className="text-2xl xl:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                   24/7
                 </div>
-                <div className="text-sm text-muted-foreground">Support</div>
+                <div className="text-xs xl:text-sm text-muted-foreground">Support</div>
               </div>
             </div>
           </div>
 
           {/* Right Side - Register Form */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6 w-full">
             {/* Mobile Logo */}
-            <div className="lg:hidden text-center mb-8">
-              <div className="flex justify-center items-center mb-4">
+            <div className="lg:hidden text-center mb-6 sm:mb-8">
+              <div className="flex justify-center items-center mb-3 sm:mb-4">
                 <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl blur-lg opacity-50"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl sm:rounded-2xl blur-lg opacity-50"></div>
+                  <div className="relative bg-white p-2 sm:p-3 rounded-xl sm:rounded-2xl shadow-xl">
+                    <img src="/logo.png" alt="RobotPDF Logo" className="h-10 w-10 sm:h-12 sm:w-12 object-contain" />
+                  </div>
                 </div>
               </div>
-              <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+              <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
                 {showOTPVerification ? 'Verify Your Email' : 'Get Started Free'}
               </h2>
-              <p className="text-muted-foreground">
+              <p className="text-sm text-muted-foreground px-4">
                 {showOTPVerification 
                   ? 'Enter the code sent to your email'
                   : 'Create your RobotPDF account'
@@ -198,8 +201,8 @@ const Register = () => {
 
             {/* Register Form Card */}
             <Card className="border-0 shadow-2xl bg-gradient-to-br from-white to-gray-50 dark:from-gray-800/50 dark:to-gray-900/50 backdrop-blur-xl">
-              <CardContent className="p-8">
-                <div className="hidden lg:block mb-6">
+              <CardContent className="p-5 sm:p-8">
+                <div className="hidden lg:block mb-4 lg:mb-6">
                   <h3 className="text-2xl font-bold text-foreground mb-2">
                     {showOTPVerification ? 'Verify your email' : 'Create your account'}
                   </h3>
@@ -285,13 +288,13 @@ const Register = () => {
                   </form>
                 ) : (
                   <>
-                    <form onSubmit={handleSubmit} className="space-y-5">
-                      <div className="space-y-2">
-                        <label htmlFor="name" className="block text-sm font-semibold text-foreground">
+                    <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
+                      <div className="space-y-1.5 sm:space-y-2">
+                        <label htmlFor="name" className="block text-xs sm:text-sm font-semibold text-foreground">
                           Full name
                         </label>
                         <div className="relative group">
-                          <User className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-blue-600 transition-colors" />
+                          <User className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground group-focus-within:text-blue-600 transition-colors" />
                           <input
                             id="name"
                             name="name"
@@ -299,7 +302,7 @@ const Register = () => {
                             value={formData.name}
                             onChange={handleChange}
                             placeholder="John Doe"
-                            className="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-foreground focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 transition-all outline-none"
+                            className="w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-2.5 sm:py-3 text-sm sm:text-base rounded-lg sm:rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-foreground focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 transition-all outline-none"
                             required
                           />
                         </div>
@@ -365,7 +368,7 @@ const Register = () => {
 
                       <Button 
                         type="submit" 
-                        className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-6 text-base font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5" 
+                        className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-4 sm:py-6 text-sm sm:text-base font-semibold rounded-lg sm:rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5" 
                         disabled={loading}
                       >
                         {loading ? (
@@ -383,12 +386,12 @@ const Register = () => {
                       </Button>
                     </form>
 
-                    <div className="relative my-6">
+                    <div className="relative my-4 sm:my-6">
                       <div className="absolute inset-0 flex items-center">
                         <span className="w-full border-t border-gray-200 dark:border-gray-700" />
                       </div>
                       <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-white dark:bg-gray-800/50 px-4 text-muted-foreground font-medium">
+                        <span className="bg-white dark:bg-gray-800/50 px-3 sm:px-4 text-muted-foreground font-medium">
                           Or continue with
                         </span>
                       </div>
@@ -398,14 +401,14 @@ const Register = () => {
                       onClick={handleGoogleSignIn}
                       disabled={loading}
                       type="button"
-                      className="w-full bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-900 dark:text-white border-2 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 py-6 text-base font-semibold rounded-xl transition-all duration-300 hover:shadow-lg"
+                      className="w-full bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-900 dark:text-white border-2 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 py-4 sm:py-6 text-sm sm:text-base font-semibold rounded-lg sm:rounded-xl transition-all duration-300 hover:shadow-lg"
                     >
-                      <GoogleIcon className="mr-3 h-5 w-5" />
+                      <GoogleIcon className="mr-2 sm:mr-3 h-4 w-4 sm:h-5 sm:w-5" />
                       Continue with Google
                     </Button>
 
-                    <div className="text-center pt-6">
-                      <p className="text-sm text-muted-foreground">
+                    <div className="text-center pt-4 sm:pt-6">
+                      <p className="text-xs sm:text-sm text-muted-foreground">
                         Already have an account?{' '}
                         <Link 
                           to="/login" 
@@ -421,19 +424,19 @@ const Register = () => {
             </Card>
 
             {/* Trust Indicators */}
-            <div className="flex items-center justify-center space-x-6 text-muted-foreground">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 text-muted-foreground">
               <div className="flex items-center space-x-2">
-                <Shield className="h-4 w-4 text-green-500" />
+                <Shield className="h-3 w-3 sm:h-4 sm:w-4 text-green-500" />
                 <span className="text-xs font-medium">Secure Signup</span>
               </div>
               <div className="flex items-center space-x-2">
-                <Star className="h-4 w-4 text-yellow-500" />
+                <Star className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-500" />
                 <span className="text-xs font-medium">Free Forever</span>
               </div>
             </div>
 
             {/* Footer */}
-            <div className="text-center">
+            <div className="text-center px-4">
               <p className="text-xs text-muted-foreground leading-relaxed">
                 By creating an account, you agree to our{' '}
                 <Link to="/terms-conditions" className="underline hover:text-blue-600 transition-colors">Terms</Link>

@@ -305,24 +305,34 @@ const Tools = () => {
     // Initialize progress tracking
     initializeProcessingSteps(selectedTool.id)
     updateProgress(5, 'Preparing files for processing...', 0)
+    await new Promise(resolve => setTimeout(resolve, 300))
     
     try {
       let uploadedFileIds = []
       
-      // First upload files to server
-      updateProgress(15, 'Uploading files to server...', 0)
-      toast.success(`Uploading ${files.length} file(s)...`)
-      
-      for (const file of files) {
+      // Upload files with detailed progress
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i]
+        const fileNum = i + 1
+        const totalFiles = files.length
+        
         try {
+          // Calculate progress: 5% to 30% for uploads
+          const uploadProgress = 5 + ((fileNum - 1) / totalFiles) * 25
+          updateProgress(uploadProgress, `Uploading file ${fileNum}/${totalFiles}: ${file.name}...`, 0)
+          
           console.log('Uploading file:', file.name, 'Size:', file.size, 'Type:', file.type)
           const response = await api.uploadFile(file)
           console.log('Upload response:', response)
           uploadedFileIds.push(response.file.id)
-          toast.success(`✅ ${file.name} uploaded successfully`)
+          
+          // Show completion for this file
+          const completedProgress = 5 + (fileNum / totalFiles) * 25
+          updateProgress(completedProgress, `Uploaded ${fileNum}/${totalFiles} files`, 0)
+          await new Promise(resolve => setTimeout(resolve, 200))
         } catch (error) {
           console.error('Upload error for', file.name, ':', error)
-          toast.error(`❌ Failed to upload ${file.name}: ${error.message}`)
+          toast.error(`Failed to upload ${file.name}: ${error.message}`)
         }
       }
 
@@ -332,10 +342,15 @@ const Tools = () => {
       }
       
       console.log('Successfully uploaded file IDs:', uploadedFileIds)
+      updateProgress(35, `All ${uploadedFileIds.length} file(s) uploaded successfully`, 1)
+      await new Promise(resolve => setTimeout(resolve, 500))
 
-      // Process based on tool type
+      // Process based on tool type with detailed progress
       let result
       const outputName = `${selectedTool.id}-${Date.now()}`
+      
+      updateProgress(40, 'Initializing processing...', 1)
+      await new Promise(resolve => setTimeout(resolve, 300))
       
       switch (selectedTool.id) {
         case 'merge':
@@ -343,10 +358,18 @@ const Tools = () => {
             toast.error('Need at least 2 PDF files to merge')
             return
           }
+          updateProgress(50, 'Analyzing PDF structures...', 2)
+          await new Promise(resolve => setTimeout(resolve, 500))
+          updateProgress(65, 'Merging PDFs...', 2)
           result = await api.mergePDFs(uploadedFileIds, `${outputName}.pdf`)
+          updateProgress(85, 'Merge complete!', 2)
           break
           
         case 'split':
+          updateProgress(50, 'Analyzing PDF structure...', 2)
+          await new Promise(resolve => setTimeout(resolve, 500))
+          updateProgress(65, 'Splitting pages...', 2)
+          
           // Split returns a ZIP stream directly
           const splitResponse = await fetch(`${API_BASE_URL}/pdf/split`, {
             method: 'POST',
@@ -365,7 +388,9 @@ const Tools = () => {
             throw new Error(errorData.error || 'Split failed')
           }
           
+          updateProgress(85, 'Preparing download...', 3)
           const splitBlob = await splitResponse.blob()
+          updateProgress(100, 'Complete!', 3)
           downloadBlob(splitBlob, `${outputName}_split.zip`)
           toast.success('PDF split successfully! Files downloaded as ZIP.')
           
@@ -374,18 +399,27 @@ const Tools = () => {
           return
           
         case 'compress':
+          updateProgress(50, 'Analyzing file content...', 2)
+          await new Promise(resolve => setTimeout(resolve, 500))
+          
           // For multiple files, compress each one
           const compressedFiles = []
-          for (const fileId of uploadedFileIds) {
+          const totalToCompress = uploadedFileIds.length
+          
+          for (let i = 0; i < uploadedFileIds.length; i++) {
+            const fileId = uploadedFileIds[i]
             try {
+              const compressProgress = 50 + ((i + 1) / totalToCompress) * 35
+              updateProgress(compressProgress, `Compressing file ${i + 1}/${totalToCompress}...`, 2)
+              
               const compressed = await api.compressPDF(fileId, 0.5, `compressed-${fileId}.pdf`)
               compressedFiles.push(compressed.file)
             } catch (error) {
               console.error('Compression error:', error)
               if (error.message.includes('already optimized')) {
-                toast.error(`File is already optimized and cannot be compressed further`)
+                toast.error(`File ${i + 1} is already optimized`)
               } else {
-                toast.error(`Compression failed: ${error.message}`)
+                toast.error(`Compression failed for file ${i + 1}: ${error.message}`)
               }
             }
           }
@@ -397,6 +431,7 @@ const Tools = () => {
             return
           }
           
+          updateProgress(85, 'Compression complete!', 2)
           result = { files: compressedFiles }
           break
           
@@ -411,7 +446,11 @@ const Tools = () => {
             return
           }
           
+          updateProgress(50, 'Processing images...', 2)
+          await new Promise(resolve => setTimeout(resolve, 500))
+          updateProgress(70, 'Creating PDF...', 2)
           result = await api.convertImagesToPDF(uploadedFileIds, `${outputName}.pdf`)
+          updateProgress(85, 'Conversion complete!', 2)
           break
           
         case 'ocr':
@@ -527,12 +566,17 @@ const Tools = () => {
         toolName: selectedTool.title
       })
 
-      // Handle download
+      // Handle download with progress
+      updateProgress(90, 'Preparing download...', processingSteps.length - 1)
+      await new Promise(resolve => setTimeout(resolve, 300))
+      
       if (result.file) {
         // Single file result
         try {
+          updateProgress(95, 'Downloading result...', processingSteps.length - 1)
           const blob = await api.downloadFile(result.file.id)
           downloadBlob(blob, result.file.filename)
+          updateProgress(100, 'Complete!', processingSteps.length - 1)
           toast.success('Processing completed! File downloaded.')
         } catch (downloadError) {
           console.error('Download error:', downloadError)
@@ -541,15 +585,25 @@ const Tools = () => {
       } else if (result.files && result.files.length > 0) {
         // Multiple files result
         let downloadCount = 0
-        for (const file of result.files) {
+        const totalFiles = result.files.length
+        
+        for (let i = 0; i < result.files.length; i++) {
+          const file = result.files[i]
           try {
+            const downloadProgress = 90 + ((i + 1) / totalFiles) * 10
+            updateProgress(downloadProgress, `Downloading file ${i + 1}/${totalFiles}...`, processingSteps.length - 1)
+            
             const blob = await api.downloadFile(file.id)
             downloadBlob(blob, file.filename)
             downloadCount++
+            await new Promise(resolve => setTimeout(resolve, 200))
           } catch (downloadError) {
             console.error('Download error for file:', file.filename, downloadError)
           }
         }
+        
+        updateProgress(100, 'Complete!', processingSteps.length - 1)
+        
         if (downloadCount > 0) {
           toast.success(`Processing completed! ${downloadCount} file(s) downloaded.`)
         } else {
@@ -557,20 +611,25 @@ const Tools = () => {
         }
       } else if (result instanceof Blob) {
         // Handle blob response (like split which returns a zip)
+        updateProgress(95, 'Downloading result...', processingSteps.length - 1)
         const filename = `${selectedTool.id}-result-${Date.now()}.zip`
         downloadBlob(result, filename)
+        updateProgress(100, 'Complete!', processingSteps.length - 1)
         toast.success('Processing completed! Files downloaded.')
       } else if (result && typeof result === 'object' && result.downloadUrl) {
         // Handle direct download URL
+        updateProgress(95, 'Downloading result...', processingSteps.length - 1)
         const link = document.createElement('a')
         link.href = result.downloadUrl
         link.download = result.filename || `${selectedTool.id}-result.zip`
         document.body.appendChild(link)
         link.click()
         document.body.removeChild(link)
+        updateProgress(100, 'Complete!', processingSteps.length - 1)
         toast.success('Processing completed! Files downloaded.')
       } else {
         // No downloadable result
+        updateProgress(100, 'Complete!', processingSteps.length - 1)
         toast.success('Processing completed successfully!')
       }
       
@@ -580,20 +639,28 @@ const Tools = () => {
     } catch (error) {
       console.error('Processing error:', error)
       
-      // Provide specific error messages
-      if (error.message.includes('No token provided') || error.message.includes('Unauthorized')) {
-        toast.error('Please sign in to use this feature')
-      } else if (error.message.includes('File not found')) {
-        toast.error('File upload failed. Please try again.')
-      } else if (error.message.includes('Network error')) {
-        toast.error('Network error. Please check your connection and try again.')
-      } else if (error.message.includes('404')) {
+      // Enhanced error messages
+      const errorMsg = error?.message || String(error)
+      
+      if (errorMsg.includes('File too large') || errorMsg.includes('File size exceeds')) {
+        toast.error(errorMsg, { duration: 6000 })
+      } else if (errorMsg.includes('No token provided') || errorMsg.includes('Unauthorized')) {
+        toast.error('Authentication required. Please sign in to use this feature.')
+      } else if (errorMsg.includes('File not found')) {
+        toast.error('File upload failed. Please check your connection and try again.')
+      } else if (errorMsg.includes('Invalid file type')) {
+        toast.error('Invalid file type. Please upload supported file formats only.')
+      } else if (errorMsg.includes('Network error') || errorMsg.includes('timeout') || errorMsg.includes('Upload timeout')) {
+        toast.error('Upload timeout. The file may be too large or your connection is slow. Please try with a smaller file or check your internet connection.', { duration: 6000 })
+      } else if (errorMsg.includes('404')) {
         toast.error('Service temporarily unavailable. Please try again later.')
+      } else if (errorMsg.includes('Too many requests')) {
+        toast.error('Rate limit exceeded. Please wait a moment and try again.')
       } else {
-        toast.error(`Processing failed: ${error.message}`)
+        toast.error(`Processing failed: ${errorMsg}`, { duration: 5000 })
       }
     } finally {
-      setIsProcessing(false)
+      setTimeout(() => setIsProcessing(false), 1500)
     }
   }
 
@@ -633,76 +700,76 @@ const Tools = () => {
 
         {/* Category Filter */}
         <div className="max-w-7xl mx-auto mobile-container py-6 sm:py-8">
-          <div className="mobile-overflow-x pb-2 mb-6 sm:mb-8 lg:mb-12">
-            <div className="flex justify-center mobile-gap min-w-max">
-              {categories.map((category) => (
-                <button
-                  key={category}
-                  onClick={() => setSelectedCategory(category)}
-                  className={`mobile-btn-sm mobile-touch-target rounded-full font-medium transition-all duration-300 whitespace-nowrap ${
-                    selectedCategory === category
-                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
-                      : 'bg-grey-800 text-grey-300 hover:bg-accent hover:text-foreground'
-                  }`}
-                >
-                  {category}
-                </button>
-              ))}
-            </div>
-          </div>
+        <div className="mobile-overflow-x pb-2 mb-6 sm:mb-8 lg:mb-12">
+        <div className="flex justify-center gap-2 sm:gap-3 min-w-max px-2">
+        {categories.map((category) => (
+        <button
+        key={category}
+        onClick={() => setSelectedCategory(category)}
+        className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-full font-medium transition-all duration-300 whitespace-nowrap text-xs sm:text-sm mobile-touch-target ${
+        selectedCategory === category
+        ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
+        : 'bg-grey-800 text-grey-300 hover:bg-accent hover:text-foreground'
+        }`}
+        >
+        {category}
+        </button>
+        ))}
+        </div>
+        </div>
 
           {/* Tools Grid */}
-          <div className="mobile-grid-3 mobile-gap-lg mb-8 sm:mb-12 lg:mb-16">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 mb-8 sm:mb-12 lg:mb-16">
             {filteredTools.map((tool) => (
               <div
                 key={tool.id}
                 onClick={() => handleToolSelect(tool)}
-                className={`group relative bg-grey-900 rounded-3xl border-2 transition-all duration-500 cursor-pointer hover:scale-105 hover:shadow-2xl ${
+                className={`group relative bg-grey-900 rounded-2xl sm:rounded-3xl border-2 transition-all duration-500 cursor-pointer hover:scale-105 hover:shadow-2xl mobile-touch-target ${
                   selectedTool?.id === tool.id
                     ? 'border-blue-500 shadow-2xl shadow-blue-500/20'
                     : 'border-grey-800 hover:border-border'
                 }`}
               >
                 {/* Popularity Badge */}
-                <div className="absolute -top-3 -right-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs font-bold px-3 py-1 rounded-full flex items-center">
-                  <TrendingUp className="h-3 w-3 mr-1" />
+                <div className="absolute -top-2 -right-2 sm:-top-3 sm:-right-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs font-bold px-2 py-1 sm:px-3 sm:py-1 rounded-full flex items-center">
+                  <TrendingUp className="h-2 w-2 sm:h-3 sm:w-3 mr-1" />
                   {tool.popularity}%
                 </div>
 
-                <div className="p-8">
+                <div className="p-4 sm:p-6 lg:p-8">
                   {/* Icon */}
-                  <div className={`w-16 h-16 ${tool.iconBg} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300`}>
-                    <tool.icon className="h-8 w-8 text-white" />
+                  <div className={`w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 ${tool.iconBg} rounded-xl sm:rounded-2xl flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                    <tool.icon className="h-6 w-6 sm:h-7 sm:w-7 lg:h-8 lg:w-8 text-white" />
                   </div>
 
                   {/* Content */}
-                  <div className="mb-6">
-                    <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-xl font-bold text-foreground">{tool.title}</h3>
-                      <span className="text-xs bg-elevated text-muted-foreground px-2 py-1 rounded-full">
+                  <div className="mb-4 sm:mb-6">
+                    <div className="flex items-start justify-between mb-2 sm:mb-3 gap-2">
+                      <h3 className="text-base sm:text-lg lg:text-xl font-bold text-foreground flex-1">{tool.title}</h3>
+                      <span className="text-xs bg-elevated text-muted-foreground px-2 py-0.5 sm:py-1 rounded-full whitespace-nowrap flex-shrink-0">
                         {tool.category}
                       </span>
                     </div>
-                    <p className="text-muted-foreground mb-4">{tool.description}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4 line-clamp-2">{tool.description}</p>
                     
                     {/* Features */}
-                    <div className="flex items-center justify-between text-sm text-secondary mb-4">
+                    <div className="flex items-center justify-between text-xs sm:text-sm text-secondary mb-3 sm:mb-4">
                       <div className="flex items-center">
-                        <Clock className="h-4 w-4 mr-1" />
-                        {tool.processingTime}
+                        <Clock className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                        <span className="truncate">{tool.processingTime}</span>
                       </div>
                       <div className="flex items-center">
-                        <Shield className="h-4 w-4 mr-1" />
-                        Secure
+                        <Shield className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                        <span>Secure</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Action Button */}
                   <Button 
-                    className={`w-full bg-gradient-to-r ${tool.color} text-white hover:shadow-lg transition-all duration-300`}
+                    className={`w-full bg-gradient-to-r ${tool.color} text-white hover:shadow-lg transition-all duration-300 text-xs sm:text-sm h-9 sm:h-10 mobile-touch-target`}
                   >
-                    <Play className="h-4 w-4 mr-2" />
+                    <Play className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                     Select Tool
                   </Button>
                 </div>
@@ -713,50 +780,50 @@ const Tools = () => {
           
           {/* Selected Tool Processing Area */}
           {selectedTool && (
-            <div className="bg-surface rounded-3xl border border-border p-8 mb-8">
-              <div className="flex items-center mb-8">
-                <div className={`w-12 h-12 ${selectedTool.iconBg} rounded-xl flex items-center justify-center mr-4`}>
-                  <selectedTool.icon className="h-6 w-6 text-white" />
+            <div className="bg-surface rounded-2xl sm:rounded-3xl border border-border p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center mb-6 sm:mb-8 gap-3 sm:gap-4">
+                <div className={`w-10 h-10 sm:w-12 sm:h-12 ${selectedTool.iconBg} rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0`}>
+                  <selectedTool.icon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                 </div>
-                <div>
-                  <h2 className="text-2xl font-bold text-foreground">{selectedTool.title}</h2>
-                  <p className="text-muted-foreground">{selectedTool.description}</p>
+                <div className="flex-1 min-w-0">
+                  <h2 className="text-lg sm:text-xl lg:text-2xl font-bold text-foreground truncate">{selectedTool.title}</h2>
+                  <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">{selectedTool.description}</p>
                 </div>
               </div>
 
               {/* File Upload Button */}
-              <div id="upload-section" className="bg-elevated rounded-2xl p-6 mb-6 text-center">
-                <h3 className="text-lg font-semibold text-card-foreground mb-4">
+              <div id="upload-section" className="bg-elevated rounded-xl sm:rounded-2xl p-4 sm:p-6 mb-4 sm:mb-6 text-center">
+                <h3 className="text-base sm:text-lg font-semibold text-card-foreground mb-3 sm:mb-4">
                   {selectedTool.multipleFiles ? 'Upload Files' : 'Upload File'}
                 </h3>
                 
                 <Button
                   onClick={() => setShowUploadModal(true)}
-                  className={`bg-gradient-to-r ${selectedTool.color} text-white px-8 py-4 text-lg font-semibold hover:shadow-lg transition-all duration-300`}
+                  className={`bg-gradient-to-r ${selectedTool.color} text-white px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base lg:text-lg font-semibold hover:shadow-lg transition-all duration-300 mobile-touch-target w-full sm:w-auto`}
                 >
-                  <Upload className="h-5 w-5 mr-2" />
+                  <Upload className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
                   {selectedTool.multipleFiles ? 'Select Files' : 'Select File'}
                 </Button>
 
-                <p className="text-sm text-muted-foreground mt-3">
+                <p className="text-xs sm:text-sm text-muted-foreground mt-3">
                   Supports: {selectedTool.acceptedFiles.replace(/\./g, '').toUpperCase()}
                   {selectedTool.multipleFiles && ` • Up to 10 files`}
                 </p>
 
                 {/* Uploaded Files Display */}
                 {uploadedFiles.length > 0 && (
-                  <div className="mt-6 space-y-3">
-                    <h4 className="text-sm font-medium text-card-foreground">
+                  <div className="mt-4 sm:mt-6 space-y-2 sm:space-y-3">
+                    <h4 className="text-xs sm:text-sm font-medium text-card-foreground">
                       Selected Files ({uploadedFiles.length})
                     </h4>
                     <div className="space-y-2">
                       {uploadedFiles.map((file, index) => (
-                        <div key={index} className="flex items-center justify-between p-3 bg-accent rounded-lg">
-                          <div className="flex items-center space-x-3">
-                            <FileText className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-sm text-card-foreground truncate">{file.name}</span>
+                        <div key={index} className="flex items-center justify-between p-2 sm:p-3 bg-accent rounded-lg mobile-touch-target">
+                          <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
+                            <FileText className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
+                            <span className="text-xs sm:text-sm text-card-foreground truncate">{file.name}</span>
                           </div>
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-xs text-muted-foreground whitespace-nowrap ml-2">
                             {(file.size / 1024 / 1024).toFixed(2)} MB
                           </span>
                         </div>
@@ -767,9 +834,9 @@ const Tools = () => {
 
                 {/* Tool-specific info */}
                 {selectedTool.minFiles > 1 && uploadedFiles.length > 0 && uploadedFiles.length < selectedTool.minFiles && (
-                  <div className="mt-4 p-4 bg-blue-900 border border-blue-800 rounded-xl flex items-center">
-                    <Info className="h-5 w-5 text-blue-400 mr-3 flex-shrink-0" />
-                    <p className="text-blue-300">
+                  <div className="mt-4 p-3 sm:p-4 bg-blue-900 border border-blue-800 rounded-xl flex items-start sm:items-center">
+                    <Info className="h-4 w-4 sm:h-5 sm:w-5 text-blue-400 mr-2 sm:mr-3 flex-shrink-0 mt-0.5 sm:mt-0" />
+                    <p className="text-xs sm:text-sm text-blue-300">
                       You need at least {selectedTool.minFiles} files to use this tool. 
                       Upload {selectedTool.minFiles - uploadedFiles.length} more file(s).
                     </p>
@@ -779,26 +846,26 @@ const Tools = () => {
 
               {/* Process Button */}
               {uploadedFiles.length > 0 && (
-                <div className="flex items-center justify-between p-6 bg-elevated rounded-2xl">
-                  <div>
-                    <h3 className="text-lg font-semibold text-card-foreground mb-1">Ready to Process</h3>
-                    <p className="text-muted-foreground">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 sm:p-6 bg-elevated rounded-xl sm:rounded-2xl gap-4">
+                  <div className="flex-1">
+                    <h3 className="text-base sm:text-lg font-semibold text-card-foreground mb-1">Ready to Process</h3>
+                    <p className="text-xs sm:text-sm text-muted-foreground">
                       {uploadedFiles.length} file(s) ready for {selectedTool.title.toLowerCase()}
                     </p>
                   </div>
                   <Button
                     onClick={handleProcess}
                     disabled={!canProcess || usageExceeded || isProcessing}
-                    className={`bg-gradient-to-r ${selectedTool.color} text-white px-8 py-3 hover:shadow-lg transition-all duration-300`}
+                    className={`bg-gradient-to-r ${selectedTool.color} text-white px-6 sm:px-8 py-2.5 sm:py-3 hover:shadow-lg transition-all duration-300 w-full sm:w-auto mobile-touch-target text-sm sm:text-base`}
                   >
                     {isProcessing ? (
                       <>
-                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
+                        <div className="animate-spin rounded-full h-3 w-3 sm:h-4 sm:w-4 border-2 border-white border-t-transparent mr-2" />
                         Processing...
                       </>
                     ) : (
                       <>
-                        <Rocket className="h-4 w-4 mr-2" />
+                        <Rocket className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                         Process Files
                       </>
                     )}
@@ -808,71 +875,71 @@ const Tools = () => {
             </div>
           )}
 
-          {/* OCR Results Display */}
+          {/* OCR Results Display - Mobile First */}
           {ocrResults && (
-            <div className="bg-surface rounded-3xl border border-border p-8 mb-8">
-              <div className="flex items-center justify-between mb-6">
+            <div className="bg-surface rounded-2xl sm:rounded-3xl border border-border p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3">
                 <div className="flex items-center">
-                  <Eye className="h-6 w-6 text-cyan-400 mr-3" />
-                  <h3 className="text-xl font-semibold text-card-foreground">OCR Results</h3>
+                  <Eye className="h-5 w-5 sm:h-6 sm:w-6 text-cyan-400 mr-2 sm:mr-3" />
+                  <h3 className="text-lg sm:text-xl font-semibold text-card-foreground">OCR Results</h3>
                 </div>
-                <div className="flex items-center space-x-3">
-                  <div className="bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">
-                    {Math.round((ocrResults.confidence || 0) * 100)}% confidence
+                <div className="flex items-center gap-2 sm:space-x-3">
+                  <div className="bg-green-600 text-white text-xs font-bold px-2 sm:px-3 py-1 rounded-full">
+                    {Math.round((ocrResults.confidence || 0) * 100)}%
                   </div>
-                  <span className="text-sm bg-elevated text-muted-foreground px-3 py-1 rounded-full">
+                  <span className="text-xs sm:text-sm bg-elevated text-muted-foreground px-2 sm:px-3 py-1 rounded-full truncate">
                     {ocrResults.detectedLanguage || 'Unknown'}
                   </span>
                 </div>
               </div>
               
-              <div className="space-y-6">
-                {/* File Info */}
-                <div className="bg-elevated rounded-xl p-4">
-                  <h4 className="font-medium text-card-foreground mb-2 flex items-center">
-                    <FileText className="h-4 w-4 mr-2" />
-                    {ocrResults.filename}
+              <div className="space-y-4 sm:space-y-6">
+                {/* File Info - Mobile First */}
+                <div className="bg-elevated rounded-xl p-3 sm:p-4">
+                  <h4 className="font-medium text-card-foreground mb-2 flex items-center text-sm sm:text-base">
+                    <FileText className="h-3 w-3 sm:h-4 sm:w-4 mr-2 flex-shrink-0" />
+                    <span className="truncate">{ocrResults.filename}</span>
                   </h4>
-                  <div className="flex items-center space-x-4 text-sm text-muted-foreground">
+                  <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
                     <span>{ocrResults.pageCount || 1} page(s)</span>
-                    <span>Language: {ocrResults.detectedLanguage || 'Auto-detected'}</span>
-                    <span>Confidence: {Math.round((ocrResults.confidence || 0) * 100)}%</span>
+                    <span className="truncate">Lang: {ocrResults.detectedLanguage || 'Auto'}</span>
+                    <span>{Math.round((ocrResults.confidence || 0) * 100)}%</span>
                   </div>
                 </div>
 
-                {/* Extracted Text */}
-                <div className="bg-elevated rounded-xl p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <h4 className="font-medium text-card-foreground">Extracted Text</h4>
+                {/* Extracted Text - Mobile First */}
+                <div className="bg-elevated rounded-xl p-3 sm:p-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 gap-2">
+                    <h4 className="font-medium text-card-foreground text-sm sm:text-base">Extracted Text</h4>
                     <Button
                       onClick={() => navigator.clipboard.writeText(ocrResults.text)}
                       size="sm"
                       variant="outline"
-                      className="border-border text-card-foreground hover:bg-accent"
+                      className="border-border text-card-foreground hover:bg-accent w-full sm:w-auto mobile-touch-target"
                     >
-                      <Copy className="h-4 w-4 mr-1" />
+                      <Copy className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                       Copy
                     </Button>
                   </div>
-                  <div className="bg-accent rounded-lg p-4 max-h-96 overflow-y-auto">
-                    <pre className="text-card-foreground text-sm whitespace-pre-wrap font-mono leading-relaxed">
+                  <div className="bg-accent rounded-lg p-3 sm:p-4 max-h-64 sm:max-h-96 overflow-y-auto">
+                    <pre className="text-card-foreground text-xs sm:text-sm whitespace-pre-wrap font-mono leading-relaxed">
                       {ocrResults.text || 'No text extracted'}
                     </pre>
                   </div>
-                  <div className="mt-3 text-xs text-secondary">
+                  <div className="mt-2 sm:mt-3 text-xs text-secondary">
                     {ocrResults.text ? `${ocrResults.text.length} characters extracted` : 'No text found'}
                   </div>
                 </div>
 
-                {/* Actions */}
-                <div className="flex items-center justify-between p-4 bg-elevated rounded-xl">
-                  <div>
-                    <h4 className="font-medium text-card-foreground mb-1">Text Extracted Successfully!</h4>
-                    <p className="text-muted-foreground text-sm">
+                {/* Actions - Mobile First */}
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 bg-elevated rounded-xl gap-3 sm:gap-4">
+                  <div className="flex-1">
+                    <h4 className="font-medium text-card-foreground mb-1 text-sm sm:text-base">Text Extracted Successfully!</h4>
+                    <p className="text-muted-foreground text-xs sm:text-sm">
                       You can now copy the text or use it for further processing.
                     </p>
                   </div>
-                  <div className="flex space-x-3">
+                  <div className="flex flex-col sm:flex-row gap-2 sm:space-x-3 sm:gap-0">
                     <Button
                       onClick={() => {
                         const blob = new Blob([ocrResults.text], { type: 'text/plain' });
@@ -886,17 +953,17 @@ const Tools = () => {
                         URL.revokeObjectURL(url);
                         toast.success('Text file downloaded!');
                       }}
-                      className="bg-cyan-600 hover:bg-cyan-700 text-white"
+                      className="bg-cyan-600 hover:bg-cyan-700 text-white w-full sm:w-auto mobile-touch-target text-sm"
                     >
-                      <Download className="h-4 w-4 mr-2" />
-                      Download Text
+                      <Download className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
+                      Download
                     </Button>
                     <Button
                       onClick={() => setOcrResults(null)}
                       variant="outline"
-                      className="border-border text-card-foreground hover:bg-accent"
+                      className="border-border text-card-foreground hover:bg-accent w-full sm:w-auto mobile-touch-target text-sm"
                     >
-                      Clear Results
+                      Clear
                     </Button>
                   </div>
                 </div>
@@ -904,62 +971,62 @@ const Tools = () => {
             </div>
           )}
 
-          {/* AI Chat Results Display */}
+          {/* AI Chat Results Display - Mobile First */}
           {toolResults && toolResults.type === 'ai-chat' && (
-            <div className="bg-surface rounded-3xl border border-border p-8 mb-8">
-              <div className="flex items-center justify-between mb-6">
+            <div className="bg-surface rounded-2xl sm:rounded-3xl border border-border p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3">
                 <div className="flex items-center">
-                  <MessageSquare className="h-6 w-6 text-pink-400 mr-3" />
-                  <h3 className="text-xl font-semibold text-card-foreground">AI Chat Initialized</h3>
+                  <MessageSquare className="h-5 w-5 sm:h-6 sm:w-6 text-pink-400 mr-2 sm:mr-3" />
+                  <h3 className="text-lg sm:text-xl font-semibold text-card-foreground">AI Chat Initialized</h3>
                 </div>
-                <div className="bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">
+                <div className="bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full self-start sm:self-auto">
                   Ready
                 </div>
               </div>
               
-              <div className="bg-elevated rounded-xl p-6 text-center">
-                <MessageSquare className="h-12 w-12 text-pink-400 mx-auto mb-4" />
-                <h4 className="text-lg font-semibold text-card-foreground mb-2">
+              <div className="bg-elevated rounded-xl p-4 sm:p-6 text-center">
+                <MessageSquare className="h-10 w-10 sm:h-12 sm:w-12 text-pink-400 mx-auto mb-3 sm:mb-4" />
+                <h4 className="text-base sm:text-lg font-semibold text-card-foreground mb-2">
                   AI Chat is Ready!
                 </h4>
-                <p className="text-muted-foreground mb-4">
+                <p className="text-xs sm:text-sm text-muted-foreground mb-4 px-2">
                   Your document has been processed and is ready for AI-powered conversations.
                   You can now ask questions about the content.
                 </p>
-                <Button className="bg-pink-600 hover:bg-pink-700 text-white">
-                  <MessageSquare className="h-4 w-4 mr-2" />
+                <Button className="bg-pink-600 hover:bg-pink-700 text-white w-full sm:w-auto mobile-touch-target">
+                  <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                   Start Chatting
                 </Button>
               </div>
             </div>
           )}
 
-          {/* Tool Results Display */}
+          {/* Tool Results Display - Mobile First */}
           {toolResults && !['ocr', 'ai-chat'].includes(toolResults.type) && (
-            <div className="bg-surface rounded-3xl border border-border p-8 mb-8">
-              <div className="flex items-center justify-between mb-6">
+            <div className="bg-surface rounded-2xl sm:rounded-3xl border border-border p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3">
                 <div className="flex items-center">
-                  <CheckCircle className="h-6 w-6 text-green-400 mr-3" />
-                  <h3 className="text-xl font-semibold text-card-foreground">Processing Complete</h3>
+                  <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-green-400 mr-2 sm:mr-3" />
+                  <h3 className="text-lg sm:text-xl font-semibold text-card-foreground">Processing Complete</h3>
                 </div>
-                <div className="bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full">
+                <div className="bg-green-600 text-white text-xs font-bold px-3 py-1 rounded-full self-start sm:self-auto">
                   Success
                 </div>
               </div>
               
-              <div className="bg-elevated rounded-xl p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="text-lg font-semibold text-card-foreground mb-1">
+              <div className="bg-elevated rounded-xl p-4 sm:p-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                  <div className="flex-1">
+                    <h4 className="text-base sm:text-lg font-semibold text-card-foreground mb-1">
                       {toolResults.toolName} Completed
                     </h4>
-                    <p className="text-muted-foreground">
+                    <p className="text-xs sm:text-sm text-muted-foreground">
                       Your files have been processed successfully and downloaded.
                     </p>
                   </div>
-                  <div className="text-right">
-                    <div className="text-sm text-muted-foreground">
-                      Processed at: {new Date(toolResults.timestamp).toLocaleString()}
+                  <div className="text-left sm:text-right">
+                    <div className="text-xs sm:text-sm text-muted-foreground">
+                      {new Date(toolResults.timestamp).toLocaleString()}
                     </div>
                   </div>
                 </div>
@@ -998,37 +1065,37 @@ const Tools = () => {
         estimatedTime={selectedTool ? parseInt(selectedTool.processingTime.replace(/[^\d]/g, '')) : 60}
       />
 
-        {/* Hero Section */}
+        {/* Hero Section - Mobile First */}
         <div className="bg-gradient-to-br from-grey-900 via-grey-800 to-grey-900 border-b border-border">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-8 sm:py-12 md:py-16">
             <div className="text-center">
-              <div className="inline-flex items-center px-4 py-2 bg-blue-900 text-blue-300 rounded-full text-sm font-medium mb-6">
-                <Sparkles className="h-4 w-4 mr-2" />
+              <div className="inline-flex items-center px-3 py-1.5 sm:px-4 sm:py-2 bg-blue-900 text-blue-300 rounded-full text-xs sm:text-sm font-medium mb-4 sm:mb-6">
+                <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
                 Professional PDF Tools
               </div>
-              <h1 className="text-4xl md:text-6xl font-bold text-foreground mb-6">
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-foreground mb-4 sm:mb-6 px-2">
                 Transform Your PDFs
-                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400">
+                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 mt-1 sm:mt-2">
                   Like Magic
                 </span>
               </h1>
-              <p className="text-xl text-muted-foreground max-w-3xl mx-auto mb-8">
+              <p className="text-sm sm:text-base md:text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto mb-6 sm:mb-8 px-4">
                 Choose from our powerful suite of PDF tools to merge, split, compress, and convert your documents with professional-grade quality.
               </p>
               
-              {/* Stats */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-2xl mx-auto">
+              {/* Stats - Mobile Optimized */}
+              <div className="grid grid-cols-3 gap-4 sm:gap-6 md:gap-8 max-w-2xl mx-auto px-4">
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-blue-400 mb-2">1M+</div>
-                  <div className="text-muted-foreground">Files Processed</div>
+                  <div className="text-xl sm:text-2xl md:text-3xl font-bold text-blue-400 mb-1 sm:mb-2">1M+</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Files Processed</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-green-400 mb-2">99.9%</div>
-                  <div className="text-muted-foreground">Uptime</div>
+                  <div className="text-xl sm:text-2xl md:text-3xl font-bold text-green-400 mb-1 sm:mb-2">99.9%</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Uptime</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-purple-400 mb-2">50K+</div>
-                  <div className="text-muted-foreground">Happy Users</div>
+                  <div className="text-xl sm:text-2xl md:text-3xl font-bold text-purple-400 mb-1 sm:mb-2">50K+</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Happy Users</div>
                 </div>
               </div>
             </div>

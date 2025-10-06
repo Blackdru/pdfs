@@ -4,6 +4,7 @@ const fs = require('fs').promises;
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const pdf2pic = require('pdf2pic');
+const pdfParse = require('pdf-parse');
 
 class OCRService {
   constructor() {
@@ -169,15 +170,50 @@ class OCRService {
       await fs.writeFile(tempPdfPath, pdfBuffer);
       await fs.mkdir(tempImagesDir, { recursive: true });
 
+      console.log('PDF saved to:', tempPdfPath);
+      console.log('Images directory:', tempImagesDir);
+
+      // First, try to extract text directly from PDF (for text-based PDFs)
+      console.log('Attempting direct text extraction from PDF...');
+      try {
+        const pdfData = await pdfParse(pdfBuffer);
+        if (pdfData.text && pdfData.text.trim().length > 50) {
+          console.log('PDF contains extractable text, using direct extraction');
+          console.log('Extracted text length:', pdfData.text.length);
+          return {
+            text: pdfData.text,
+            confidence: 0.95, // High confidence for direct extraction
+            pageCount: pdfData.numpages || 1,
+            pages: [{
+              page: 1,
+              text: pdfData.text,
+              confidence: 0.95,
+              words: []
+            }],
+            language: language,
+            method: 'direct_extraction'
+          };
+        }
+        console.log('PDF text extraction yielded insufficient text, proceeding with OCR');
+      } catch (parseError) {
+        console.log('Direct PDF text extraction failed, proceeding with OCR:', parseError.message);
+      }
+
       // Convert PDF to images (optimized DPI)
-      const convert = pdf2pic.fromPath(tempPdfPath, {
-        density: 150, // Optimized: Reduced DPI for faster processing
-        saveFilename: 'page',
-        savePath: tempImagesDir,
-        format: 'png',
-        width: 1800,
-        height: 1800
-      });
+      let convert;
+      try {
+        convert = pdf2pic.fromPath(tempPdfPath, {
+          density: 150, // Optimized: Reduced DPI for faster processing
+          saveFilename: 'page',
+          savePath: tempImagesDir,
+          format: 'png',
+          width: 1800,
+          height: 1800
+        });
+      } catch (pdf2picError) {
+        console.error('pdf2pic initialization error:', pdf2picError);
+        throw new Error('PDF conversion tool initialization failed. Please ensure GraphicsMagick or ImageMagick is installed on the server.');
+      }
 
       // Process pages (limit for performance)
       const pages = [];
@@ -188,11 +224,25 @@ class OCRService {
       for (let pageNum = 1; pageNum <= Math.min(maxPages, 100); pageNum++) {
         try {
           console.log(`Processing page ${pageNum}...`);
-          const pageImage = await convert(pageNum, { responseType: 'image' });
+          
+          let pageImage;
+          try {
+            pageImage = await convert(pageNum, { responseType: 'image' });
+          } catch (convertError) {
+            console.error(`PDF conversion error for page ${pageNum}:`, convertError.message);
+            // If first page fails, it's likely a PDF issue
+            if (pageNum === 1) {
+              throw new Error('Failed to convert PDF to images. The PDF may be corrupted or password-protected.');
+            }
+            break; // No more pages or conversion failed
+          }
           
           // Check if conversion was successful
           if (!pageImage || !pageImage.path) {
             console.log(`No more pages or conversion failed at page ${pageNum}`);
+            if (pageNum === 1) {
+              throw new Error('Failed to convert first page of PDF. The PDF may be empty or corrupted.');
+            }
             break; // No more pages
           }
 
@@ -201,6 +251,9 @@ class OCRService {
             await fs.access(pageImage.path);
           } catch (accessError) {
             console.error(`Image file not found: ${pageImage.path}`);
+            if (pageNum === 1) {
+              throw new Error('PDF conversion produced no output. Please check if the PDF is valid.');
+            }
             continue;
           }
 

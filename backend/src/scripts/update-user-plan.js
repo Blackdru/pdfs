@@ -2,7 +2,7 @@ require('dotenv').config();
 const { supabaseAdmin } = require('../config/supabase');
 
 async function updateUserPlan() {
-  const targetEmail = 'ganeshmudiraj7tec@gmail.com';
+  const targetEmail = 'rajnaresh308@gmail.com';
   const targetPlan = 'premium'; // Enterprise plan
   
   try {

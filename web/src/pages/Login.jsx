@@ -48,144 +48,147 @@ const Login = () => {
   ]
 
   return (
-    <div className="min-h-screen flex items-center justify-center py-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden bg-gradient-to-br from-background via-background to-muted/30">
+    <div className="min-h-screen flex items-center justify-center py-8 sm:py-16 px-3 sm:px-4 md:px-6 lg:px-8 relative overflow-hidden bg-gradient-to-br from-background via-background to-muted/30">
       {/* Animated Background Elements - Matching Home Page */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-gradient-to-r from-blue-400 to-purple-600 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
-        <div className="absolute top-40 right-10 w-72 h-72 bg-gradient-to-r from-purple-400 to-pink-600 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
-        <div className="absolute bottom-20 left-20 w-72 h-72 bg-gradient-to-r from-cyan-400 to-blue-600 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
+        <div className="absolute top-20 left-10 w-48 h-48 sm:w-72 sm:h-72 bg-gradient-to-r from-blue-400 to-purple-600 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
+        <div className="absolute top-40 right-10 w-48 h-48 sm:w-72 sm:h-72 bg-gradient-to-r from-purple-400 to-pink-600 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
+        <div className="absolute bottom-20 left-20 w-48 h-48 sm:w-72 sm:h-72 bg-gradient-to-r from-cyan-400 to-blue-600 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
       </div>
       
       <div className={`max-w-6xl w-full relative z-10 transition-all duration-1000 ${
         isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
       }`}>
-        <div className="grid lg:grid-cols-2 gap-12 items-center">
-          {/* Left Side - Branding & Features */}
-          <div className="hidden lg:block space-y-8">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-12 items-center">
+          {/* Left Side - Branding & Features - Hidden on mobile */}
+          <div className="hidden lg:block space-y-6 xl:space-y-8">
             {/* Logo */}
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3 xl:space-x-4">
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl blur-lg opacity-50"></div>
-                <div className="relative bg-white p-3 rounded-2xl shadow-xl">
-                  <img src="/logo.png" alt="RobotPDF Logo" className="h-16 w-16 object-contain" />
+                <div className="relative bg-white p-2 xl:p-3 rounded-2xl shadow-xl">
+                  <img src="/logo.png" alt="RobotPDF Logo" className="h-12 w-12 xl:h-16 xl:w-16 object-contain" />
                 </div>
               </div>
               <div>
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                <h1 className="text-3xl xl:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                   RobotPDF
                 </h1>
-                <p className="text-muted-foreground">Your PDF companion</p>
+                <p className="text-sm xl:text-base text-muted-foreground">Your PDF companion</p>
               </div>
             </div>
 
             {/* Welcome Message */}
-            <div className="space-y-4">
-              <h2 className="text-4xl font-bold text-foreground">
+            <div className="space-y-3 xl:space-y-4">
+              <h2 className="text-2xl xl:text-4xl font-bold text-foreground leading-tight">
                 Welcome back to the future of PDF tools
               </h2>
-              <p className="text-xl text-muted-foreground">
+              <p className="text-base xl:text-xl text-muted-foreground">
                 Sign in to access your powerful PDF toolkit and continue where you left off.
               </p>
             </div>
 
             {/* Features List */}
-            <div className="space-y-4">
+            <div className="space-y-3 xl:space-y-4">
               {features.map((feature, index) => (
                 <div key={index} className="flex items-center space-x-3 group">
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow">
-                    <CheckCircle className="h-5 w-5 text-white" />
+                  <div className="flex-shrink-0 w-7 h-7 xl:w-8 xl:h-8 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 flex items-center justify-center shadow-lg group-hover:shadow-xl transition-shadow">
+                    <CheckCircle className="h-4 w-4 xl:h-5 xl:w-5 text-white" />
                   </div>
-                  <span className="text-lg text-foreground font-medium">{feature}</span>
+                  <span className="text-base xl:text-lg text-foreground font-medium">{feature}</span>
                 </div>
               ))}
             </div>
 
             {/* Stats */}
-            <div className="grid grid-cols-3 gap-6 pt-8">
+            <div className="grid grid-cols-3 gap-4 xl:gap-6 pt-6 xl:pt-8">
               <div className="text-center">
-                <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                <div className="text-2xl xl:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                   50K+
                 </div>
-                <div className="text-sm text-muted-foreground">Active Users</div>
+                <div className="text-xs xl:text-sm text-muted-foreground">Active Users</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                <div className="text-2xl xl:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                   1M+
                 </div>
-                <div className="text-sm text-muted-foreground">PDFs Processed</div>
+                <div className="text-xs xl:text-sm text-muted-foreground">PDFs Processed</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                <div className="text-2xl xl:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                   99.9%
                 </div>
-                <div className="text-sm text-muted-foreground">Uptime</div>
+                <div className="text-xs xl:text-sm text-muted-foreground">Uptime</div>
               </div>
             </div>
           </div>
 
           {/* Right Side - Login Form */}
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6 w-full">
             {/* Mobile Logo */}
-            <div className="lg:hidden text-center mb-8">
-              <div className="flex justify-center items-center mb-4">
+            <div className="lg:hidden text-center mb-6 sm:mb-8">
+              <div className="flex justify-center items-center mb-3 sm:mb-4">
                 <div className="relative">
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl blur-lg opacity-50"></div>
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl sm:rounded-2xl blur-lg opacity-50"></div>
+                  <div className="relative bg-white p-2 sm:p-3 rounded-xl sm:rounded-2xl shadow-xl">
+                    <img src="/logo.png" alt="RobotPDF Logo" className="h-10 w-10 sm:h-12 sm:w-12 object-contain" />
+                  </div>
                 </div>
               </div>
-              <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
-                Login
+              <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+                Login to RobotPDF
               </h2>
-              
+              <p className="text-sm text-muted-foreground">Sign in to access your account</p>
             </div>
 
             {/* Login Form Card */}
             <Card className="border-0 shadow-2xl bg-gradient-to-br from-white to-gray-50 dark:from-gray-800/50 dark:to-gray-900/50 backdrop-blur-xl">
-              <CardContent className="p-8">
-                <div className="hidden lg:block mb-6">
-                  <h3 className="text-2xl font-bold text-foreground mb-2">Sign in to your account</h3>
-                  <p className="text-muted-foreground">Enter your credentials to access your dashboard</p>
+              <CardContent className="p-5 sm:p-8">
+                <div className="hidden lg:block mb-4 lg:mb-6">
+                  <h3 className="text-xl lg:text-2xl font-bold text-foreground mb-2">Sign in to your account</h3>
+                  <p className="text-sm lg:text-base text-muted-foreground">Enter your credentials to access your dashboard</p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-5">
-                  <div className="space-y-2">
-                    <label htmlFor="email" className="block text-sm font-semibold text-foreground">
+                <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
+                  <div className="space-y-1.5 sm:space-y-2">
+                    <label htmlFor="email" className="block text-xs sm:text-sm font-semibold text-foreground">
                       Email address
                     </label>
                     <div className="relative group">
-                      <Mail className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-blue-600 transition-colors" />
+                      <Mail className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground group-focus-within:text-blue-600 transition-colors" />
                       <input
                         id="email"
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
                         placeholder="you@example.com"
-                        className="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-foreground focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 transition-all outline-none"
+                        className="w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-2.5 sm:py-3 text-sm sm:text-base rounded-lg sm:rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-foreground focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 transition-all outline-none"
                         required
                       />
                     </div>
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="space-y-1.5 sm:space-y-2">
                     <div className="flex items-center justify-between">
-                      <label htmlFor="password" className="block text-sm font-semibold text-foreground">
+                      <label htmlFor="password" className="block text-xs sm:text-sm font-semibold text-foreground">
                         Password
                       </label>
                       <Link 
                         to="/forgot-password" 
-                        className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
+                        className="text-xs sm:text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
                       >
                         Forgot?
                       </Link>
                     </div>
                     <div className="relative group">
-                      <Lock className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground group-focus-within:text-blue-600 transition-colors" />
+                      <Lock className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground group-focus-within:text-blue-600 transition-colors" />
                       <input
                         id="password"
                         type="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="Enter your password"
-                        className="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-foreground focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 transition-all outline-none"
+                        className="w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-2.5 sm:py-3 text-sm sm:text-base rounded-lg sm:rounded-xl border-2 border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-foreground focus:border-blue-600 focus:ring-4 focus:ring-blue-600/10 transition-all outline-none"
                         required
                       />
                     </div>
@@ -193,7 +196,7 @@ const Login = () => {
 
                   <Button 
                     type="submit" 
-                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-6 text-base font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5" 
+                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white py-4 sm:py-6 text-sm sm:text-base font-semibold rounded-lg sm:rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-0.5" 
                     disabled={loading}
                   >
                     {loading ? (
@@ -209,12 +212,12 @@ const Login = () => {
                   </Button>
                 </form>
 
-                <div className="relative my-6">
+                <div className="relative my-4 sm:my-6">
                   <div className="absolute inset-0 flex items-center">
                     <span className="w-full border-t border-gray-200 dark:border-gray-700" />
                   </div>
                   <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-white dark:bg-gray-800/50 px-4 text-muted-foreground font-medium">
+                    <span className="bg-white dark:bg-gray-800/50 px-3 sm:px-4 text-muted-foreground font-medium">
                       Or continue with
                     </span>
                   </div>
@@ -224,14 +227,14 @@ const Login = () => {
                   onClick={handleGoogleSignIn}
                   disabled={loading}
                   type="button"
-                  className="w-full bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-900 dark:text-white border-2 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 py-6 text-base font-semibold rounded-xl transition-all duration-300 hover:shadow-lg"
+                  className="w-full bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-900 dark:text-white border-2 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 py-4 sm:py-6 text-sm sm:text-base font-semibold rounded-lg sm:rounded-xl transition-all duration-300 hover:shadow-lg"
                 >
-                  <GoogleIcon className="mr-3 h-5 w-5" />
+                  <GoogleIcon className="mr-2 sm:mr-3 h-4 w-4 sm:h-5 sm:w-5" />
                   Continue with Google
                 </Button>
 
-                <div className="text-center pt-6">
-                  <p className="text-sm text-muted-foreground">
+                <div className="text-center pt-4 sm:pt-6">
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     Don't have an account?{' '}
                     <Link 
                       to="/register" 
@@ -245,19 +248,19 @@ const Login = () => {
             </Card>
 
             {/* Trust Indicators */}
-            <div className="flex items-center justify-center space-x-6 text-muted-foreground">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 text-muted-foreground">
               <div className="flex items-center space-x-2">
-                <Shield className="h-4 w-4 text-green-500" />
+                <Shield className="h-3 w-3 sm:h-4 sm:w-4 text-green-500" />
                 <span className="text-xs font-medium">Secure Login</span>
               </div>
               <div className="flex items-center space-x-2">
-                <Sparkles className="h-4 w-4 text-blue-500" />
+                <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 text-blue-500" />
                 <span className="text-xs font-medium">50K+ Users</span>
               </div>
             </div>
 
             {/* Footer */}
-            <div className="text-center">
+            <div className="text-center px-4">
               <p className="text-xs text-muted-foreground leading-relaxed">
                 By signing in, you agree to our{' '}
                 <Link to="/terms-conditions" className="underline hover:text-blue-600 transition-colors">Terms</Link>

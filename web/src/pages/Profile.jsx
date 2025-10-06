@@ -152,23 +152,23 @@ const Profile = () => {
 
         {/* Profile Tab */}
         <TabsContent value="profile">
-          <div className="grid gap-6">
-            <Card className="dark-card">
-              <CardHeader>
-                <CardTitle className="heading-dark-4 text-foreground">Personal Information</CardTitle>
-                <CardDescription className="text-muted-foreground">
+          <div className="grid gap-4 sm:gap-6">
+            <Card className="dark-card mobile-card">
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="heading-dark-4 text-foreground text-base sm:text-lg">Personal Information</CardTitle>
+                <CardDescription className="text-muted-foreground text-xs sm:text-sm">
                   Update your personal details and account information
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4 sm:p-6 pt-0">
                 <form onSubmit={handleSaveProfile} className="space-y-4">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label htmlFor="name" className="block text-sm font-medium mb-2 text-card-foreground">
+                      <label htmlFor="name" className="block text-xs sm:text-sm font-medium mb-2 text-card-foreground">
                         Full Name
                       </label>
                       <div className="relative">
-                        <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <User className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
                         <Input
                           id="name"
                           name="name"
@@ -176,17 +176,17 @@ const Profile = () => {
                           value={profile.name}
                           onChange={handleInputChange}
                           placeholder="Enter your full name"
-                          className="dark-input pl-10"
+                          className="dark-input pl-9 sm:pl-10 text-sm sm:text-base h-10 sm:h-11 mobile-touch-target"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label htmlFor="email" className="block text-sm font-medium mb-2 text-card-foreground">
+                      <label htmlFor="email" className="block text-xs sm:text-sm font-medium mb-2 text-card-foreground">
                         Email Address
                       </label>
                       <div className="relative">
-                        <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
                         <Input
                           id="email"
                           name="email"
@@ -194,41 +194,41 @@ const Profile = () => {
                           value={profile.email}
                           onChange={handleInputChange}
                           placeholder="Enter your email"
-                          className="dark-input pl-10"
+                          className="dark-input pl-9 sm:pl-10 text-sm sm:text-base h-10 sm:h-11 mobile-touch-target"
                         />
                       </div>
                     </div>
                   </div>
 
-                  <div className="flex justify-end">
-                    <Button type="submit" disabled={saving} className="btn-blue">
-                      <Save className="mr-2 h-4 w-4" />
-                      {saving ? 'Saving...' : 'Save Changes'}
+                  <div className="flex justify-end pt-2">
+                    <Button type="submit" disabled={saving} className="btn-blue w-full sm:w-auto mobile-btn mobile-touch-target">
+                      <Save className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                      <span className="text-sm sm:text-base">{saving ? 'Saving...' : 'Save Changes'}</span>
                     </Button>
                   </div>
                 </form>
               </CardContent>
             </Card>
 
-            <Card className="dark-card border-red-800">
-              <CardHeader>
-                <CardTitle className="text-red-400">
+            <Card className="dark-card border-red-800 mobile-card">
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="text-red-400 text-base sm:text-lg">
                   Danger Zone
                 </CardTitle>
-                <CardDescription className="text-muted-foreground">
+                <CardDescription className="text-muted-foreground text-xs sm:text-sm">
                   Permanently delete your account and all associated data
                 </CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4 sm:p-6 pt-0">
                 <Button 
                   variant="destructive" 
                   onClick={handleDeleteAccount}
-                  className="w-full md:w-auto"
+                  className="w-full md:w-auto mobile-btn mobile-touch-target text-sm sm:text-base"
                 >
-                  <Trash2 className="mr-2 h-4 w-4" />
+                  <Trash2 className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                   Delete Account
                 </Button>
-                <p className="text-sm text-muted-foreground mt-2">
+                <p className="text-xs sm:text-sm text-muted-foreground mt-3">
                   This action cannot be undone. All your files and data will be permanently deleted.
                 </p>
               </CardContent>
@@ -239,42 +239,42 @@ const Profile = () => {
         {/* Statistics Tab */}
         <TabsContent value="stats">
           {stats && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card className="dark-card">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-card-foreground">Total Files</CardTitle>
-                  <Files className="h-4 w-4 text-muted-foreground" />
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
+              <Card className="dark-card mobile-card-compact">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
+                  <CardTitle className="text-xs sm:text-sm font-medium text-card-foreground truncate">Total Files</CardTitle>
+                  <Files className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-blue-400">{stats.totalFiles}</div>
-                  <p className="text-xs text-muted-foreground">
+                <CardContent className="p-3 sm:p-6 pt-0">
+                  <div className="text-xl sm:text-2xl font-bold text-blue-400">{stats.totalFiles}</div>
+                  <p className="text-xs text-muted-foreground truncate">
                     {stats.filesLimit - stats.totalFiles} remaining
                   </p>
                 </CardContent>
               </Card>
 
-              <Card className="dark-card">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-card-foreground">Storage Used</CardTitle>
-                  <HardDrive className="h-4 w-4 text-muted-foreground" />
+              <Card className="dark-card mobile-card-compact">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
+                  <CardTitle className="text-xs sm:text-sm font-medium text-card-foreground truncate">Storage Used</CardTitle>
+                  <HardDrive className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-green-400">{formatFileSize(stats.totalStorage)}</div>
-                  <p className="text-xs text-muted-foreground">
-                    of {formatFileSize(stats.storageLimit)} used
+                <CardContent className="p-3 sm:p-6 pt-0">
+                  <div className="text-xl sm:text-2xl font-bold text-green-400 truncate">{formatFileSize(stats.totalStorage)}</div>
+                  <p className="text-xs text-muted-foreground truncate">
+                    of {formatFileSize(stats.storageLimit)}
                   </p>
                 </CardContent>
               </Card>
 
-              <Card className="dark-card">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium text-card-foreground">Recent Activity</CardTitle>
-                  <Activity className="h-4 w-4 text-muted-foreground" />
+              <Card className="dark-card mobile-card-compact">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 p-3 sm:p-6">
+                  <CardTitle className="text-xs sm:text-sm font-medium text-card-foreground truncate">Activity</CardTitle>
+                  <Activity className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-purple-400">{stats.recentActivity}</div>
-                  <p className="text-xs text-muted-foreground">
-                    operations this month
+                <CardContent className="p-3 sm:p-6 pt-0">
+                  <div className="text-xl sm:text-2xl font-bold text-purple-400">{stats.recentActivity}</div>
+                  <p className="text-xs text-muted-foreground truncate">
+                    this month
                   </p>
                 </CardContent>
               </Card>
@@ -284,41 +284,41 @@ const Profile = () => {
 
         {/* Activity History Tab */}
         <TabsContent value="history">
-          <Card className="dark-card">
-            <CardHeader>
-              <CardTitle className="heading-dark-4 text-foreground">Recent Activity</CardTitle>
-              <CardDescription className="text-muted-foreground">
+          <Card className="dark-card mobile-card">
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="heading-dark-4 text-foreground text-base sm:text-lg">Recent Activity</CardTitle>
+              <CardDescription className="text-muted-foreground text-xs sm:text-sm">
                 Your recent file operations and activities
               </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-4 sm:p-6 pt-0">
               {history.length === 0 ? (
-                <div className="text-center py-8">
-                  <Activity className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                  <h3 className="text-lg font-medium mb-2 text-card-foreground">No activity yet</h3>
-                  <p className="text-muted-foreground">
+                <div className="text-center py-6 sm:py-8">
+                  <Activity className="mx-auto h-8 w-8 sm:h-12 sm:w-12 text-muted-foreground mb-3 sm:mb-4" />
+                  <h3 className="text-base sm:text-lg font-medium mb-2 text-card-foreground">No activity yet</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground">
                     Your file operations will appear here
                   </p>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   {history.map((item) => (
                     <div
                       key={item.id}
-                      className="flex items-center justify-between p-4 border border-border rounded-xl bg-elevated"
+                      className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-3 sm:p-4 border border-border rounded-xl bg-elevated mobile-touch-target gap-2 sm:gap-0"
                     >
-                      <div className="flex items-center space-x-4">
-                        <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
-                        <div>
-                          <p className="font-medium capitalize text-card-foreground">
+                      <div className="flex items-center space-x-3 sm:space-x-4 flex-1 min-w-0">
+                        <div className="w-2 h-2 bg-blue-400 rounded-full flex-shrink-0"></div>
+                        <div className="flex-1 min-w-0">
+                          <p className="font-medium capitalize text-card-foreground text-xs sm:text-sm truncate">
                             {item.action} operation
                           </p>
-                          <p className="text-sm text-muted-foreground">
+                          <p className="text-xs sm:text-sm text-muted-foreground truncate">
                             {item.files?.filename || 'File operation'}
                           </p>
                         </div>
                       </div>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-xs sm:text-sm text-muted-foreground pl-5 sm:pl-0">
                         {formatDate(item.created_at)}
                       </p>
                     </div>

@@ -91,33 +91,33 @@ const Billing = () => {
 
   return (
     <div className="min-h-screen bg-page mobile-spacing-dark">
-      <div className="layout-dark-container py-12 space-y-8">
+      <div className="mobile-container py-6 sm:py-8 lg:py-12 space-y-6 sm:space-y-8">
         {/* Header */}
         <div className="text-center">
-          <h1 className="heading-dark-1 text-gradient-hero">Billing & Subscription</h1>
-          <p className="body-dark-large text-card-foreground mt-4">
+          <h1 className="mobile-text-3xl font-bold text-gradient-hero mb-2 sm:mb-4">Billing & Subscription</h1>
+          <p className="mobile-text-base text-card-foreground">
             Manage your subscription, view usage, and billing history
           </p>
         </div>
 
         {/* Current Subscription Card */}
-        <Card className="dark-card">
-          <CardHeader>
-            <CardTitle className="heading-dark-4 flex items-center gap-2 text-foreground">
+        <Card className="dark-card mobile-card">
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="text-base sm:text-lg flex flex-wrap items-center gap-2 text-foreground">
               {getPlanIcon()}
-              Current Plan
+              <span>Current Plan</span>
               {getStatusBadge()}
             </CardTitle>
-            <CardDescription className="text-muted-foreground">
+            <CardDescription className="text-muted-foreground text-xs sm:text-sm">
               Your current subscription details and status
             </CardDescription>
           </CardHeader>
           
-          <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <CardContent className="p-4 sm:p-6 pt-0 space-y-4 sm:space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
               <div className="space-y-2">
-                <h3 className="heading-dark-4 text-card-foreground">{getPlanDisplayName()} Plan</h3>
-                <p className="text-2xl font-bold text-blue-400">
+                <h3 className="text-sm sm:text-base font-semibold text-card-foreground">{getPlanDisplayName()} Plan</h3>
+                <p className="text-xl sm:text-2xl font-bold text-blue-400">
                   {subscription?.planLimits?.price === 0 ? (
                     'Free'
                   ) : (
@@ -127,14 +127,14 @@ const Billing = () => {
               </div>
               
               <div className="space-y-2">
-                <h4 className="font-medium flex items-center gap-2 text-card-foreground">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                <h4 className="text-xs sm:text-sm font-medium flex items-center gap-2 text-card-foreground">
+                  <Calendar className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
                   Billing Cycle
                 </h4>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   {subscription?.current_period_end ? (
                     <>
-                      Next billing: {formatDate(subscription.current_period_end)}
+                      Next: {formatDate(subscription.current_period_end)}
                     </>
                   ) : (
                     'No billing cycle'
@@ -143,17 +143,17 @@ const Billing = () => {
               </div>
               
               <div className="space-y-2">
-                <h4 className="font-medium flex items-center gap-2 text-card-foreground">
-                  <Settings className="h-4 w-4 text-muted-foreground" />
+                <h4 className="text-xs sm:text-sm font-medium flex items-center gap-2 text-card-foreground">
+                  <Settings className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
                   Status
                 </h4>
                 <div className="flex items-center gap-2">
                   {isActive() ? (
-                    <CheckCircle className="h-4 w-4 text-green-400" />
+                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-green-400" />
                   ) : (
-                    <AlertCircle className="h-4 w-4 text-red-400" />
+                    <AlertCircle className="h-3 w-3 sm:h-4 sm:w-4 text-red-400" />
                   )}
-                  <span className="text-sm text-card-foreground">
+                  <span className="text-xs sm:text-sm text-card-foreground">
                     {isActive() ? 'Active' : 'Inactive'}
                   </span>
                 </div>
@@ -162,12 +162,12 @@ const Billing = () => {
 
             {/* Cancellation Notice */}
             {isCancelledButActive() && (
-              <div className="p-4 bg-orange-950 border border-orange-800 rounded-xl">
+              <div className="p-3 sm:p-4 bg-orange-950 border border-orange-800 rounded-xl">
                 <div className="flex items-center gap-2 text-orange-300">
-                  <AlertCircle className="h-4 w-4" />
-                  <span className="font-medium">Subscription Ending</span>
+                  <AlertCircle className="h-3 w-3 sm:h-4 sm:w-4 flex-shrink-0" />
+                  <span className="font-medium text-xs sm:text-sm">Subscription Ending</span>
                 </div>
-                <p className="text-sm text-orange-200 mt-1">
+                <p className="text-xs sm:text-sm text-orange-200 mt-1">
                   Your subscription will end on {formatDate(subscription?.current_period_end)}. 
                   You can reactivate it anytime before then.
                 </p>
@@ -175,20 +175,20 @@ const Billing = () => {
             )}
 
             {/* Action Buttons */}
-            <div className="flex gap-3">
+            <div className="flex flex-col sm:flex-row gap-3">
               <Button 
                 onClick={() => setShowUpgradeModal(true)}
-                className="btn-blue flex items-center gap-2"
+                className="btn-blue flex items-center justify-center gap-2 w-full sm:w-auto mobile-btn mobile-touch-target"
               >
-                <ArrowUpCircle className="h-4 w-4" />
-                {subscription?.plan === 'free' ? 'Upgrade Plan' : 'Change Plan'}
+                <ArrowUpCircle className="h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="text-sm sm:text-base">{subscription?.plan === 'free' ? 'Upgrade Plan' : 'Change Plan'}</span>
               </Button>
               
               {subscription?.plan !== 'free' && isActive() && (
                 <Button 
                   variant="outline"
                   onClick={() => setShowCancelModal(true)}
-                  className="btn-dark-outline"
+                  className="btn-dark-outline w-full sm:w-auto mobile-btn mobile-touch-target text-sm sm:text-base"
                 >
                   {isCancelledButActive() ? 'Manage Cancellation' : 'Cancel Subscription'}
                 </Button>
@@ -198,11 +198,13 @@ const Billing = () => {
         </Card>
 
         {/* Tabs for Usage and Billing */}
-        <Tabs defaultValue="usage" className="space-y-6">
-          <TabsList className="tab-dark-list grid w-full grid-cols-2">
-            <TabsTrigger value="usage" className="tab-dark-button">Usage & Limits</TabsTrigger>
-            <TabsTrigger value="history" className="tab-dark-button">Billing History</TabsTrigger>
-          </TabsList>
+        <Tabs defaultValue="usage" className="space-y-4 sm:space-y-6">
+          <div className="mobile-overflow-x">
+            <TabsList className="inline-flex w-full sm:w-auto min-w-max bg-elevated border border-border rounded-xl p-1">
+              <TabsTrigger value="usage" className="mobile-btn-sm mobile-touch-target text-xs sm:text-sm">Usage & Limits</TabsTrigger>
+              <TabsTrigger value="history" className="mobile-btn-sm mobile-touch-target text-xs sm:text-sm">Billing History</TabsTrigger>
+            </TabsList>
+          </div>
           
           <TabsContent value="usage" className="space-y-6">
             <UsageIndicator />
@@ -215,20 +217,20 @@ const Billing = () => {
 
         {/* Plan Features */}
         {subscription?.planLimits && (
-          <Card className="dark-card">
-            <CardHeader>
-              <CardTitle className="heading-dark-4 text-foreground">Plan Features</CardTitle>
-              <CardDescription className="text-muted-foreground">
+          <Card className="dark-card mobile-card">
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-base sm:text-lg text-foreground">Plan Features</CardTitle>
+              <CardDescription className="text-muted-foreground text-xs sm:text-sm">
                 What's included in your {getPlanDisplayName()} plan
               </CardDescription>
             </CardHeader>
             
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <CardContent className="p-4 sm:p-6 pt-0">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 {subscription.planLimits.features.map((feature, index) => (
-                  <div key={index} className="flex items-center gap-2">
-                    <CheckCircle className="h-4 w-4 text-green-400" />
-                    <span className="text-sm capitalize text-card-foreground">
+                  <div key={index} className="flex items-center gap-2 mobile-touch-target">
+                    <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-green-400 flex-shrink-0" />
+                    <span className="text-xs sm:text-sm capitalize text-card-foreground">
                       {feature.replace(/_/g, ' ')}
                     </span>
                   </div>

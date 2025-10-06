@@ -161,24 +161,22 @@ const Pricing = () => {
 
   return (
     <div className="min-h-screen bg-page mobile-spacing-dark">
-      <div className="layout-dark-container py-12 space-y-8">
+      <div className="mobile-container py-8 sm:py-12 space-y-6 sm:space-y-8">
         {/* Header */}
-        <div className="text-center space-y-4">
+        <div className="text-center space-y-3 sm:space-y-4 px-4">
           <div className="flex items-center justify-center gap-2 mb-2">
-            <DollarSign className="h-6 w-6 text-blue-400" />
-            <h1 className="heading-dark-1 text-gradient-hero">Simple, Transparent Pricing</h1>
+            <DollarSign className="h-5 w-5 sm:h-6 sm:w-6 text-blue-400" />
+            <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-gradient-hero">Simple, Transparent Pricing</h1>
           </div>
           
-          <p className="body-dark-large text-card-foreground max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-card-foreground max-w-2xl mx-auto">
             Choose the perfect plan for your PDF processing needs. 
             Start free and upgrade as you grow.
           </p>
-          
-
         </div>
 
         {/* Plan Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-8">
           {plans.map((plan) => (
             <Card key={plan.id} className={`relative transition-all duration-200 hover:shadow-lg dark-card ${
               plan.popular ? 'border-purple-500/30 shadow-lg shadow-purple-500/20' : 
@@ -186,51 +184,51 @@ const Pricing = () => {
               'border-grey-700'
             }`}>
               {plan.popular && (
-                <Badge className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-purple-500 hover:bg-purple-600">
+                <Badge className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-purple-500 hover:bg-purple-600 text-xs sm:text-sm">
                   Most Popular
                 </Badge>
               )}
               
               {plan.bestValue && (
-                <Badge className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-blue-500 hover:bg-blue-600">
+                <Badge className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-blue-500 hover:bg-blue-600 text-xs sm:text-sm">
                   Best Value
                 </Badge>
               )}
 
-              <CardHeader className="text-center pb-4">
+              <CardHeader className="text-center pb-3 sm:pb-4 px-4 sm:px-6">
                 <div className="flex justify-center mb-2">
-                  {plan.id === 'free' && <Star className="h-6 w-6 text-blue-500" />}
-                  {plan.id === 'basic' && <Zap className="h-6 w-6 text-purple-500" />}
-                  {plan.id === 'pro' && <Crown className="h-6 w-6 text-blue-500" />}
+                  {plan.id === 'free' && <Star className="h-5 w-5 sm:h-6 sm:w-6 text-blue-500" />}
+                  {plan.id === 'basic' && <Zap className="h-5 w-5 sm:h-6 sm:w-6 text-purple-500" />}
+                  {plan.id === 'pro' && <Crown className="h-5 w-5 sm:h-6 sm:w-6 text-blue-500" />}
                 </div>
-                <CardTitle className="text-2xl font-bold text-foreground">{plan.name}</CardTitle>
-                <CardDescription className="text-lg text-card-foreground">
+                <CardTitle className="text-xl sm:text-2xl font-bold text-foreground">{plan.name}</CardTitle>
+                <CardDescription className="text-base sm:text-lg text-card-foreground">
                   {plan.price === 0 ? (
-                    <span className="text-2xl font-bold">Free</span>
+                    <span className="text-xl sm:text-2xl font-bold">Free</span>
                   ) : (
                     <>
-                      <span className="text-3xl font-bold">${plan.price}</span>
-                      <span className="text-sm text-muted-foreground">/month</span>
+                      <span className="text-2xl sm:text-3xl font-bold">${plan.price}</span>
+                      <span className="text-xs sm:text-sm text-muted-foreground">/month</span>
                     </>
                   )}
                 </CardDescription>
-                <p className="text-sm text-muted-foreground mt-2">{plan.description}</p>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-2">{plan.description}</p>
               </CardHeader>
 
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
+              <CardContent className="space-y-3 sm:space-y-4 px-4 sm:px-6">
+                <div className="space-y-1.5 sm:space-y-2">
                   {plan.features.map((feature, index) => (
-                    <div key={index} className="flex items-center gap-2">
-                      <Check className="h-4 w-4 text-green-500 flex-shrink-0" />
-                      <span className="text-sm text-card-foreground">{feature}</span>
+                    <div key={index} className="flex items-start gap-2">
+                      <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-500 flex-shrink-0 mt-0.5" />
+                      <span className="text-xs sm:text-sm text-card-foreground leading-tight">{feature}</span>
                     </div>
                   ))}
                 </div>
               </CardContent>
 
-              <div className="p-6 pt-0">
+              <div className="p-4 sm:p-6 pt-0">
                 <Button
-                  className="w-full"
+                  className="w-full text-sm sm:text-base py-2 sm:py-3"
                   variant={plan.id === 'free' ? 'outline' : 'default'}
                   onClick={() => handleSelectPlan(plan.id)}
                 >
@@ -243,20 +241,20 @@ const Pricing = () => {
 
         {/* Feature Comparison Table */}
         <Card className="dark-card">
-          <CardHeader>
-            <CardTitle className="heading-dark-4 text-center text-foreground">Feature Comparison</CardTitle>
-            <CardDescription className="text-center text-muted-foreground">
+          <CardHeader className="px-4 sm:px-6">
+            <CardTitle className="text-lg sm:text-xl md:text-2xl text-center text-foreground">Feature Comparison</CardTitle>
+            <CardDescription className="text-center text-muted-foreground text-xs sm:text-sm">
               Compare all features across our plans
             </CardDescription>
           </CardHeader>
           
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full">
+          <CardContent className="p-0 sm:p-6">
+            <div className="overflow-x-auto w-full scrollbar-thin scrollbar-thumb-muted-foreground/10 scrollbar-track-transparent">
+              <table className="w-full min-w-[640px]">
                 <thead>
                   <tr className="border-b border-border">
-                    <th className="text-left py-3 px-2 sm:px-4 font-medium text-card-foreground text-sm sm:text-base">Feature</th>
-                    <th className="text-center py-3 px-2 sm:px-4">
+                    <th className="text-left py-4 px-4 sm:px-6 font-medium text-card-foreground text-sm sm:text-base sticky left-0 bg-background">Feature</th>
+                    <th className="text-center py-4 px-3 sm:px-6">
                       <div className="flex items-center justify-center gap-1 sm:gap-2">
                         <Star className="h-3 w-3 sm:h-4 sm:w-4 text-blue-400" />
                         <span className="font-medium text-card-foreground text-xs sm:text-sm">Free</span>
@@ -264,11 +262,11 @@ const Pricing = () => {
                     </th>
                     <th className="text-center py-3 px-2 sm:px-4">
                       <div className="flex items-center justify-center gap-1 sm:gap-2 flex-col sm:flex-row">
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1 whitespace-nowrap">
                           <Zap className="h-3 w-3 sm:h-4 sm:w-4 text-purple-400" />
                           <span className="font-medium text-card-foreground text-xs sm:text-sm">Basic</span>
                         </div>
-                        <Badge className="text-xs badge-purple">Popular</Badge>
+                        <Badge className="text-[10px] sm:text-xs badge-purple whitespace-nowrap">Popular</Badge>
                       </div>
                     </th>
                     <th className="text-center py-3 px-2 sm:px-4">
@@ -285,8 +283,8 @@ const Pricing = () => {
                 <tbody>
                   {comparisonFeatures.map((row, index) => (
                     <tr key={index} className="border-b border-border hover:bg-elevated/50">
-                      <td className="py-3 px-2 sm:px-4 font-medium text-card-foreground text-sm">{row.feature}</td>
-                      <td className="py-3 px-2 sm:px-4 text-center text-card-foreground">
+                      <td className="py-4 px-4 sm:px-6 font-medium text-card-foreground text-sm whitespace-normal sticky left-0 bg-background">{row.feature}</td>
+                      <td className="py-4 px-3 sm:px-6 text-center text-card-foreground">
                         {renderFeatureValue(row.free)}
                       </td>
                       <td className="py-3 px-2 sm:px-4 text-center text-card-foreground">
@@ -305,39 +303,39 @@ const Pricing = () => {
 
         {/* FAQ Section */}
         <Card className="dark-card">
-          <CardHeader>
-            <CardTitle className="heading-dark-4 text-foreground">Frequently Asked Questions</CardTitle>
+          <CardHeader className="px-4 sm:px-6">
+            <CardTitle className="text-lg sm:text-xl md:text-2xl text-foreground">Frequently Asked Questions</CardTitle>
           </CardHeader>
           
-          <CardContent className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <CardContent className="space-y-4 sm:space-y-6 px-4 sm:px-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
               <div className="space-y-2">
-                <h4 className="font-semibold text-card-foreground">Can I change plans anytime?</h4>
-                <p className="text-sm text-muted-foreground">
+                <h4 className="font-semibold text-card-foreground text-sm sm:text-base">Can I change plans anytime?</h4>
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   Yes, you can upgrade or downgrade your plan at any time. 
                   Changes take effect immediately with prorated billing.
                 </p>
               </div>
               
               <div className="space-y-2">
-                <h4 className="font-semibold text-card-foreground">What happens to my files if I downgrade?</h4>
-                <p className="text-sm text-muted-foreground">
+                <h4 className="font-semibold text-card-foreground text-sm sm:text-base">What happens to my files if I downgrade?</h4>
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   Your files remain safe. You'll just have lower monthly limits 
                   for new operations going forward.
                 </p>
               </div>
               
               <div className="space-y-2">
-                <h4 className="font-semibold text-card-foreground">Is there a free trial?</h4>
-                <p className="text-sm text-muted-foreground">
+                <h4 className="font-semibold text-card-foreground text-sm sm:text-base">Is there a free trial?</h4>
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   All paid plans come with a 7-day free trial. 
                   Cancel anytime during the trial with no charges.
                 </p>
               </div>
               
               <div className="space-y-2">
-                <h4 className="font-semibold text-card-foreground">How secure is my data?</h4>
-                <p className="text-sm text-muted-foreground">
+                <h4 className="font-semibold text-card-foreground text-sm sm:text-base">How secure is my data?</h4>
+                <p className="text-xs sm:text-sm text-muted-foreground">
                   We use enterprise-grade security with end-to-end encryption. 
                   Your files are processed securely and never shared.
                 </p>
@@ -347,12 +345,12 @@ const Pricing = () => {
         </Card>
 
         {/* CTA Section */}
-        <div className="text-center space-y-4 py-8">
-          <h2 className="heading-dark-2 text-foreground">Ready to get started?</h2>
-          <p className="text-muted-foreground">
+        <div className="text-center space-y-3 sm:space-y-4 py-6 sm:py-8 px-4">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-foreground">Ready to get started?</h2>
+          <p className="text-sm sm:text-base text-muted-foreground">
             Join thousands of users who trust RobotPDF for their document processing needs
           </p>
-          <div className="flex flex-col sm:flex-row justify-center gap-4">
+          <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">
             {!user ? (
               <>
                 <Button 

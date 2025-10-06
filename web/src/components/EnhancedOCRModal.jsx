@@ -261,69 +261,88 @@ const EnhancedOCRModal = ({ isOpen, onClose, result, fileName, fileId, onResultU
   }
 
   return (
-    <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-3 sm:p-4 z-50">
-      <Card className="w-full max-w-[94vw] sm:max-w-xl lg:max-w-3xl h-[90vh] sm:h-[80vh] overflow-hidden bg-card">
-        <CardHeader className="flex flex-row items-center justify-between border-b p-3 sm:p-4">
-          <div className="flex items-center space-x-2 sm:space-x-3 min-w-0">
+    <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-0 sm:p-4 z-50" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <Card className="w-full h-full sm:h-auto sm:max-h-[95vh] sm:max-w-2xl md:max-w-3xl lg:max-w-5xl xl:max-w-6xl sm:rounded-2xl overflow-hidden bg-card flex flex-col">
+        <CardHeader className="flex flex-row items-center justify-between border-b p-3 sm:p-4 md:p-6 shrink-0 relative">
+          <div className="flex items-center space-x-2 sm:space-x-3 min-w-0 flex-1 pr-12">
             <div className="p-1.5 sm:p-2 bg-blue-600 rounded-full flex-shrink-0">
               <Brain className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
             </div>
-            <div className="min-w-0">
-              <CardTitle className="text-sm sm:text-base flex items-center">
+            <div className="min-w-0 flex-1">
+              <CardTitle className="text-sm sm:text-base md:text-lg flex items-center">
                 <span className="truncate">OCR Results</span>
                 <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 ml-1 sm:ml-2 text-yellow-500 flex-shrink-0" />
               </CardTitle>
-              <p className="text-xs text-muted-foreground truncate">{fileName}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground truncate">{fileName}</p>
             </div>
           </div>
-          <Button variant="ghost" size="icon" onClick={onClose} className="flex-shrink-0 h-8 w-8">
-            <X className="h-4 w-4" />
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            onClick={onClose} 
+            className="absolute right-2 top-1/2 -translate-y-1/2 flex-shrink-0 h-10 w-10 sm:h-10 sm:w-10 z-10 hover:bg-destructive/10"
+          >
+            <X className="h-5 w-5 sm:h-5 sm:w-5" />
           </Button>
         </CardHeader>
         
-        <CardContent className="p-0">
-          <div className="flex flex-col lg:flex-row h-[calc(90vh-70px)] sm:h-[calc(80vh-70px)]">
-            {/* Left Panel - Settings */}
-            <div className="w-full lg:w-56 border-b lg:border-b-0 lg:border-r bg-card p-3 overflow-y-auto max-h-40 lg:max-h-full">
-              <div className="space-y-2 sm:space-y-3">
-                {/* OCR Info */}
-                <div className="space-y-1.5">
-                  <h3 className="text-xs font-semibold flex items-center">
-                    <Eye className="h-3 w-3 mr-1" />
-                    Info
-                  </h3>
-                  <div className="flex flex-wrap gap-1.5">
-                    <Badge variant="secondary" className="bg-blue-600 text-white text-[10px] sm:text-xs px-1.5 py-0.5">
-                      <Eye className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" />
+        <CardContent className="p-0 flex-1 overflow-hidden">
+          <div className="flex flex-col lg:flex-row h-full">
+            {/* Left Panel - Settings - Mobile First */}
+            <div className="w-full lg:w-64 border-b lg:border-b-0 lg:border-r bg-muted/30 p-3 sm:p-4 overflow-y-auto shrink-0">
+              <div className="space-y-3 sm:space-y-4">
+                {/* OCR Info - Mobile Optimized */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xs sm:text-sm font-semibold flex items-center text-foreground">
+                      <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 flex-shrink-0" />
+                      Info
+                    </h3>
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={onClose} 
+                      className="h-8 w-8 hover:bg-destructive/10 lg:hidden"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                    <Badge variant="secondary" className="bg-blue-600 text-white text-[10px] sm:text-xs px-2 py-1">
+                      <Eye className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1 flex-shrink-0" />
                       {Math.round(result.confidence * 100)}%
                     </Badge>
-                    <Badge variant="secondary" className="bg-gray-600 text-white text-[10px] sm:text-xs px-1.5 py-0.5">
+                    <Badge variant="secondary" className="bg-gray-600 text-white text-[10px] sm:text-xs px-2 py-1">
                       Pages: {result.pageCount}
                     </Badge>
                     {autoDetectedLanguage && (
-                      <Badge variant="secondary" className="bg-purple-600 text-white text-[10px] sm:text-xs px-1.5 py-0.5">
-                        <Languages className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" />
+                      <Badge variant="secondary" className="bg-purple-600 text-white text-[10px] sm:text-xs px-2 py-1">
+                        <Languages className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1 flex-shrink-0" />
                         {autoDetectedLanguage}
                       </Badge>
                     )}
                   </div>
                 </div>
 
-                {/* Translation Settings */}
-                <div className="space-y-1.5">
-                  <h3 className="text-xs font-semibold flex items-center">
-                    <Globe className="h-3 w-3 mr-1" />
+                {/* Translation Settings - Mobile Optimized */}
+                <div className="space-y-2">
+                  <h3 className="text-xs sm:text-sm font-semibold flex items-center text-foreground">
+                    <Globe className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 flex-shrink-0" />
                     Translate
                   </h3>
                   
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <Select value={targetLanguage} onValueChange={setTargetLanguage}>
-                      <SelectTrigger className="w-full h-7 sm:h-8 text-xs bg-gray-700">
-                        <SelectValue placeholder="Select..." />
+                      <SelectTrigger className="w-full h-10 sm:h-10 text-xs sm:text-sm">
+                        <SelectValue placeholder="Select language..." />
                       </SelectTrigger>
-                      <SelectContent className="bg-gray-800 border-gray-700">
+                      <SelectContent className="max-h-60">
                         {languages.map((lang) => (
-                          <SelectItem key={lang.code} value={lang.code} className="text-xs bg-gray-800 hover:bg-gray-700 focus:bg-gray-700">
+                          <SelectItem 
+                            key={lang.code} 
+                            value={lang.code} 
+                            className="text-xs sm:text-sm min-h-[44px] sm:min-h-[36px]"
+                          >
                             {lang.name}
                           </SelectItem>
                         ))}
@@ -333,64 +352,69 @@ const EnhancedOCRModal = ({ isOpen, onClose, result, fileName, fileId, onResultU
                     <Button 
                       onClick={handleTranslate}
                       disabled={isTranslating || !targetLanguage || (!result.text && !enhancedText)}
-                      className="w-full h-7 sm:h-8 text-xs"
+                      className="w-full h-10 sm:h-10 text-xs sm:text-sm"
                       size="sm"
                     >
                       {isTranslating ? (
                         <>
-                          <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin flex-shrink-0" />
                           <span className="hidden sm:inline">Translating...</span>
-                          <span className="sm:hidden">...</span>
+                          <span className="sm:hidden">Wait...</span>
                         </>
                       ) : (
                         <>
-                          <Languages className="h-3 w-3 mr-1" />
+                          <Languages className="h-4 w-4 mr-2 flex-shrink-0" />
                           Translate
                         </>
                       )}
                     </Button>
 
                     {isTranslating && (
-                      <Progress value={translationProgress} className="h-1" />
+                      <Progress value={translationProgress} className="h-2" />
                     )}
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Right Panel - Results */}
-            <div className="flex-1 flex flex-col min-h-0">
-              <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-                <TabsList className="grid w-full grid-cols-2 m-2 sm:m-3 mb-0">
-                  <TabsTrigger value="results" className="flex items-center text-xs sm:text-sm">
-                   <FileText className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+            {/* Right Panel - Results - Mobile First */}
+            <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col h-full">
+                <TabsList className="grid w-full grid-cols-2 m-3 sm:m-4 mb-0 h-11 sm:h-11 shrink-0">
+                  <TabsTrigger value="results" className="flex items-center text-xs sm:text-sm h-10">
+                   <FileText className="h-4 w-4 mr-1.5 flex-shrink-0" />
                     <span className="hidden sm:inline">Extracted</span>
                     <span className="sm:hidden">Text</span>
                   </TabsTrigger>
-                  <TabsTrigger value="translated" className="flex items-center text-xs sm:text-sm" disabled={!translatedText}>
-                    <Globe className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                  <TabsTrigger value="translated" className="flex items-center text-xs sm:text-sm h-10" disabled={!translatedText}>
+                    <Globe className="h-4 w-4 mr-1.5 flex-shrink-0" />
                     <span className="hidden sm:inline">Translated</span>
                     <span className="sm:hidden">Trans</span>
                   </TabsTrigger>
                 </TabsList>
 
-                <div className="flex-1 p-2 sm:p-3 pt-2 overflow-y-auto">
-                  <TabsContent value="results" className="h-full mt-0">
-                    <div className="space-y-2 h-full flex flex-col">
-                      <div className="flex items-center justify-between flex-wrap gap-2">
-                        <Label className="text-xs sm:text-sm font-medium">Extracted:</Label>
-                        <div className="flex space-x-1 sm:space-x-2">
-                          <Button onClick={() => handleCopyText(result.text)} size="sm" variant="outline" className="h-7 text-xs">
-                            <Copy className="h-3 w-3 sm:mr-1" />
+                <div className="flex-1 p-3 sm:p-4 pt-2 sm:pt-3 overflow-y-auto min-h-0">
+                  <TabsContent value="results" className="h-full mt-0 data-[state=active]:flex data-[state=active]:flex-col">
+                    <div className="space-y-3 h-full flex flex-col">
+                      <div className="flex items-center justify-between flex-wrap gap-2 shrink-0">
+                        <Label className="text-xs sm:text-sm font-medium">Extracted Text:</Label>
+                        <div className="flex gap-2">
+                          <Button 
+                            onClick={() => handleCopyText(result.text)} 
+                            size="sm" 
+                            variant="outline" 
+                            className="h-9 sm:h-9 text-xs sm:text-sm px-3"
+                          >
+                            <Copy className="h-4 w-4 sm:mr-1.5 flex-shrink-0" />
                             <span className="hidden sm:inline">Copy</span>
                           </Button>
                           <Button 
                             onClick={() => downloadText(result.text, `${fileName}_original.txt`)} 
                             size="sm" 
                             variant="outline"
-                            className="h-7 text-xs"
+                            className="h-9 sm:h-9 text-xs sm:text-sm px-3"
                           >
-                            <Download className="h-3 w-3 sm:mr-1" />
+                            <Download className="h-4 w-4 sm:mr-1.5 flex-shrink-0" />
                             <span className="hidden sm:inline">Download</span>
                           </Button>
                         </div>
@@ -398,31 +422,36 @@ const EnhancedOCRModal = ({ isOpen, onClose, result, fileName, fileId, onResultU
                       <Textarea
                         value={result.text}
                         readOnly
-                        className="flex-1 text-xs sm:text-sm resize-none min-h-[200px]"
+                        className="flex-1 text-xs sm:text-sm resize-none min-h-0"
                         placeholder="No text extracted..."
                       />
                     </div>
                   </TabsContent>
 
-                  <TabsContent value="translated" className="h-full mt-0">
-                    <div className="space-y-2 h-full flex flex-col">
-                      <div className="flex items-center justify-between flex-wrap gap-2">
+                  <TabsContent value="translated" className="h-full mt-0 data-[state=active]:flex data-[state=active]:flex-col">
+                    <div className="space-y-3 h-full flex flex-col">
+                      <div className="flex items-center justify-between flex-wrap gap-2 shrink-0">
                         <Label className="text-xs sm:text-sm font-medium flex items-center">
-                          <Globe className="h-3 w-3 sm:h-4 sm:w-4 mr-1 text-blue-500" />
-                          Translated
+                          <Globe className="h-4 w-4 mr-1.5 text-blue-500 flex-shrink-0" />
+                          Translated Text
                         </Label>
-                        <div className="flex space-x-1 sm:space-x-2">
-                          <Button onClick={() => handleCopyText(translatedText)} size="sm" variant="outline" className="h-7 text-xs">
-                            <Copy className="h-3 w-3 sm:mr-1" />
+                        <div className="flex gap-2">
+                          <Button 
+                            onClick={() => handleCopyText(translatedText)} 
+                            size="sm" 
+                            variant="outline" 
+                            className="h-9 sm:h-9 text-xs sm:text-sm px-3"
+                          >
+                            <Copy className="h-4 w-4 sm:mr-1.5 flex-shrink-0" />
                             <span className="hidden sm:inline">Copy</span>
                           </Button>
                           <Button 
                             onClick={() => downloadText(translatedText, `${fileName}_translated.txt`)} 
                             size="sm" 
                             variant="outline"
-                            className="h-7 text-xs"
+                            className="h-9 sm:h-9 text-xs sm:text-sm px-3"
                           >
-                            <Download className="h-3 w-3 sm:mr-1" />
+                            <Download className="h-4 w-4 sm:mr-1.5 flex-shrink-0" />
                             <span className="hidden sm:inline">Download</span>
                           </Button>
                         </div>
@@ -430,7 +459,7 @@ const EnhancedOCRModal = ({ isOpen, onClose, result, fileName, fileId, onResultU
                       <Textarea
                         value={translatedText}
                         readOnly
-                        className="flex-1 text-xs sm:text-sm resize-none min-h-[200px]"
+                        className="flex-1 text-xs sm:text-sm resize-none min-h-0"
                         placeholder="Select a language and translate..."
                       />
                     </div>

@@ -90,18 +90,18 @@ const ModernNavbar = () => {
         <div className="layout-dark-container">
           <div className="flex h-20 items-center justify-between">
             {/* Logo */}
-            <Link to="/" className="flex items-center space-x-4 group">
+            <Link to="/" className="flex items-center space-x-2 sm:space-x-4 group">
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-blue rounded-3xl scale-110" />
-                <div className="relative bg-white p-2 rounded-3xl group-hover:scale-105 transition-transform duration-300">
-                  <img src="/logo.png" alt="RobotPDF Logo" className="h-8 w-8 object-contain" />
+                <div className="absolute inset-0 bg-gradient-blue rounded-2xl sm:rounded-3xl scale-110" />
+                <div className="relative bg-white p-1.5 sm:p-2 rounded-2xl sm:rounded-3xl group-hover:scale-105 transition-transform duration-300">
+                  <img src="/logo.png" alt="RobotPDF Logo" className="h-6 w-6 sm:h-8 sm:w-8 object-contain" />
                 </div>
               </div>
               <div className="flex flex-col">
-                <span className="text-2xl font-bold text-gradient-grey font-poppins">
+                <span className="text-lg sm:text-2xl font-bold text-gradient-grey font-poppins">
                   RobotPDF
                 </span>
-                <span className="text-xs text-secondary -mt-1 font-semibold hidden sm:block">
+                <span className="text-xs text-secondary -mt-1 font-semibold hidden lg:block">
                   ✨ AI-Powered Document Magic
                 </span>
               </div>
@@ -141,9 +141,25 @@ const ModernNavbar = () => {
             </div>
 
             {/* Right Side Actions */}
-            <div className="flex items-center space-x-4">
-              {/* Theme Toggle */}
-              <ThemeToggle />
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              {/* Mobile Menu Button */}
+              <Button
+                variant="ghost"
+                size="icon"
+                className="md:hidden h-10 w-10"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              >
+                {isMobileMenuOpen ? (
+                  <X className="h-5 w-5" />
+                ) : (
+                  <Menu className="h-5 w-5" />
+                )}
+              </Button>
+
+              {/* Theme Toggle - Hidden on mobile */}
+              <div className="hidden sm:block">
+                <ThemeToggle />
+              </div>
               
               {user ? (
                 /* User Menu */
@@ -155,10 +171,10 @@ const ModernNavbar = () => {
                       </div>
                       <div className="hidden sm:block text-left">
                         <div className="text-sm font-semibold text-card-foreground">
-                          {user.user_metadata?.name || 'User'}
+                          {user.name || user.user_metadata?.name || 'User'}
                         </div>
                         <div className="text-xs text-secondary">
-                          {user.user_metadata?.role === 'admin' ? 'Administrator' : 'Member'}
+                          {(user.role || user.user_metadata?.role) === 'admin' ? 'Administrator' : 'Member'}
                         </div>
                       </div>
                       <ChevronDown className="h-4 w-4 text-secondary" />
@@ -172,7 +188,7 @@ const ModernNavbar = () => {
                         </div>
                         <div>
                           <p className="text-sm font-semibold text-card-foreground">
-                            {user.user_metadata?.name || user.email}
+                            {user.name || user.user_metadata?.name || user.email}
                           </p>
                           <p className="text-xs text-secondary">{user.email}</p>
                         </div>
@@ -213,13 +229,16 @@ const ModernNavbar = () => {
                           <div className="text-xs text-purple-400">Unlock premium features</div>
                         </div>
                       </DropdownMenuItem>
-                      {user.user_metadata?.role === 'admin' && (
+                      {(user.role === 'admin' || user.user_metadata?.role === 'admin') && (
                         <DropdownMenuItem 
                           onClick={() => navigate('/admin')}
-                          className="dropdown-item-dark"
+                          className="dropdown-item-dark bg-orange-950 hover:bg-orange-900"
                         >
                           <Shield className="mr-4 h-5 w-5 text-orange-400" />
-                          <span className="font-semibold">Admin Panel</span>
+                          <div>
+                            <div className="font-semibold text-orange-300">Admin Panel</div>
+                            <div className="text-xs text-orange-400">System management</div>
+                          </div>
                         </DropdownMenuItem>
                       )}
                       <DropdownMenuSeparator className="my-3" />
@@ -330,29 +349,29 @@ const ModernNavbar = () => {
                 to="/files"
                 className={isActivePath('/files') ? 'mobile-nav-item-dark-active' : 'mobile-nav-item-dark'}
               >
-                <FolderOpen className="h-6 w-6" />
-                <span>Files</span>
+                <FolderOpen className="h-5 w-5" />
+                <span className="text-xs">Files</span>
               </Link>
               <Link
                 to="/tools"
                 className={isActivePath('/tools') ? 'mobile-nav-item-dark-active' : 'mobile-nav-item-dark'}
               >
-                <GitMerge className="h-6 w-6" />
-                <span>Tools</span>
+                <GitMerge className="h-5 w-5" />
+                <span className="text-xs">Tools</span>
               </Link>
               <Link
                 to="/advanced-tools"
                 className={isActivePath('/advanced-tools') ? 'mobile-nav-item-dark-active' : 'mobile-nav-item-dark'}
               >
-                <Sparkles className="h-6 w-6" />
-                <span>Pro Tools</span>
+                <Sparkles className="h-5 w-5" />
+                <span className="text-xs">Pro</span>
               </Link>
               <Link
                 to="/profile"
                 className={isActivePath('/profile') ? 'mobile-nav-item-dark-active' : 'mobile-nav-item-dark'}
               >
-                <User className="h-6 w-6" />
-                <span>Profile</span>
+                <User className="h-5 w-5" />
+                <span className="text-xs">Profile</span>
               </Link>
             </>
           ) : (
@@ -361,29 +380,29 @@ const ModernNavbar = () => {
                 to="/"
                 className={isActivePath('/') ? 'mobile-nav-item-dark-active' : 'mobile-nav-item-dark'}
               >
-                <Home className="h-6 w-6" />
-                <span>Home</span>
+                <Home className="h-5 w-5" />
+                <span className="text-xs">Home</span>
               </Link>
               <Link
                 to="/tools"
                 className={isActivePath('/tools') ? 'mobile-nav-item-dark-active' : 'mobile-nav-item-dark'}
               >
-                <GitMerge className="h-6 w-6" />
-                <span>Tools</span>
+                <GitMerge className="h-5 w-5" />
+                <span className="text-xs">Tools</span>
               </Link>
               <Link
                 to="/advanced-tools"
                 className={isActivePath('/advanced-tools') ? 'mobile-nav-item-dark-active' : 'mobile-nav-item-dark'}
               >
-                <Sparkles className="h-6 w-6" />
-                <span>Pro Tools</span>
+                <Sparkles className="h-5 w-5" />
+                <span className="text-xs">Pro Tools</span>
               </Link>
               <Link
                 to="/contact"
                 className={isActivePath('/contact') ? 'mobile-nav-item-dark-active' : 'mobile-nav-item-dark'}
               >
-                <Mail className="h-6 w-6" />
-                <span>Contact</span>
+                <Mail className="h-5 w-5" />
+                <span className="text-xs">Contact</span>
               </Link>
             </>
           )}

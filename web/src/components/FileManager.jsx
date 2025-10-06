@@ -492,22 +492,22 @@ const FileManager = () => {
 
         {/* Selection Actions */}
         {selectedFiles.length > 0 && (
-          <div className="dark-card p-6 mb-8 bg-blue-950 border-blue-800">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <span className="text-blue-300 font-semibold">
+          <div className="dark-card p-4 sm:p-6 mb-6 sm:mb-8 bg-blue-950 border-blue-800">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+                <span className="text-blue-300 font-semibold text-sm sm:text-base">
                   {selectedFiles.length} file(s) selected
                 </span>
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={handleSelectAll}
-                  className="text-blue-300 hover:text-blue-200 hover:bg-blue-900"
+                  className="text-blue-300 hover:text-blue-200 hover:bg-blue-900 w-full sm:w-auto justify-center text-xs sm:text-sm"
                 >
                   {selectedFiles.length === sortedFiles.length ? 'Deselect All' : 'Select All'}
                 </Button>
               </div>
-              <div className="flex space-x-3">
+              <div className="grid grid-cols-3 sm:flex gap-2 sm:gap-3">
                 <Button 
                   variant="ghost" 
                   size="sm" 
@@ -517,23 +517,23 @@ const FileManager = () => {
                       if (file) handleDownloadFile(file.id, file.name)
                     })
                   }}
-                  className="text-blue-300 hover:text-blue-200 hover:bg-blue-900"
+                  className="text-blue-300 hover:text-blue-200 hover:bg-blue-900 text-xs sm:text-sm"
                 >
-                  <Download className="h-4 w-4 mr-2" />
-                  Download
+                  <Download className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Download</span>
                 </Button>
-                <Button variant="ghost" size="sm" className="text-blue-300 hover:text-blue-200 hover:bg-blue-900">
-                  <Share className="h-4 w-4 mr-2" />
-                  Share
+                <Button variant="ghost" size="sm" className="text-blue-300 hover:text-blue-200 hover:bg-blue-900 text-xs sm:text-sm">
+                  <Share className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Share</span>
                 </Button>
                 <Button 
                   variant="ghost" 
                   size="sm" 
                   onClick={handleDeleteSelected}
-                  className="text-red-400 hover:text-red-300 hover:bg-red-950"
+                  className="text-red-400 hover:text-red-300 hover:bg-red-950 text-xs sm:text-sm"
                 >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete
+                  <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Delete</span>
                 </Button>
               </div>
             </div>

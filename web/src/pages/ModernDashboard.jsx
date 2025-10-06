@@ -155,30 +155,30 @@ const ModernDashboard = () => {
 
       <div className="layout-dark-container py-12 relative">
         {/* Header */}
-        <div className={`mb-12 ${isVisible ? 'animate-slide-down-fade' : ''}`}>
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+        <div className={`mb-8 sm:mb-12 ${isVisible ? 'animate-slide-down-fade' : ''}`}>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h1 className="heading-dark-2 mb-3">
-                Welcome back, <span className="text-gradient-blue">{user?.user_metadata?.name || 'User'}</span>! 
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3">
+                Welcome back, <span className="text-gradient-blue break-words">{user?.user_metadata?.name || 'User'}</span>! 
                 <span className="inline-block ml-2">👋</span>
               </h1>
-              <p className="body-dark text-muted-foreground">
+              <p className="text-sm sm:text-base text-muted-foreground">
                 Manage your documents and unleash the power of intelligent PDF processing
               </p>
             </div>
-            <div className="mt-6 md:mt-0 flex space-x-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full md:w-auto">
               <Button 
                 onClick={() => navigate('/files')}
-                className="btn-dark-outline"
+                className="btn-dark-outline w-full sm:w-auto"
               >
-                <FolderOpen className="h-5 w-5 mr-2" />
+                <FolderOpen className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
                 My Files
               </Button>
               <Button 
                 onClick={() => navigate('/tools')}
-                className="btn-blue"
+                className="btn-blue w-full sm:w-auto"
               >
-                <Rocket className="h-5 w-5 mr-2" />
+                <Rocket className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
                 New Project
               </Button>
             </div>
@@ -186,115 +186,115 @@ const ModernDashboard = () => {
         </div>
 
         {/* Stats Cards */}
-        <div className={`grid grid-cols-2 lg:grid-cols-4 gap-6 mb-12 ${isVisible ? 'animate-slide-up-fade' : ''}`}>
-          <div className="dark-card-hover p-8 group">
+        <div className={`grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-8 sm:mb-12 ${isVisible ? 'animate-slide-up-fade' : ''}`}>
+          <div className="dark-card-hover p-4 sm:p-6 lg:p-8 group overflow-hidden">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="body-dark-small text-secondary mb-2">Total Files</p>
-                <p className="text-3xl font-bold text-card-foreground group-hover:text-blue-400 transition-colors duration-300">{stats.totalFiles}</p>
+              <div className="min-w-0 flex-1 pr-2">
+                <p className="text-xs sm:text-sm text-secondary mb-1 sm:mb-2 truncate">Total Files</p>
+                <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-card-foreground group-hover:text-blue-400 transition-colors duration-300 truncate">{stats.totalFiles}</p>
               </div>
-              <div className="p-4 bg-blue-900 rounded-2xl group-hover:bg-blue-800 transition-all duration-300 group-hover:scale-110">
-                <FileText className="h-7 w-7 text-blue-400" />
+              <div className="p-2 sm:p-3 lg:p-4 bg-blue-900 rounded-xl sm:rounded-2xl group-hover:bg-blue-800 transition-all duration-300 group-hover:scale-110 flex-shrink-0">
+                <FileText className="h-4 w-4 sm:h-5 sm:w-5 lg:h-7 lg:w-7 text-blue-400" />
               </div>
             </div>
           </div>
 
-          <div className="dark-card-hover p-8 group">
+          <div className="dark-card-hover p-4 sm:p-6 lg:p-8 group overflow-hidden">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="body-dark-small text-secondary mb-2">This Month</p>
-                <p className="text-3xl font-bold text-card-foreground group-hover:text-green-400 transition-colors duration-300">{stats.filesThisMonth}</p>
+              <div className="min-w-0 flex-1 pr-2">
+                <p className="text-xs sm:text-sm text-secondary mb-1 sm:mb-2 truncate">This Month</p>
+                <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-card-foreground group-hover:text-green-400 transition-colors duration-300 truncate">{stats.filesThisMonth}</p>
               </div>
-              <div className="p-4 bg-green-900 rounded-2xl group-hover:bg-green-800 transition-all duration-300 group-hover:scale-110">
-                <TrendingUp className="h-7 w-7 text-green-400" />
+              <div className="p-2 sm:p-3 lg:p-4 bg-green-900 rounded-xl sm:rounded-2xl group-hover:bg-green-800 transition-all duration-300 group-hover:scale-110 flex-shrink-0">
+                <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 lg:h-7 lg:w-7 text-green-400" />
               </div>
             </div>
           </div>
 
-          <div className="dark-card-hover p-8 group">
+          <div className="dark-card-hover p-4 sm:p-6 lg:p-8 group overflow-hidden">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="body-dark-small text-secondary mb-2">Storage Used</p>
-                <p className="text-3xl font-bold text-card-foreground group-hover:text-purple-400 transition-colors duration-300">{stats.storageUsed} MB</p>
+              <div className="min-w-0 flex-1 pr-2">
+                <p className="text-xs sm:text-sm text-secondary mb-1 sm:mb-2 truncate">Storage</p>
+                <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-card-foreground group-hover:text-purple-400 transition-colors duration-300 truncate">{stats.storageUsed.toFixed(1)} MB</p>
               </div>
-              <div className="p-4 bg-purple-900 rounded-2xl group-hover:bg-purple-800 transition-all duration-300 group-hover:scale-110">
-                <BarChart3 className="h-7 w-7 text-purple-400" />
+              <div className="p-2 sm:p-3 lg:p-4 bg-purple-900 rounded-xl sm:rounded-2xl group-hover:bg-purple-800 transition-all duration-300 group-hover:scale-110 flex-shrink-0">
+                <BarChart3 className="h-4 w-4 sm:h-5 sm:w-5 lg:h-7 lg:w-7 text-purple-400" />
               </div>
             </div>
           </div>
 
-          <div className="dark-card-hover p-8 group">
+          <div className="dark-card-hover p-4 sm:p-6 lg:p-8 group overflow-hidden">
             <div className="flex items-center justify-between">
-              <div>
-                <p className="body-dark-small text-secondary mb-2">Tools Used</p>
-                <p className="text-3xl font-bold text-card-foreground group-hover:text-orange-400 transition-colors duration-300">{stats.toolsUsed}</p>
+              <div className="min-w-0 flex-1 pr-2">
+                <p className="text-xs sm:text-sm text-secondary mb-1 sm:mb-2 truncate">Tools Used</p>
+                <p className="text-xl sm:text-2xl lg:text-3xl font-bold text-card-foreground group-hover:text-orange-400 transition-colors duration-300 truncate">{stats.toolsUsed}</p>
               </div>
-              <div className="p-4 bg-orange-900 rounded-2xl group-hover:bg-orange-800 transition-all duration-300 group-hover:scale-110">
-                <Activity className="h-7 w-7 text-orange-400" />
+              <div className="p-2 sm:p-3 lg:p-4 bg-orange-900 rounded-xl sm:rounded-2xl group-hover:bg-orange-800 transition-all duration-300 group-hover:scale-110 flex-shrink-0">
+                <Activity className="h-4 w-4 sm:h-5 sm:w-5 lg:h-7 lg:w-7 text-orange-400" />
               </div>
             </div>
           </div>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-12">
+        <div className="grid lg:grid-cols-3 gap-6 sm:gap-8 lg:gap-12">
           {/* Main Content */}
-          <div className="lg:col-span-2 space-y-12">
+          <div className="lg:col-span-2 space-y-6 sm:space-y-8 lg:space-y-12">
             {/* Quick Actions */}
-            <div className={`dark-card p-10 ${isVisible ? 'animate-slide-left-fade' : ''}`} style={{ animationDelay: '200ms' }}>
-              <div className="flex items-center justify-between mb-8">
+            <div className={`dark-card p-4 sm:p-6 lg:p-10 ${isVisible ? 'animate-slide-left-fade' : ''}`} style={{ animationDelay: '200ms' }}>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
                 <div className="flex items-center">
-                  <div className="p-3 bg-gradient-blue rounded-2xl mr-4">
-                    <Zap className="h-6 w-6 text-white" />
+                  <div className="p-2 sm:p-3 bg-gradient-blue rounded-xl sm:rounded-2xl mr-3 sm:mr-4 flex-shrink-0">
+                    <Zap className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-white" />
                   </div>
-                  <div>
-                    <h2 className="heading-dark-3">Quick Actions</h2>
-                    <p className="body-dark-small text-secondary">Start processing your documents</p>
+                  <div className="min-w-0">
+                    <h2 className="text-base sm:text-lg lg:text-xl font-bold truncate">Quick Actions</h2>
+                    <p className="text-xs sm:text-sm text-secondary truncate">Start processing</p>
                   </div>
                 </div>
                 <Link 
                   to="/tools" 
-                  className="text-blue-400 hover:text-blue-300 font-semibold flex items-center group"
+                  className="text-blue-400 hover:text-blue-300 font-semibold flex items-center group text-sm sm:text-base flex-shrink-0"
                 >
                   View All
-                  <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform duration-200" />
+                  <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 ml-2 group-hover:translate-x-1 transition-transform duration-200" />
                 </Link>
               </div>
               
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
                 {quickActions.map((action, index) => (
                   <Link
                     key={action.title}
                     to={action.path}
-                    className="group p-6 rounded-3xl border border-border hover:border-border hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-elevated"
+                    className="group p-3 sm:p-4 lg:p-6 rounded-2xl sm:rounded-3xl border border-border hover:border-border hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-elevated overflow-hidden"
                   >
-                    <div className={`inline-flex items-center justify-center w-16 h-16 ${action.bgColor} rounded-2xl mb-4 group-hover:scale-110 transition-all duration-300`}>
-                      <action.icon className={`h-8 w-8 ${action.color}`} />
+                    <div className={`inline-flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 lg:w-16 lg:h-16 ${action.bgColor} rounded-xl sm:rounded-2xl mb-2 sm:mb-3 lg:mb-4 group-hover:scale-110 transition-all duration-300 flex-shrink-0`}>
+                      <action.icon className={`h-5 w-5 sm:h-6 sm:w-6 lg:h-8 lg:w-8 ${action.color}`} />
                     </div>
-                    <h3 className="font-semibold text-card-foreground mb-2">{action.title}</h3>
-                    <p className="text-sm text-secondary">{action.description}</p>
+                    <h3 className="font-semibold text-card-foreground mb-1 sm:mb-2 text-xs sm:text-sm lg:text-base truncate">{action.title}</h3>
+                    <p className="text-xs sm:text-sm text-secondary truncate">{action.description}</p>
                   </Link>
                 ))}
               </div>
             </div>
 
             {/* Recent Files */}
-            <div className={`dark-card p-10 ${isVisible ? 'animate-slide-left-fade' : ''}`} style={{ animationDelay: '400ms' }}>
-              <div className="flex items-center justify-between mb-8">
+            <div className={`dark-card p-4 sm:p-6 lg:p-10 ${isVisible ? 'animate-slide-left-fade' : ''}`} style={{ animationDelay: '400ms' }}>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 sm:mb-8">
                 <div className="flex items-center">
-                  <div className="p-3 bg-gradient-green rounded-2xl mr-4">
-                    <FileText className="h-6 w-6 text-white" />
+                  <div className="p-2 sm:p-3 bg-gradient-green rounded-xl sm:rounded-2xl mr-3 sm:mr-4 flex-shrink-0">
+                    <FileText className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-white" />
                   </div>
-                  <div>
-                    <h2 className="heading-dark-3">Recent Files</h2>
-                    <p className="body-dark-small text-secondary">Your latest processed documents</p>
+                  <div className="min-w-0">
+                    <h2 className="text-base sm:text-lg lg:text-xl font-bold truncate">Recent Files</h2>
+                    <p className="text-xs sm:text-sm text-secondary truncate">Latest documents</p>
                   </div>
                 </div>
                 <Link 
                   to="/files" 
-                  className="text-green-400 hover:text-green-300 font-semibold flex items-center group"
+                  className="text-green-400 hover:text-green-300 font-semibold flex items-center group text-sm sm:text-base flex-shrink-0"
                 >
                   View All
-                  <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform duration-200" />
+                  <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 ml-2 group-hover:translate-x-1 transition-transform duration-200" />
                 </Link>
               </div>
               
@@ -303,23 +303,23 @@ const ModernDashboard = () => {
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
                 </div>
               ) : recentFiles.length > 0 ? (
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   {recentFiles.map((file, index) => (
-                    <div key={file.id} className="flex items-center justify-between p-4 rounded-2xl hover:bg-elevated transition-all duration-200 group">
-                      <div className="flex items-center space-x-4">
-                        <div className="p-3 bg-purple-900 rounded-2xl group-hover:bg-purple-800 transition-colors duration-200">
-                          <FileText className="h-6 w-6 text-purple-400" />
+                    <div key={file.id} className="flex items-center justify-between p-3 sm:p-4 rounded-xl sm:rounded-2xl hover:bg-elevated transition-all duration-200 group overflow-hidden">
+                      <div className="flex items-center space-x-2 sm:space-x-3 lg:space-x-4 min-w-0 flex-1">
+                        <div className="p-2 sm:p-3 bg-purple-900 rounded-xl sm:rounded-2xl group-hover:bg-purple-800 transition-colors duration-200 flex-shrink-0">
+                          <FileText className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-purple-400" />
                         </div>
-                        <div>
-                          <p className="font-semibold text-card-foreground group-hover:text-foreground transition-colors duration-200">{file.filename}</p>
-                          <p className="text-sm text-secondary">{formatFileSize(file.size)} • {formatDate(file.created_at)}</p>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-semibold text-card-foreground group-hover:text-foreground transition-colors duration-200 text-xs sm:text-sm lg:text-base truncate">{file.filename}</p>
+                          <p className="text-xs sm:text-sm text-secondary truncate">{formatFileSize(file.size)} • {formatDate(file.created_at)}</p>
                         </div>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <Button variant="ghost" size="sm" className="p-3 rounded-xl hover:bg-accent" onClick={() => navigate(`/files/${file.id}`)}>
-                          <Eye className="h-4 w-4" />
+                      <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
+                        <Button variant="ghost" size="sm" className="p-2 sm:p-3 rounded-xl hover:bg-accent" onClick={() => navigate(`/files/${file.id}`)}>
+                          <Eye className="h-3 w-3 sm:h-4 sm:w-4" />
                         </Button>
-                        <Button variant="ghost" size="sm" className="p-3 rounded-xl hover:bg-accent" onClick={async () => {
+                        <Button variant="ghost" size="sm" className="p-2 sm:p-3 rounded-xl hover:bg-accent" onClick={async () => {
                           try {
                             const blob = await api.downloadFile(file.id)
                             const url = window.URL.createObjectURL(blob)
@@ -332,7 +332,7 @@ const ModernDashboard = () => {
                             console.error('Download failed:', error)
                           }
                         }}>
-                          <Download className="h-4 w-4" />
+                          <Download className="h-3 w-3 sm:h-4 sm:w-4" />
                         </Button>
                       </div>
                     </div>
@@ -354,25 +354,25 @@ const ModernDashboard = () => {
           </div>
 
           {/* Sidebar */}
-          <div className="space-y-8">
+          <div className="space-y-6 sm:space-y-8">
             {/* Usage Card */}
             {usage && (
-              <div className={`dark-card p-8 ${isVisible ? 'animate-slide-right-fade' : ''}`} style={{ animationDelay: '300ms' }}>
-                <div className="flex items-center mb-6">
-                  <div className="p-3 bg-gradient-purple rounded-2xl mr-4">
-                    <Target className="h-6 w-6 text-white" />
+              <div className={`dark-card p-4 sm:p-6 lg:p-8 ${isVisible ? 'animate-slide-right-fade' : ''}`} style={{ animationDelay: '300ms' }}>
+                <div className="flex items-center mb-4 sm:mb-6">
+                  <div className="p-2 sm:p-3 bg-gradient-purple rounded-xl sm:rounded-2xl mr-3 sm:mr-4 flex-shrink-0">
+                    <Target className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-white" />
                   </div>
-                  <div>
-                    <h3 className="heading-dark-4">Usage This Month</h3>
-                    <p className="body-dark-small text-secondary">Track your progress</p>
+                  <div className="min-w-0">
+                    <h3 className="text-base sm:text-lg font-bold truncate">Usage This Month</h3>
+                    <p className="text-xs sm:text-sm text-secondary truncate">Track progress</p>
                   </div>
                 </div>
                 
-                <div className="space-y-6">
+                <div className="space-y-4 sm:space-y-6">
                   <div>
-                    <div className="flex justify-between text-sm mb-3">
-                      <span className="text-muted-foreground font-medium">Files Processed</span>
-                      <span className="font-semibold text-card-foreground">{usage.current}/{usage.limit}</span>
+                    <div className="flex justify-between text-xs sm:text-sm mb-2 sm:mb-3">
+                      <span className="text-muted-foreground font-medium truncate">Files Processed</span>
+                      <span className="font-semibold text-card-foreground flex-shrink-0 ml-2">{usage.current}/{usage.limit}</span>
                     </div>
                     <div className="progress-dark">
                       <div 
@@ -383,9 +383,9 @@ const ModernDashboard = () => {
                   </div>
                   
                   {subscription?.plan === 'free' && (
-                    <div className="pt-6 border-t border-border">
-                      <p className="body-dark-small text-muted-foreground mb-4">
-                        Upgrade for unlimited processing and premium features
+                    <div className="pt-4 sm:pt-6 border-t border-border">
+                      <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
+                        Upgrade for unlimited processing
                       </p>
                       <Button 
                         onClick={() => navigate('/upgrade')} 
@@ -401,67 +401,67 @@ const ModernDashboard = () => {
             )}
 
             {/* Pro Features */}
-            <div className={`dark-card p-8 ${isVisible ? 'animate-slide-right-fade' : ''}`} style={{ animationDelay: '500ms' }}>
-              <div className="flex items-center mb-6">
-                <div className="p-3 bg-gradient-orange rounded-2xl mr-4">
-                  <Sparkles className="h-6 w-6 text-white" />
+            <div className={`dark-card p-4 sm:p-6 lg:p-8 ${isVisible ? 'animate-slide-right-fade' : ''}`} style={{ animationDelay: '500ms' }}>
+              <div className="flex items-center mb-4 sm:mb-6">
+                <div className="p-2 sm:p-3 bg-gradient-orange rounded-xl sm:rounded-2xl mr-3 sm:mr-4 flex-shrink-0">
+                  <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-white" />
                 </div>
-                <div>
-                  <h3 className="heading-dark-4">Pro Features</h3>
-                  <p className="body-dark-small text-secondary">Unlock advanced tools</p>
+                <div className="min-w-0">
+                  <h3 className="text-base sm:text-lg font-bold truncate">Pro Features</h3>
+                  <p className="text-xs sm:text-sm text-secondary truncate">Advanced tools</p>
                 </div>
               </div>
               
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {proFeatures.map((feature, index) => (
                   <Link
                     key={feature.title}
                     to={feature.path}
-                    className="flex items-center p-4 rounded-2xl hover:bg-elevated transition-all duration-300 group"
+                    className="flex items-center p-3 sm:p-4 rounded-xl sm:rounded-2xl hover:bg-elevated transition-all duration-300 group overflow-hidden"
                   >
-                    <div className={`p-3 ${feature.bgColor} rounded-2xl mr-4 group-hover:scale-110 transition-transform duration-300`}>
-                      <feature.icon className={`h-5 w-5 ${feature.color}`} />
+                    <div className={`p-2 sm:p-3 ${feature.bgColor} rounded-xl sm:rounded-2xl mr-3 sm:mr-4 group-hover:scale-110 transition-transform duration-300 flex-shrink-0`}>
+                      <feature.icon className={`h-4 w-4 sm:h-5 sm:w-5 ${feature.color}`} />
                     </div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-card-foreground group-hover:text-foreground transition-colors duration-200">{feature.title}</p>
-                      <p className="text-sm text-secondary">{feature.description}</p>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-card-foreground group-hover:text-foreground transition-colors duration-200 text-xs sm:text-sm lg:text-base truncate">{feature.title}</p>
+                      <p className="text-xs sm:text-sm text-secondary truncate">{feature.description}</p>
                     </div>
-                    <ArrowRight className="h-4 w-4 text-grey-600 group-hover:text-muted-foreground group-hover:translate-x-1 transition-all duration-200" />
+                    <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 text-grey-600 group-hover:text-muted-foreground group-hover:translate-x-1 transition-all duration-200 flex-shrink-0" />
                   </Link>
                 ))}
               </div>
               
-              <div className="mt-6 pt-6 border-t border-border">
+              <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-border">
                 <Button 
                   onClick={() => navigate('/advanced-tools')} 
-                  className="w-full btn-orange"
+                  className="w-full btn-orange text-sm sm:text-base"
                 >
-                  <Rocket className="h-4 w-4 mr-2" />
+                  <Rocket className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
                   Explore Pro Tools
                 </Button>
               </div>
             </div>
 
             {/* Tips Card */}
-            <div className={`dark-card p-8 bg-blue-950 border-blue-800 ${isVisible ? 'animate-slide-right-fade' : ''}`} style={{ animationDelay: '700ms' }}>
-              <div className="flex items-center mb-4">
-                <div className="p-3 bg-gradient-blue rounded-2xl mr-4">
-                  <Heart className="h-6 w-6 text-white" />
+            <div className={`dark-card p-4 sm:p-6 lg:p-8 bg-blue-950 border-blue-800 ${isVisible ? 'animate-slide-right-fade' : ''}`} style={{ animationDelay: '700ms' }}>
+              <div className="flex items-center mb-3 sm:mb-4">
+                <div className="p-2 sm:p-3 bg-gradient-blue rounded-xl sm:rounded-2xl mr-3 sm:mr-4 flex-shrink-0">
+                  <Heart className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-white" />
                 </div>
-                <div>
-                  <h3 className="heading-dark-4 text-blue-300">Pro Tip</h3>
-                  <p className="body-dark-small text-blue-400">Boost your productivity</p>
+                <div className="min-w-0">
+                  <h3 className="text-base sm:text-lg font-bold text-blue-300 truncate">Pro Tip</h3>
+                  <p className="text-xs sm:text-sm text-blue-400 truncate">Boost productivity</p>
                 </div>
               </div>
-              <p className="body-dark-small text-blue-300 mb-6 leading-relaxed">
+              <p className="text-xs sm:text-sm text-blue-300 mb-4 sm:mb-6 leading-relaxed">
                 Use keyboard shortcuts to speed up your workflow. Press <kbd className="px-2 py-1 bg-blue-900 rounded text-xs font-mono">Ctrl+U</kbd> to quickly upload files!
               </p>
               <Button 
                 variant="ghost" 
-                className="text-blue-400 hover:text-blue-300 hover:bg-blue-900 p-0 h-auto font-semibold group"
+                className="text-blue-400 hover:text-blue-300 hover:bg-blue-900 p-0 h-auto font-semibold group text-xs sm:text-sm"
               >
                 Learn More Shortcuts
-                <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform duration-200" />
+                <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 ml-2 group-hover:translate-x-1 transition-transform duration-200" />
               </Button>
             </div>
           </div>

@@ -145,18 +145,18 @@ const FileUploadModal = ({
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-2 sm:p-4 z-50 backdrop-blur-sm">
-      <Card className="bg-surface border-border rounded-3xl shadow-2xl w-full max-w-[95vw] sm:max-w-2xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto animate-in fade-in duration-300">
-        <CardHeader className="px-8 py-6 border-b border-border">
+    <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+      <Card className="bg-surface border-border rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-in fade-in duration-300">
+        <CardHeader className="px-4 sm:px-8 py-4 sm:py-6 border-b border-border">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="p-3 bg-blue-600 rounded-xl">
-                <ToolIcon className="h-6 w-6 text-white" />
+            <div className="flex items-center space-x-2 sm:space-x-4 min-w-0 flex-1">
+              <div className="p-2 sm:p-3 bg-blue-600 rounded-xl flex-shrink-0">
+                <ToolIcon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
               </div>
-              <div>
-                <CardTitle className="text-xl font-bold text-foreground">{title}</CardTitle>
+              <div className="min-w-0 flex-1">
+                <CardTitle className="text-base sm:text-xl font-bold text-foreground truncate">{title}</CardTitle>
                 {toolName && (
-                  <p className="text-sm text-blue-400 mt-1">for {toolName}</p>
+                  <p className="text-xs sm:text-sm text-blue-400 mt-1 truncate">for {toolName}</p>
                 )}
               </div>
             </div>
@@ -164,42 +164,42 @@ const FileUploadModal = ({
               variant="ghost"
               size="sm"
               onClick={onClose}
-              className="text-muted-foreground hover:text-card-foreground hover:bg-elevated p-2 rounded-xl"
+              className="text-muted-foreground hover:text-card-foreground hover:bg-elevated p-2 rounded-xl flex-shrink-0 ml-2"
               disabled={isUploading}
             >
               <X className="h-5 w-5" />
             </Button>
           </div>
           {description && (
-            <p className="text-sm text-muted-foreground mt-3">{description}</p>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-2 sm:mt-3">{description}</p>
           )}
         </CardHeader>
         
-        <CardContent className="px-8 py-6 space-y-6">
+        <CardContent className="px-4 sm:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6">
           {/* Dropzone */}
           <div
             {...getRootProps()}
-            className={`border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all duration-300 ${
+            className={`border-2 border-dashed rounded-2xl p-4 sm:p-8 text-center cursor-pointer transition-all duration-300 ${
               isDragActive 
                 ? 'border-blue-400 bg-blue-900/20' 
                 : 'border-grey-700 hover:border-border hover:bg-secondary/50'
             }`}
           >
             <input {...getInputProps()} />
-            <Upload className={`mx-auto h-12 w-12 mb-4 ${
+            <Upload className={`mx-auto h-8 w-8 sm:h-12 sm:w-12 mb-3 sm:mb-4 ${
               isDragActive ? 'text-blue-400' : 'text-grey-400'
             }`} />
             {isDragActive ? (
               <div>
-                <p className="text-lg font-semibold text-blue-300 mb-2">Drop the files here...</p>
-                <p className="text-blue-400">Release to upload your files</p>
+                <p className="text-base sm:text-lg font-semibold text-blue-300 mb-1 sm:mb-2">Drop the files here...</p>
+                <p className="text-sm sm:text-base text-blue-400">Release to upload your files</p>
               </div>
             ) : (
               <div>
-                <p className="text-lg font-semibold text-card-foreground mb-2">
+                <p className="text-base sm:text-lg font-semibold text-card-foreground mb-2">
                   Drag & drop files here, or click to select
                 </p>
-                <p className="text-sm text-muted-foreground mb-4">
+                <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">
                   {acceptedFiles.includes('.pdf') && 'PDF, '}
                   {acceptedFiles.includes('.jpg') && 'JPG, '}
                   {acceptedFiles.includes('.png') && 'PNG, '}
@@ -215,9 +215,9 @@ const FileUploadModal = ({
 
           {/* File List */}
           {files.length > 0 && (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               <div className="flex items-center justify-between">
-                <h4 className="text-lg font-semibold text-card-foreground">
+                <h4 className="text-base sm:text-lg font-semibold text-card-foreground">
                   Selected Files ({files.length})
                 </h4>
                 {!isUploading && (
@@ -225,24 +225,24 @@ const FileUploadModal = ({
                     variant="outline"
                     size="sm"
                     onClick={() => setFiles([])}
-                    className="text-muted-foreground border-border hover:bg-elevated"
+                    className="text-xs sm:text-sm text-muted-foreground border-border hover:bg-elevated"
                   >
                     Clear All
                   </Button>
                 )}
               </div>
               
-              <div className="space-y-3 max-h-60 overflow-y-auto">
+              <div className="space-y-2 sm:space-y-3 max-h-48 sm:max-h-60 overflow-y-auto">
                 {files.map((fileData) => (
                   <div
                     key={fileData.id}
-                    className="flex items-center justify-between p-4 border border-border rounded-xl bg-elevated/50"
+                    className="flex items-center justify-between p-3 sm:p-4 border border-border rounded-xl bg-elevated/50"
                   >
-                    <div className="flex items-center space-x-4 flex-1 min-w-0">
+                    <div className="flex items-center space-x-2 sm:space-x-4 flex-1 min-w-0">
                       {getStatusIcon(fileData.status)}
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium text-card-foreground truncate">{fileData.name}</p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm sm:text-base font-medium text-card-foreground truncate">{fileData.name}</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground">
                           {formatFileSize(fileData.size)}
                         </p>
                       </div>
@@ -253,7 +253,7 @@ const FileUploadModal = ({
                         variant="ghost"
                         size="sm"
                         onClick={() => removeFile(fileData.id)}
-                        className="text-red-400 hover:text-red-300 hover:bg-red-950 p-2 rounded-xl ml-2"
+                        className="text-red-400 hover:text-red-300 hover:bg-red-950 p-2 rounded-xl ml-2 flex-shrink-0"
                       >
                         <X className="h-4 w-4" />
                       </Button>
@@ -265,8 +265,8 @@ const FileUploadModal = ({
           )}
 
           {/* Action Buttons */}
-          <div className="flex items-center justify-between pt-4 border-t border-border">
-            <div className="text-sm text-muted-foreground">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-4 border-t border-border">
+            <div className="text-xs sm:text-sm text-muted-foreground text-center sm:text-left">
               {files.length > 0 && (
                 <span>
                   {files.length} file{files.length !== 1 ? 's' : ''} selected
@@ -275,19 +275,19 @@ const FileUploadModal = ({
               )}
             </div>
             
-            <div className="flex space-x-3">
+            <div className="flex space-x-2 sm:space-x-3">
               <Button
                 variant="outline"
                 onClick={onClose}
                 disabled={isUploading}
-                className="border-border text-card-foreground hover:bg-elevated"
+                className="flex-1 sm:flex-none text-sm border-border text-card-foreground hover:bg-elevated"
               >
                 Cancel
               </Button>
               <Button
                 onClick={handleUpload}
                 disabled={files.length === 0 || isUploading}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
+                className="flex-1 sm:flex-none text-sm bg-blue-600 hover:bg-blue-700 text-white"
               >
                 {isUploading ? (
                   <>

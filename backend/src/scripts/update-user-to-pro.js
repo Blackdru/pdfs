@@ -1,4 +1,5 @@
 const { supabaseAdmin } = require('../config/supabase');
+require('dotenv').config();
 
 async function updateUserToPro(email) {
   try {
@@ -112,7 +113,7 @@ async function updateUserToPro(email) {
 }
 
 // Run the script
-const email = 'ganeshmudiraj7tec@gmail.com';
+const email = 'rajnaresh308@gmail.com';
 updateUserToPro(email)
   .then(success => {
     if (success) {

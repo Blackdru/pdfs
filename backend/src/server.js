@@ -41,16 +41,16 @@ app.use(limiter);
 // CORS configuration
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://budzee.one', 'https://your-mobile-app.com']
+    ? ['https://robotpdf.com','https://www.robotpdf.com', 'https://your-mobile-app.com']
     : ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:19006'], // React, Vite, and Expo dev servers
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
-// Body parsing middleware
-app.use(express.json({ limit: '50mb' }));
-app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+// Body parsing middleware - Increased limits for advanced tools
+app.use(express.json({ limit: '150mb' }));
+app.use(express.urlencoded({ extended: true, limit: '150mb' }));
 
 // Logging
 app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
@@ -109,7 +109,7 @@ app.use((err, req, res, next) => {
   if (err.name === 'MulterError') {
     if (err.code === 'LIMIT_FILE_SIZE') {
       return res.status(400).json({ 
-        error: 'File too large. Maximum file size is 50MB.' 
+        error: 'File size exceeds the limit. Free tools support up to 10MB, Advanced tools support up to 100MB.' 
       });
     }
     if (err.code === 'LIMIT_FILE_COUNT') {
@@ -157,10 +157,10 @@ const server = app.listen(PORT, () => {
   cleanupScheduler.start();
 });
 
-// Increase timeout for long-running operations (OCR, AI processing)
-server.timeout = 300000; // 5 minutes
-server.keepAliveTimeout = 300000; // 5 minutes
-server.headersTimeout = 310000; // Slightly more than keepAliveTimeout
+// Increase timeout for long-running operations (OCR, AI processing, large files)
+server.timeout = 600000; // 10 minutes for large file processing
+server.keepAliveTimeout = 600000; // 10 minutes
+server.headersTimeout = 610000; // Slightly more than keepAliveTimeout
 
 // Graceful shutdown
 process.on('SIGTERM', () => {

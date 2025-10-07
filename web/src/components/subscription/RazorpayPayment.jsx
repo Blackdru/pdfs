@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button } from '../ui/button';
 import { Shield, CreditCard } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useAuth } from '../../contexts/AuthContext';
 
 const RazorpayPayment = ({ 
   orderId, 
@@ -10,10 +11,15 @@ const RazorpayPayment = ({
   plan,
   userEmail,
   userName,
+  countryCode,
   onSuccess, 
   onError 
 }) => {
+  const { session } = useAuth();
   const [loading, setLoading] = useState(false);
+  
+  // Determine if user is in India for full payment options
+  const isIndia = countryCode === 'IN' || currency === 'INR';
 
   const loadRazorpayScript = () => {
     return new Promise((resolve) => {
@@ -53,6 +59,27 @@ const RazorpayPayment = ({
         theme: {
           color: '#8B5CF6'
         },
+        // For international users, show only card payment
+        ...(!isIndia && {
+          config: {
+            display: {
+              blocks: {
+                card: {
+                  name: 'Pay with Card',
+                  instruments: [
+                    {
+                      method: 'card'
+                    }
+                  ]
+                }
+              },
+              sequence: ['block.card'],
+              preferences: {
+                show_default_blocks: false
+              }
+            }
+          }
+        }),
         handler: async function (response) {
           try {
             // Verify payment on backend
@@ -62,25 +89,28 @@ const RazorpayPayment = ({
                 method: 'POST',
                 headers: {
                   'Content-Type': 'application/json',
-                  'Authorization': `Bearer ${localStorage.getItem('token')}`
+                  'Authorization': `Bearer ${session?.access_token}`
                 },
                 body: JSON.stringify({
                   orderId: response.razorpay_order_id,
                   paymentId: response.razorpay_payment_id,
-                  signature: response.razorpay_signature
+                  signature: response.razorpay_signature,
+                  plan: plan
                 })
               }
             );
 
             if (verifyResponse.ok) {
-              toast.success('Payment successful!');
+              const result = await verifyResponse.json();
+              toast.success('Payment successful! Your subscription is now active.');
               onSuccess(response);
             } else {
-              throw new Error('Payment verification failed');
+              const errorData = await verifyResponse.json();
+              throw new Error(errorData.error || 'Payment verification failed');
             }
           } catch (error) {
             console.error('Payment verification error:', error);
-            toast.error('Payment verification failed');
+            toast.error(error.message || 'Payment verification failed');
             onError(error);
           }
         },
@@ -117,7 +147,7 @@ const RazorpayPayment = ({
         <div className="flex items-center justify-between">
           <span className="text-sm text-muted-foreground">Amount</span>
           <span className="font-bold text-lg text-foreground">
-            ₹{(amount / 100).toFixed(2)}
+            {currency === 'INR' ? '₹' : '$'}{(amount / 100).toFixed(2)}
           </span>
         </div>
 
@@ -125,9 +155,25 @@ const RazorpayPayment = ({
           <p className="text-xs text-muted-foreground">
             • Secure payment powered by Razorpay
           </p>
-          <p className="text-xs text-muted-foreground">
-            • Supports UPI, Cards, Net Banking, and Wallets
-          </p>
+          {isIndia ? (
+            <>
+              <p className="text-xs text-muted-foreground">
+                • Supports UPI, Cards, Net Banking, and Wallets
+              </p>
+              <p className="text-xs text-muted-foreground">
+                • All Indian payment methods available
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="text-xs text-muted-foreground">
+                • International card payments accepted
+              </p>
+              <p className="text-xs text-muted-foreground">
+                • Visa, Mastercard, Amex supported
+              </p>
+            </>
+          )}
           <p className="text-xs text-muted-foreground">
             • Cancel anytime from your account settings
           </p>
@@ -148,7 +194,7 @@ const RazorpayPayment = ({
         ) : (
           <>
             <CreditCard className="h-4 w-4 mr-2" />
-            Pay ₹{(amount / 100).toFixed(2)}
+            Pay {currency === 'INR' ? '₹' : '$'}{(amount / 100).toFixed(2)}
           </>
         )}
       </Button>

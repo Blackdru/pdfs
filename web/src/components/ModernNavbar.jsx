@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { useSubscription } from '../contexts/SubscriptionContext'
 import { Button } from './ui/button'
 import { 
   FileText, 
@@ -39,6 +40,7 @@ import ThemeToggle from './ThemeToggle'
 
 const ModernNavbar = () => {
   const { user, signOut } = useAuth()
+  const { subscription } = useSubscription()
   const navigate = useNavigate()
   const location = useLocation()
   const [isScrolled, setIsScrolled] = useState(false)
@@ -216,19 +218,22 @@ const ModernNavbar = () => {
                         <CreditCard className="mr-4 h-5 w-5 text-green-400" />
                         <span className="font-semibold">Billing & Usage</span>
                       </DropdownMenuItem>
-                      <DropdownMenuItem 
-                        onClick={() => navigate('/upgrade')}
-                        className="dropdown-item-dark bg-purple-950 hover:bg-purple-900"
-                      >
-                        <ArrowUpCircle className="mr-4 h-5 w-5 text-purple-400" />
-                        <div>
-                          <div className="font-semibold flex items-center text-purple-300">
-                            Upgrade Plan
-                            <Star className="ml-2 h-4 w-4 text-purple-400 fill-current" />
+                      {/* Only show Upgrade Plan for free users */}
+                      {(!subscription?.plan || subscription?.plan === 'free') && (
+                        <DropdownMenuItem 
+                          onClick={() => navigate('/upgrade')}
+                          className="dropdown-item-dark bg-purple-950 hover:bg-purple-900"
+                        >
+                          <ArrowUpCircle className="mr-4 h-5 w-5 text-purple-400" />
+                          <div>
+                            <div className="font-semibold flex items-center text-purple-300">
+                              Upgrade Plan
+                              <Star className="ml-2 h-4 w-4 text-purple-400 fill-current" />
+                            </div>
+                            <div className="text-xs text-purple-400">Unlock premium features</div>
                           </div>
-                          <div className="text-xs text-purple-400">Unlock premium features</div>
-                        </div>
-                      </DropdownMenuItem>
+                        </DropdownMenuItem>
+                      )}
                       {(user.role === 'admin' || user.user_metadata?.role === 'admin') && (
                         <DropdownMenuItem 
                           onClick={() => navigate('/admin')}

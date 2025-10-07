@@ -43,7 +43,7 @@ const ToolsGrid = ({ tools, selectedTool, onToolSelect }) => {
               <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4 line-clamp-2">{tool.description}</p>
               
               {/* Features - Mobile Optimized */}
-              <div className="flex items-center justify-between text-xs sm:text-sm text-secondary mb-3 sm:mb-4">
+              <div className="flex items-center justify-between text-xs sm:text-sm text-gray-400 mb-3 sm:mb-4">
                 <div className="flex items-center">
                   <Clock className="h-3 w-3 sm:h-4 sm:w-4 mr-1 flex-shrink-0" />
                   <span className="truncate">{tool.processingTime}</span>
@@ -58,7 +58,7 @@ const ToolsGrid = ({ tools, selectedTool, onToolSelect }) => {
               {/* Pro Features List - Mobile Optimized */}
               <div className="space-y-1 mb-3 sm:mb-4">
                 {tool.features.slice(0, 2).map((feature, index) => (
-                  <div key={index} className="flex items-start text-xs text-secondary">
+                  <div key={index} className="flex items-start text-xs text-gray-400">
                     <CheckCircle className="h-3 w-3 mr-2 text-green-400 flex-shrink-0 mt-0.5" />
                     <span className="line-clamp-1">{feature}</span>
                   </div>

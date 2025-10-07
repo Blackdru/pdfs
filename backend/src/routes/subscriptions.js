@@ -265,17 +265,27 @@ router.post('/create', authenticateUser, async (req, res) => {
     console.log(`Creating subscription for user ${req.user.id} with ${gateway} gateway`);
 
     // Create subscription with appropriate gateway
-    const result = await paymentService.createSubscription(
-      req.user.id,
-      plan,
-      userProfile.email,
-      userProfile.name,
-      detectedCountry,
-      detectedCurrency
-    );
+    let result;
+    try {
+      result = await paymentService.createSubscription(
+        req.user.id,
+        plan,
+        userProfile.email,
+        userProfile.name,
+        detectedCountry,
+        detectedCurrency
+      );
+    } catch (createError) {
+      console.error('Error in paymentService.createSubscription:', createError);
+      return res.status(500).json({ 
+        error: 'Failed to create subscription order',
+        details: createError.message,
+        gateway: gateway
+      });
+    }
 
     // Get pricing info
-    const pricing = paymentService.getPlanPricing(plan, gateway, detectedCurrency);
+    const pricing = paymentService.getPlanPricing(plan, gateway, detectedCurrency, detectedCountry);
 
     res.json({
       success: true,
@@ -285,14 +295,16 @@ router.post('/create', authenticateUser, async (req, res) => {
       orderId: result.id, // For Razorpay
       currency: pricing.currency,
       amount: pricing.amount,
+      countryCode: detectedCountry,
       ...result
     });
 
   } catch (error) {
-    console.error('Error creating subscription:', error);
+    console.error('Error creating subscription (outer):', error);
     res.status(500).json({ 
       error: 'Failed to create subscription',
-      details: error.message 
+      details: error.message,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 });
@@ -300,7 +312,7 @@ router.post('/create', authenticateUser, async (req, res) => {
 // Verify payment (for Razorpay)
 router.post('/verify-payment', authenticateUser, async (req, res) => {
   try {
-    const { orderId, paymentId, signature } = req.body;
+    const { orderId, paymentId, signature, plan } = req.body;
 
     if (!orderId || !paymentId || !signature) {
       return res.status(400).json({ error: 'Missing payment verification data' });
@@ -312,7 +324,57 @@ router.post('/verify-payment', authenticateUser, async (req, res) => {
       return res.status(400).json({ error: 'Invalid payment signature' });
     }
 
-    res.json({ success: true, message: 'Payment verified successfully' });
+    // Activate subscription after successful payment
+    if (plan) {
+      const now = new Date();
+      const periodEnd = new Date(now);
+      periodEnd.setMonth(periodEnd.getMonth() + 1); // 1 month subscription
+
+      const { error: updateError } = await supabaseAdmin
+        .from('subscriptions')
+        .upsert(
+          {
+            user_id: req.user.id,
+            plan: plan,
+            status: 'active',
+            payment_method: 'razorpay',
+            razorpay_payment_id: paymentId,
+            razorpay_order_id: orderId,
+            current_period_start: now.toISOString(),
+            current_period_end: periodEnd.toISOString(),
+            started_at: now.toISOString(),
+            updated_at: now.toISOString()
+          },
+          { onConflict: 'user_id' }
+        );
+
+      if (updateError) {
+        console.error('Error updating subscription:', updateError);
+        return res.status(500).json({ error: 'Payment verified but failed to activate subscription' });
+      }
+
+      // Record payment transaction
+      await supabaseAdmin
+        .from('payment_transactions')
+        .insert({
+          user_id: req.user.id,
+          razorpay_payment_id: paymentId,
+          razorpay_order_id: orderId,
+          amount: plan === 'basic' ? 8800 : 88000, // Amount in paise (₹88 or ₹880)
+          currency: 'INR',
+          status: 'succeeded',
+          payment_method: 'razorpay',
+          metadata: {
+            plan: plan,
+            verified_at: new Date().toISOString()
+          }
+        });
+    }
+
+    res.json({ 
+      success: true, 
+      message: 'Payment verified and subscription activated successfully' 
+    });
   } catch (error) {
     console.error('Error verifying payment:', error);
     res.status(500).json({ error: 'Failed to verify payment' });

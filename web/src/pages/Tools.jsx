@@ -753,7 +753,7 @@ const Tools = () => {
                     <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4 line-clamp-2">{tool.description}</p>
                     
                     {/* Features */}
-                    <div className="flex items-center justify-between text-xs sm:text-sm text-secondary mb-3 sm:mb-4">
+                    <div className="flex items-center justify-between text-xs sm:text-sm text-gray-400 mb-3 sm:mb-4">
                       <div className="flex items-center">
                         <Clock className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                         <span className="truncate">{tool.processingTime}</span>

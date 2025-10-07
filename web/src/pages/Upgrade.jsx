@@ -31,7 +31,7 @@ const Upgrade = () => {
     return subscription?.plan || 'free'
   }
 
-  // Updated plan comparison data with new pricing structure
+  // Plan comparison data - matches Pricing page exactly
   const comparisonFeatures = [
     {
       feature: 'Monthly Price',
@@ -89,18 +89,6 @@ const Upgrade = () => {
     },
     {
       feature: 'Advanced Settings',
-      free: false,
-      basic: false,
-      pro: true
-    },
-    {
-      feature: 'Batch Processing',
-      free: 'Single files',
-      basic: 'Up to 10 files',
-      pro: 'Unlimited'
-    },
-    {
-      feature: 'API Access',
       free: false,
       basic: false,
       pro: true

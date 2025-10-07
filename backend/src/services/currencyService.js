@@ -31,6 +31,67 @@ class CurrencyService {
   }
 
   /**
+   * Get country code from request headers or IP
+   */
+  async getCountryFromRequest(req) {
+    try {
+      // Try to get from Accept-Language header
+      const acceptLanguage = req.headers['accept-language'];
+      if (acceptLanguage) {
+        const locale = acceptLanguage.split(',')[0];
+        const region = locale.split('-')[1];
+        
+        if (region) {
+          return region.toUpperCase();
+        }
+      }
+
+      // For localhost/development, default to India for testing
+      // You can change this to 'US' to test international payments
+      const ipAddress = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'];
+      if (!ipAddress || ipAddress === '::1' || ipAddress === '127.0.0.1' || ipAddress.includes('::ffff:127.0.0.1')) {
+        console.log('Localhost detected, defaulting to IN for Razorpay testing');
+        return 'IN'; // Change to 'US' to test international card payments
+      }
+
+      // Try to detect from IP address for production
+      try {
+        const cleanIp = ipAddress.replace('::ffff:', '');
+        const https = require('https');
+        const url = `https://ipapi.co/${cleanIp}/json/`;
+        
+        return await new Promise((resolve, reject) => {
+          https.get(url, (res) => {
+            let data = '';
+            res.on('data', (chunk) => { data += chunk; });
+            res.on('end', () => {
+              try {
+                const parsed = JSON.parse(data);
+                if (parsed.country_code) {
+                  resolve(parsed.country_code);
+                } else {
+                  resolve('IN'); // Default to India
+                }
+              } catch (e) {
+                resolve('IN');
+              }
+            });
+          }).on('error', () => {
+            resolve('IN');
+          });
+        });
+      } catch (error) {
+        console.warn('Error detecting country from IP:', error);
+        return 'IN'; // Default to India
+      }
+    } catch (error) {
+      console.warn('Error in getCountryFromRequest:', error);
+    }
+    
+    return 'IN'; // Default to India for Razorpay
+  }
+
+  /**
    * Get currency from request headers or IP
    */
   async getCurrencyFromRequest(req) {
@@ -39,24 +100,13 @@ class CurrencyService {
       return req.user.preferred_currency;
     }
 
-    // Try to get from Accept-Language header
-    const acceptLanguage = req.headers['accept-language'];
-    if (acceptLanguage) {
-      const locale = acceptLanguage.split(',')[0];
-      const region = locale.split('-')[1];
-      
-      if (region) {
-        const currency = getCurrencyByCountry(region);
-        if (currency) {
-          return currency.code;
-        }
-      }
-    }
-
-    // Try to detect from IP address
-    const ipAddress = req.ip || req.connection.remoteAddress;
-    if (ipAddress) {
-      return await this.detectCurrencyFromIP(ipAddress);
+    // Get country code
+    const countryCode = await this.getCountryFromRequest(req);
+    
+    // Get currency for country
+    const currency = getCurrencyByCountry(countryCode);
+    if (currency) {
+      return currency.code;
     }
 
     return 'USD'; // Default fallback

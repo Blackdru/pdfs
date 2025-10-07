@@ -39,14 +39,44 @@ const limiter = rateLimit({
 app.use(limiter);
 
 // CORS configuration
+const allowedOrigins = process.env.NODE_ENV === 'production' 
+  ? [
+      // HTTPS (Production - Recommended)
+      'https://robotpdf.com',
+      'https://www.robotpdf.com',
+      'https://server.robotpdf.com',
+      // HTTP (Non-SSL - For testing/staging)
+      'http://robotpdf.com',
+      'http://www.robotpdf.com',
+      'http://server.robotpdf.com'
+    ]
+  : [
+      'http://localhost:3000',
+      'http://localhost:5173',
+      'http://localhost:19006'
+    ];
+
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? ['https://robotpdf.com','https://www.robotpdf.com', 'https://your-mobile-app.com']
-    : ['http://localhost:3000', 'http://localhost:5173', 'http://localhost:19006'], // React, Vite, and Expo dev servers
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl, Postman)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.warn(`CORS blocked origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'Origin'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range'],
+  maxAge: 86400 // 24 hours - cache preflight requests
 }));
+
+// Handle preflight requests explicitly
+app.options('*', cors());
 
 // Body parsing middleware - Increased limits for advanced tools
 app.use(express.json({ limit: '150mb' }));

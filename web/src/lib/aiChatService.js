@@ -9,11 +9,10 @@ class AIChatService {
   // Initialize AI chat for a file
   async initializeChat(fileId) {
     try {
-      console.log('Initializing AI chat for file:', fileId)
-      
+
       // Check if already initializing to prevent race conditions
       if (this.initializingFiles && this.initializingFiles.has(fileId)) {
-        console.log('Already initializing chat for file:', fileId)
+        
         return {
           success: false,
           message: 'Chat initialization already in progress',
@@ -33,8 +32,7 @@ class AIChatService {
         
         // First, create embeddings for the file
         const embeddingResponse = await api.createEmbeddings(fileId)
-        console.log('Embeddings created:', embeddingResponse)
-        
+
         this.isInitialized = true
         return {
           success: true,
@@ -59,8 +57,7 @@ class AIChatService {
   // Send a message to AI chat
   async sendMessage(fileId, message, sessionId = null) {
     try {
-      console.log('Sending message to AI chat:', { fileId, message, sessionId })
-      
+
       // Get conversation history if we have a session
       let conversationHistory = []
       if (sessionId && this.sessions.has(sessionId)) {
@@ -74,8 +71,6 @@ class AIChatService {
         sessionId,
         conversationHistory: conversationHistory.slice(-10) // Last 10 messages for context
       })
-
-      console.log('AI chat response:', response)
 
       // Update local session if we have one
       if (response.sessionId) {
@@ -154,15 +149,12 @@ class AIChatService {
   // Generate summary for a file
   async generateSummary(fileId, summaryType = 'auto') {
     try {
-      console.log('Generating summary for file:', fileId, 'type:', summaryType)
-      
+
       const response = await api.post('/ai/summarize', {
         fileId,
         summaryType
       })
 
-      console.log('Summary generated:', response)
-      
       return {
         success: true,
         summary: response.summary,

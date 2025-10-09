@@ -163,14 +163,14 @@ const CURRENCIES = {
   }
 };
 
-// Plan prices in different currencies (monthly)
-// Base prices in USD: Basic = $1, Pro = $10
+// Plan prices in INR (monthly) - Primary currency
+// All users will pay in INR via Razorpay
 const PLAN_PRICES = {
   basic: {
-    USD: 100, // $1.00 (in cents)
+    INR: 9900, // ₹99 (in paise)
+    USD: 100, // $1.00 (in cents) - for display only
     EUR: 100, // €1.00
     GBP: 100, // £1.00
-    INR: 8300, // ₹83 (approx)
     CAD: 135, // C$1.35
     AUD: 150, // A$1.50
     JPY: 150, // ¥150
@@ -189,10 +189,10 @@ const PLAN_PRICES = {
     SAR: 375 // 3.75 ر.س
   },
   pro: {
-    USD: 1000, // $10.00 (in cents)
+    INR: 49900, // ₹499 (in paise)
+    USD: 1000, // $10.00 (in cents) - for display only
     EUR: 1000, // €10.00
     GBP: 900, // £9.00
-    INR: 83000, // ₹830
     CAD: 1350, // C$13.50
     AUD: 1500, // A$15.00
     JPY: 1500, // ¥1500

@@ -67,8 +67,8 @@ export const useSubscriptionAccess = () => {
     const requiredPlan = TOOL_REQUIREMENTS[toolId] || 'pro'
     setUpgradeModalData({
       requiredPlan,
-      toolName,
-      toolDescription,
+      feature: toolName,
+      description: toolDescription,
       toolId
     })
     setShowUpgradeModal(true)

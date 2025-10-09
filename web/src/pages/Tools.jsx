@@ -137,7 +137,7 @@ const Tools = () => {
     },
       ]
 
-  const categories = ['All', 'Basic', 'Optimization', 'Conversion', 'AI-Powered']
+  const categories = ['All', 'Basic', 'Optimization', 'Conversion']
   const [selectedCategory, setSelectedCategory] = useState('All')
 
   // Filter tools based on category (show all tools regardless of plan)
@@ -214,18 +214,15 @@ const Tools = () => {
   }
 
   const handleToolSelect = (tool) => {
-    console.log('Tool selected:', tool.id, 'Current plan:', subscription?.plan)
-    
+
     // Check if user has access to this tool
     const hasToolAccess = checkAccess(tool.id, tool.title, tool.description)
-    console.log('Access check result:', hasToolAccess)
-    
+
     if (!hasToolAccess) {
-      console.log('Access denied, showing upgrade modal')
+      
       return // Access denied, upgrade modal will be shown
     }
 
-    console.log('Access granted, proceeding with tool selection')
     setSelectedTool(tool)
     setUploadedFiles([])
     setProcessedFiles([])
@@ -320,10 +317,9 @@ const Tools = () => {
           // Calculate progress: 5% to 30% for uploads
           const uploadProgress = 5 + ((fileNum - 1) / totalFiles) * 25
           updateProgress(uploadProgress, `Uploading file ${fileNum}/${totalFiles}: ${file.name}...`, 0)
-          
-          console.log('Uploading file:', file.name, 'Size:', file.size, 'Type:', file.type)
+
           const response = await api.uploadFile(file)
-          console.log('Upload response:', response)
+          
           uploadedFileIds.push(response.file.id)
           
           // Show completion for this file
@@ -340,8 +336,7 @@ const Tools = () => {
         toast.error('No files were uploaded successfully. Please check your connection and try again.')
         return
       }
-      
-      console.log('Successfully uploaded file IDs:', uploadedFileIds)
+
       updateProgress(35, `All ${uploadedFileIds.length} file(s) uploaded successfully`, 1)
       await new Promise(resolve => setTimeout(resolve, 500))
 
@@ -455,7 +450,7 @@ const Tools = () => {
           
         case 'ocr':
           // Perform OCR on the uploaded file
-          console.log('Starting OCR processing for file ID:', uploadedFileIds[0])
+          
           toast.loading('Processing OCR with multi-language support...', { id: 'ocr-processing' })
           
           try {
@@ -464,7 +459,7 @@ const Tools = () => {
               language: 'eng+tel', // Default to English + Telugu for better ID card recognition
               enhanceImage: true
             })
-            console.log('OCR result:', result)
+            
             toast.dismiss('ocr-processing')
             toast.success('OCR processing completed! Text extracted successfully.')
             
@@ -488,7 +483,7 @@ const Tools = () => {
           
         case 'ai-chat':
           // Initialize AI chat for the uploaded PDF
-          console.log('Starting AI Chat initialization for file ID:', uploadedFileIds[0])
+          
           toast.loading('Preparing document for AI chat...', { id: 'ai-chat-init' })
           
           try {
@@ -500,8 +495,7 @@ const Tools = () => {
             toast.dismiss('ai-chat-init')
             toast.success('AI Chat initialized! You can now chat with your document.')
           } catch (embeddingError) {
-            console.log('Embeddings failed, checking if OCR is needed:', embeddingError.message)
-            
+
             // If embeddings fail due to no text content, run OCR first
             if (embeddingError.message.includes('No text content found') || 
                 embeddingError.message.includes('Please run OCR')) {
@@ -516,8 +510,7 @@ const Tools = () => {
                   language: 'eng+tel',
                   enhanceImage: true
                 })
-                
-                console.log('OCR completed for AI chat:', ocrResult)
+
                 toast.dismiss('ai-chat-ocr')
                 toast.loading('Creating AI embeddings...', { id: 'ai-chat-embeddings' })
                 
@@ -777,7 +770,6 @@ const Tools = () => {
             ))}
           </div>
 
-          
           {/* Selected Tool Processing Area */}
           {selectedTool && (
             <div className="bg-surface rounded-2xl sm:rounded-3xl border border-border p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
@@ -1102,7 +1094,6 @@ const Tools = () => {
           </div>
         </div>
 
-
       {/* AI Assistant */}
       {showAIAssistant && currentFileForAI && (
         <div className="fixed bottom-4 right-4 z-50">
@@ -1124,7 +1115,6 @@ const Tools = () => {
         toolName={upgradeModalData.toolName}
         toolDescription={upgradeModalData.toolDescription}
       />
-      
 
     </div>
   )

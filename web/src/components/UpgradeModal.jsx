@@ -16,7 +16,10 @@ import {
   TrendingUp
 } from 'lucide-react'
 
-const UpgradeModal = ({ isOpen, onClose, requiredPlan = 'pro', toolName = '', toolDescription = '' }) => {
+const UpgradeModal = ({ isOpen, onClose, requiredPlan = 'pro', toolName = '', toolDescription = '', feature = '', description = '' }) => {
+  // Support both prop names for backward compatibility
+  const displayName = toolName || feature
+  const displayDescription = toolDescription || description
   const navigate = useNavigate()
   const { plans, subscription } = useSubscription()
   const [loading, setLoading] = useState(false)
@@ -50,24 +53,21 @@ const UpgradeModal = ({ isOpen, onClose, requiredPlan = 'pro', toolName = '', to
   }
 
   const getRecommendedPlans = () => {
-    if (!plans || plans.length === 0) {
-      return [
-        {
-          id: 'basic',
-          name: 'Basic',
-          price: 1,
-          features: ['50 files/month', '25 OCR pages', '25 AI chat messages', '25 AI summaries', 'All advanced tools']
-        },
-        {
-          id: 'pro',
-          name: 'Pro',
-          price: 10,
-          features: ['Unlimited files', 'Unlimited OCR', 'Unlimited AI chat', 'Unlimited AI summaries', 'All advanced tools & settings', 'Priority support']
-        }
-      ]
-    }
-
-    return plans.filter(plan => plan.id !== 'free')
+    // Always use hardcoded plans with correct pricing
+    return [
+      {
+        id: 'basic',
+        name: 'Basic',
+        price: 99,
+        features: ['50 files/month', '25 OCR pages', '25 AI chat messages', '25 AI summaries', 'All advanced tools']
+      },
+      {
+        id: 'pro',
+        name: 'Pro',
+        price: 499,
+        features: ['Unlimited files', 'Unlimited OCR', 'Unlimited AI chat', 'Unlimited AI summaries', 'All advanced tools & settings', 'Priority support']
+      }
+    ]
   }
 
   const recommendedPlans = getRecommendedPlans()
@@ -86,7 +86,7 @@ const UpgradeModal = ({ isOpen, onClose, requiredPlan = 'pro', toolName = '', to
                   Upgrade Required
                 </DialogTitle>
                 <DialogDescription className="text-muted-foreground">
-                  {toolName ? `${toolName} requires a Basic or Pro subscription` : 'This feature requires a paid subscription'}
+                  {displayName ? `${displayName} requires a Pro or Premium subscription` : 'This feature requires a paid subscription'}
                 </DialogDescription>
               </div>
             </div>
@@ -103,24 +103,24 @@ const UpgradeModal = ({ isOpen, onClose, requiredPlan = 'pro', toolName = '', to
 
         <div className="space-y-6">
           {/* Tool Info */}
-          {toolName && (
+          {displayName && (
             <div className="bg-secondary rounded-xl p-6 border border-border">
               <div className="flex items-center space-x-3 mb-3">
                 <div className="w-8 h-8 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
                   <Sparkles className="h-4 w-4 text-white" />
                 </div>
-                <h3 className="text-lg font-semibold text-card-foreground">{toolName}</h3>
+                <h3 className="text-lg font-semibold text-card-foreground">{displayName}</h3>
                 <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white">
                   <Crown className="h-3 w-3 mr-1" />
                   PRO
                 </Badge>
               </div>
-              {toolDescription && (
-                <p className="text-muted-foreground mb-4">{toolDescription}</p>
+              {displayDescription && (
+                <p className="text-muted-foreground mb-4">{displayDescription}</p>
               )}
               <div className="flex items-center text-sm text-muted-foreground">
                 <Lock className="h-4 w-4 mr-2" />
-                This advanced feature is available with Basic and Pro plans
+                This advanced feature is available with Pro and Premium plans
               </div>
             </div>
           )}
@@ -138,13 +138,13 @@ const UpgradeModal = ({ isOpen, onClose, requiredPlan = 'pro', toolName = '', to
                     : 'border-blue-500 shadow-lg shadow-blue-500/20'
                 }`}
               >
-                {plan.id === 'pro' && (
+                {plan.id === 'basic' && (
                   <Badge className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-purple-500 hover:bg-purple-600">
                     Most Popular
                   </Badge>
                 )}
                 
-                {plan.id === 'premium' && (
+                {plan.id === 'pro' && (
                   <Badge className="absolute -top-2 left-1/2 transform -translate-x-1/2 bg-blue-500 hover:bg-blue-600">
                     Best Value
                   </Badge>
@@ -160,7 +160,7 @@ const UpgradeModal = ({ isOpen, onClose, requiredPlan = 'pro', toolName = '', to
                   <div className="text-center mb-6">
                     <h3 className="text-xl font-bold text-card-foreground mb-2">{plan.name}</h3>
                     <div className="text-3xl font-bold text-card-foreground mb-1">
-                      ${plan.price}
+                      ₹{plan.price}
                       <span className="text-sm text-muted-foreground font-normal">/month</span>
                     </div>
                     <p className="text-muted-foreground text-sm">

@@ -454,63 +454,51 @@ class RazorpayService {
 
   /**
    * Get plan details with Razorpay plan IDs
-   * Supports both INR (India) and USD (International)
+   * All payments in INR via Razorpay
+   * India: Full payment options (UPI, Cards, Net Banking, Wallets)
+   * International: Card payments only
    */
   getPlanDetails(plan, currency = 'INR') {
     const plans = {
       basic: {
         INR: {
           name: 'Basic',
-          amount: 8800, // ₹88 in paise
+          amount: 9900, // ₹99 in paise
           currency: 'INR',
           period: 'monthly',
           interval: 1,
           razorpayPlanId: process.env.RAZORPAY_PLAN_BASIC || 'plan_basic'
-        },
-        USD: {
-          name: 'Basic',
-          amount: 100, // $1 in cents
-          currency: 'USD',
-          period: 'monthly',
-          interval: 1,
-          razorpayPlanId: process.env.RAZORPAY_PLAN_BASIC_USD || 'plan_basic_usd'
         }
       },
       pro: {
         INR: {
           name: 'Pro',
-          amount: 88000, // ₹880 in paise (~$10)
+          amount: 49900, // ₹499 in paise
           currency: 'INR',
           period: 'monthly',
           interval: 1,
           razorpayPlanId: process.env.RAZORPAY_PLAN_PRO || 'plan_pro'
-        },
-        USD: {
-          name: 'Pro',
-          amount: 1000, // $10 in cents
-          currency: 'USD',
-          period: 'monthly',
-          interval: 1,
-          razorpayPlanId: process.env.RAZORPAY_PLAN_PRO_USD || 'plan_pro_usd'
         }
       }
     };
 
-    return plans[plan]?.[currency] || plans[plan]?.['INR'];
+    // Always return INR pricing
+    return plans[plan]?.['INR'];
   }
 
   /**
    * Create Razorpay plans (run this once to set up plans)
+   * All plans in INR
    */
   async createPlans() {
     try {
-      // Create Basic plan
+      // Create Basic plan - ₹99/month
       const basicPlan = await razorpay.plans.create({
         period: 'monthly',
         interval: 1,
         item: {
           name: 'Basic Plan',
-          amount: 8300, // ₹83 (~$1) in paise
+          amount: 9900, // ₹99 in paise
           currency: 'INR',
           description: 'Basic subscription plan with 50 files per month, 25 OCR pages, 25 AI chat messages, 25 AI summaries'
         }
@@ -518,13 +506,13 @@ class RazorpayService {
 
       console.log('Basic Plan created:', basicPlan.id);
 
-      // Create Pro plan
+      // Create Pro plan - ₹499/month
       const proPlan = await razorpay.plans.create({
         period: 'monthly',
         interval: 1,
         item: {
           name: 'Pro Plan',
-          amount: 83000, // ₹830 (~$10) in paise
+          amount: 49900, // ₹499 in paise
           currency: 'INR',
           description: 'Pro subscription plan with unlimited files, OCR, AI chat, and AI summaries'
         }

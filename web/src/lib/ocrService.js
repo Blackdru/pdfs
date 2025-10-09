@@ -20,23 +20,22 @@ class OCRService {
         try {
           await this.worker.terminate()
         } catch (terminateError) {
-          console.warn('Error terminating worker:', terminateError)
+          
         }
         this.worker = null
         this.isInitialized = false
       }
 
       if (!this.worker) {
-        console.log(`Initializing OCR worker for language: ${language}`)
-        
+
         this.worker = await createWorker(language, 1, {
           logger: m => {
             if (m.status === 'loading tesseract core') {
-              console.log('Loading Tesseract core...')
+              
             } else if (m.status === 'initializing tesseract') {
-              console.log('Initializing Tesseract...')
+              
             } else if (m.status === 'loading language traineddata') {
-              console.log(`Loading ${language} language data...`)
+              
             }
           }
         })
@@ -48,10 +47,9 @@ class OCRService {
             tessedit_char_whitelist: '', // Allow all characters
           })
         } catch (paramError) {
-          console.warn('Could not set OCR parameters:', paramError.message)
+          
         }
-        
-        console.log('OCR worker initialized successfully')
+
       }
       
       this.isInitialized = true
@@ -86,11 +84,9 @@ class OCRService {
           tessedit_pageseg_mode: psm,
         })
       } catch (paramError) {
-        console.warn('Could not set OCR parameters:', paramError.message)
+        
       }
 
-      console.log('Starting OCR recognition...')
-      
       // Simulate progress updates since we can't use logger
       if (onProgress) {
         onProgress(0.1)
@@ -101,9 +97,7 @@ class OCRService {
       
       // Perform OCR without logger to avoid DataCloneError
       const { data } = await this.worker.recognize(imageData)
-      
-      console.log('OCR recognition completed')
-      
+
       // Report completion
       if (onProgress) {
         onProgress(1.0)

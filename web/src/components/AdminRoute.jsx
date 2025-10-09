@@ -12,10 +12,7 @@ const AdminRoute = ({ children }) => {
     if (!loading && user) {
       // Check multiple possible locations for role
       const role = user.role || user.user_metadata?.role || user.app_metadata?.role
-      
-      console.log('AdminRoute - User:', user)
-      console.log('AdminRoute - Role:', role)
-      
+
       if (role === 'admin') {
         setIsAdmin(true)
       } else {

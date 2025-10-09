@@ -32,63 +32,131 @@ class CurrencyService {
 
   /**
    * Get country code from request headers or IP
+   * Enhanced with multiple detection methods
    */
   async getCountryFromRequest(req) {
     try {
-      // Try to get from Accept-Language header
+      console.log('\n=== LOCATION DETECTION START ===');
+      
+      // Log all available headers for debugging
+      console.log('Available headers:', {
+        'x-forwarded-for': req.headers['x-forwarded-for'],
+        'x-real-ip': req.headers['x-real-ip'],
+        'cf-ipcountry': req.headers['cf-ipcountry'],
+        'accept-language': req.headers['accept-language']
+      });
+      
+      // Get IP address from various sources
+      const ipAddress = req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
+                       req.headers['x-real-ip'] ||
+                       req.connection?.remoteAddress ||
+                       req.socket?.remoteAddress ||
+                       req.ip;
+
+      console.log('Raw IP detected:', ipAddress);
+
+      // Check for localhost
+      const isLocalhost = !ipAddress || 
+                         ipAddress === '::1' || 
+                         ipAddress === '127.0.0.1' || 
+                         ipAddress.includes('::ffff:127.0.0.1') ||
+                         ipAddress.includes('::ffff:0.0.0.0');
+      
+      if (isLocalhost) {
+        console.log('⚠️  Localhost detected, defaulting to IN for testing');
+        console.log('=== LOCATION DETECTION END: IN (localhost) ===\n');
+        return 'IN';
+      }
+
+      // Clean IP address
+      const cleanIp = ipAddress.replace('::ffff:', '').trim();
+      console.log('Clean IP:', cleanIp);
+      
+      // Method 0: Check CloudFlare header first (fastest)
+      if (req.headers['cf-ipcountry'] && req.headers['cf-ipcountry'] !== 'XX') {
+        const countryCode = req.headers['cf-ipcountry'];
+        console.log(`✓ Location detected via CloudFlare header: ${countryCode}`);
+        console.log('=== LOCATION DETECTION END ===\n');
+        return countryCode;
+      }
+
+      // Method 1: Try ip-api.com (no rate limit for non-commercial)
+      try {
+        const fetch = require('node-fetch');
+        console.log('Trying ip-api.com...');
+        
+        const response = await Promise.race([
+          fetch(`http://ip-api.com/json/${cleanIp}?fields=status,countryCode,country,query`),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
+        ]);
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log('ip-api.com response:', data);
+          
+          if (data.status === 'success' && data.countryCode) {
+            console.log(`✓ Location detected via ip-api.com: ${data.countryCode} (${data.country})`);
+            console.log('=== LOCATION DETECTION END ===\n');
+            return data.countryCode;
+          }
+        }
+      } catch (error) {
+        console.warn('✗ ip-api.com failed:', error.message);
+      }
+
+      // Method 2: Try ipapi.co (backup)
+      try {
+        const fetch = require('node-fetch');
+        console.log('Trying ipapi.co...');
+        
+        const response = await Promise.race([
+          fetch(`https://ipapi.co/${cleanIp}/json/`, {
+            headers: {
+              'User-Agent': 'RobotPDF/1.0'
+            }
+          }),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 5000))
+        ]);
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log('ipapi.co response:', data);
+          
+          if (data.country_code && data.country_code !== 'undefined') {
+            console.log(`✓ Location detected via ipapi.co: ${data.country_code} (${data.country_name})`);
+            console.log('=== LOCATION DETECTION END ===\n');
+            return data.country_code;
+          }
+        }
+      } catch (error) {
+        console.warn('✗ ipapi.co failed:', error.message);
+      }
+
+      // Method 3: Try Accept-Language header
       const acceptLanguage = req.headers['accept-language'];
       if (acceptLanguage) {
+        console.log('Trying Accept-Language header:', acceptLanguage);
         const locale = acceptLanguage.split(',')[0];
         const region = locale.split('-')[1];
         
-        if (region) {
-          return region.toUpperCase();
+        if (region && region.length === 2) {
+          const countryCode = region.toUpperCase();
+          console.log(`✓ Location detected via Accept-Language: ${countryCode}`);
+          console.log('=== LOCATION DETECTION END ===\n');
+          return countryCode;
         }
       }
 
-      // For localhost/development, default to India for testing
-      // You can change this to 'US' to test international payments
-      const ipAddress = req.ip || req.connection.remoteAddress || req.headers['x-forwarded-for'];
-      if (!ipAddress || ipAddress === '::1' || ipAddress === '127.0.0.1' || ipAddress.includes('::ffff:127.0.0.1')) {
-        console.log('Localhost detected, defaulting to IN for Razorpay testing');
-        return 'IN'; // Change to 'US' to test international card payments
-      }
-
-      // Try to detect from IP address for production
-      try {
-        const cleanIp = ipAddress.replace('::ffff:', '');
-        const https = require('https');
-        const url = `https://ipapi.co/${cleanIp}/json/`;
-        
-        return await new Promise((resolve, reject) => {
-          https.get(url, (res) => {
-            let data = '';
-            res.on('data', (chunk) => { data += chunk; });
-            res.on('end', () => {
-              try {
-                const parsed = JSON.parse(data);
-                if (parsed.country_code) {
-                  resolve(parsed.country_code);
-                } else {
-                  resolve('IN'); // Default to India
-                }
-              } catch (e) {
-                resolve('IN');
-              }
-            });
-          }).on('error', () => {
-            resolve('IN');
-          });
-        });
-      } catch (error) {
-        console.warn('Error detecting country from IP:', error);
-        return 'IN'; // Default to India
-      }
+      // Default to India if all methods fail
+      console.log('⚠️  All detection methods failed, defaulting to IN');
+      console.log('=== LOCATION DETECTION END: IN (default) ===\n');
+      return 'IN';
+      
     } catch (error) {
-      console.warn('Error in getCountryFromRequest:', error);
+      console.error('❌ Error in getCountryFromRequest:', error);
+      console.log('=== LOCATION DETECTION END: IN (error) ===\n');
+      return 'IN';
     }
-    
-    return 'IN'; // Default to India for Razorpay
   }
 
   /**

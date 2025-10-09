@@ -78,6 +78,12 @@ const RazorpayPayment = ({
                 show_default_blocks: false
               }
             }
+          },
+          method: {
+            card: true,
+            netbanking: false,
+            wallet: false,
+            upi: false
           }
         }),
         handler: async function (response) {
@@ -147,7 +153,7 @@ const RazorpayPayment = ({
         <div className="flex items-center justify-between">
           <span className="text-sm text-muted-foreground">Amount</span>
           <span className="font-bold text-lg text-foreground">
-            {currency === 'INR' ? '₹' : '$'}{(amount / 100).toFixed(2)}
+            ₹{(amount / 100).toFixed(2)}
           </span>
         </div>
 
@@ -158,7 +164,7 @@ const RazorpayPayment = ({
           {isIndia ? (
             <>
               <p className="text-xs text-muted-foreground">
-                • Supports UPI, Cards, Net Banking, and Wallets
+                • UPI, Cards, Net Banking, and Wallets supported
               </p>
               <p className="text-xs text-muted-foreground">
                 • All Indian payment methods available
@@ -167,10 +173,10 @@ const RazorpayPayment = ({
           ) : (
             <>
               <p className="text-xs text-muted-foreground">
-                • International card payments accepted
+                • International card payments only
               </p>
               <p className="text-xs text-muted-foreground">
-                • Visa, Mastercard, Amex supported
+                • Visa, Mastercard, Amex, and other cards supported
               </p>
             </>
           )}
@@ -194,7 +200,7 @@ const RazorpayPayment = ({
         ) : (
           <>
             <CreditCard className="h-4 w-4 mr-2" />
-            Pay {currency === 'INR' ? '₹' : '$'}{(amount / 100).toFixed(2)}
+            Pay ₹{(amount / 100).toFixed(2)}
           </>
         )}
       </Button>

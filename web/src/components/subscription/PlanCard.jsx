@@ -134,7 +134,7 @@ const PlanCard = ({ plan, isCurrentPlan = false, onSelectPlan }) => {
             <span className="text-xl sm:text-2xl font-bold">Free</span>
           ) : (
             <>
-              <span className="text-2xl sm:text-3xl font-bold">${plan.price}</span>
+              <span className="text-2xl sm:text-3xl font-bold">₹{plan.id === 'basic' ? '99' : '499'}</span>
               <span className="text-xs sm:text-sm text-muted-foreground">/month</span>
             </>
           )}

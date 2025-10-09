@@ -66,6 +66,7 @@ const authenticateUser = async (req, res, next) => {
           .from('users')
           .insert([
             {
+              id: user.id, // Use Supabase user ID
               email: user.email,
               name: user.user_metadata?.name || user.user_metadata?.full_name || user.email.split('@')[0],
               role: 'user',
@@ -103,7 +104,13 @@ const authenticateUser = async (req, res, next) => {
         return res.status(500).json({ error: 'Database error' });
       }
 
-      req.user = user;
+      // Use profile data for consistency
+      req.user = {
+        id: profile.id,
+        email: profile.email,
+        name: profile.name,
+        role: profile.role
+      };
       next();
     }
   } catch (error) {

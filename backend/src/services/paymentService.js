@@ -5,25 +5,26 @@ const currencyService = require('./currencyService');
 class PaymentService {
   /**
    * Determine which payment gateway to use based on country/currency
-   * Now using Razorpay for all countries
+   * Using Razorpay for all countries with INR currency
+   * India: Full payment options (UPI, Cards, Net Banking, Wallets)
+   * International: Card payments only
    */
   getPaymentGateway(countryCode, currency) {
     // Use Razorpay for all countries
-    // India gets full payment options (UPI, Cards, Net Banking, Wallets)
-    // Other countries get card payment only
     return 'razorpay';
   }
 
   /**
    * Create a subscription using the appropriate gateway
+   * All subscriptions are in INR via Razorpay
    */
   async createSubscription(userId, plan, email, name, countryCode, currency) {
     const gateway = this.getPaymentGateway(countryCode, currency);
     
-    // Determine currency based on country
-    const orderCurrency = countryCode === 'IN' ? 'INR' : 'USD';
+    // Always use INR for Razorpay
+    const orderCurrency = 'INR';
     
-    console.log(`Creating subscription with ${gateway} for user ${userId}, plan ${plan}, currency ${orderCurrency}`);
+    console.log(`Creating subscription with ${gateway} for user ${userId}, plan ${plan}, currency ${orderCurrency}, country ${countryCode}`);
     
     if (gateway === 'razorpay') {
       return await razorpayService.createSubscription(userId, plan, email, name, orderCurrency);
@@ -104,16 +105,17 @@ class PaymentService {
 
   /**
    * Get plan pricing based on gateway and currency
+   * All Razorpay payments are in INR
    */
-  getPlanPricing(plan, gateway, currency = 'USD', countryCode = 'US') {
+  getPlanPricing(plan, gateway, currency = 'INR', countryCode = 'IN') {
     if (gateway === 'razorpay') {
-      // Determine currency based on country
-      const orderCurrency = countryCode === 'IN' ? 'INR' : 'USD';
-      const planDetails = razorpayService.getPlanDetails(plan, orderCurrency);
+      // Always use INR for Razorpay
+      const planDetails = razorpayService.getPlanDetails(plan, 'INR');
       return {
         amount: planDetails.amount,
-        currency: planDetails.currency,
-        gateway: 'razorpay'
+        currency: 'INR',
+        gateway: 'razorpay',
+        countryCode: countryCode
       };
     } else {
       const planDetails = paypalService.getPlanDetails(plan);
@@ -127,6 +129,7 @@ class PaymentService {
 
   /**
    * Get available payment methods for a country
+   * All payments via Razorpay in INR
    */
   getAvailablePaymentMethods(countryCode) {
     if (countryCode === 'IN') {
@@ -135,15 +138,15 @@ class PaymentService {
         name: 'Razorpay',
         methods: ['card', 'upi', 'netbanking', 'wallet'],
         currency: 'INR',
-        description: 'All payment methods available'
+        description: 'UPI, Cards, Net Banking, and Wallets'
       }];
     } else {
       return [{
         gateway: 'razorpay',
         name: 'Razorpay',
         methods: ['card'],
-        currency: 'USD',
-        description: 'International card payments'
+        currency: 'INR',
+        description: 'International card payments (charged in INR)'
       }];
     }
   }

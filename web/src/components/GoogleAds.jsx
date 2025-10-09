@@ -19,10 +19,19 @@ const GoogleAds = ({
   const adId = `ad-${adSlot}-${Math.random().toString(36).substr(2, 9)}`
   
   useEffect(() => {
-    // Don't load ads for premium users
-    if (isActive() && (subscription?.plan === 'pro' || subscription?.plan === 'premium')) {
+    // Show ads for:
+    // 1. Anonymous users (not logged in)
+    // 2. Free plan users
+    // Hide ads for:
+    // 1. Basic plan users (ad-free)
+    // 2. Pro plan users (ad-free)
+    
+    if (subscription && subscription.plan !== 'free') {
+      // User is logged in with Basic or Pro plan - no ads
       return
     }
+    
+    // Show ads for anonymous users or free users
 
     // Prevent duplicate ad loading for this specific ad
     if (globalAdState.loadedAds.has(adSlot)) {
@@ -43,7 +52,7 @@ const GoogleAds = ({
         } catch (error) {
           // Remove from loaded set if failed
           globalAdState.loadedAds.delete(adSlot)
-          console.warn('AdSense error (this is normal in development):', error.message)
+          :', error.message)
         }
       }
     }
@@ -62,7 +71,7 @@ const GoogleAds = ({
           loadAd()
         }
         script.onerror = () => {
-          console.warn('Failed to load AdSense script')
+          
         }
         document.head.appendChild(script)
       } else {
@@ -79,8 +88,9 @@ const GoogleAds = ({
     }
   }, [adSlot, isActive, subscription?.plan])
 
-  // Don't show ads for premium users
-  if (isActive() && (subscription?.plan === 'pro' || subscription?.plan === 'premium')) {
+  // Show ads for anonymous users (no subscription) or free users
+  // Hide ads for Basic and Pro users (ad-free benefit)
+  if (subscription && subscription.plan !== 'free') {
     return null
   }
 

@@ -19,9 +19,7 @@ const configurePDFWorker = () => {
   
   // Set the primary worker source to local file
   pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrls[0]
-  
-  console.log('PDF.js worker configured with:', pdfjsLib.GlobalWorkerOptions.workerSrc)
-  
+
   return pdfjsLib
 }
 

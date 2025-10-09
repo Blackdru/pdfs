@@ -169,7 +169,7 @@ const BillingHistory = () => {
                     size="sm"
                     onClick={() => {
                       // In a real app, you'd implement invoice download
-                      console.log('Download invoice for:', transaction.id)
+                      
                     }}
                   >
                     <Download className="h-4 w-4" />

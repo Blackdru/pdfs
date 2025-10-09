@@ -25,14 +25,10 @@ const ResultsDisplay = ({
 }) => {
   
   const generateSummaryReport = (toolResults) => {
-    console.log('generateSummaryReport called with:', toolResults)
-    console.log('toolResults.result:', toolResults.result)
-    console.log('toolResults.result.result:', toolResults.result?.result)
-    
+
     // Extract the actual summary data - it's nested in result.result
     const summaryData = toolResults.result?.result || toolResults.result
-    console.log('summaryData:', summaryData)
-    
+
     const summaryText = [
       'AI SUMMARY REPORT',
       '==================',

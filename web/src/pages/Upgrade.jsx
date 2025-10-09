@@ -31,13 +31,13 @@ const Upgrade = () => {
     return subscription?.plan || 'free'
   }
 
-  // Plan comparison data - matches Pricing page exactly
+  // Plan comparison data - matches Pricing page exactly (INR pricing)
   const comparisonFeatures = [
     {
       feature: 'Monthly Price',
       free: 'Free',
-      basic: '$1/month',
-      pro: '$10/month'
+      basic: '₹99/month',
+      pro: '₹499/month'
     },
     {
       feature: 'Free Tools Usage',

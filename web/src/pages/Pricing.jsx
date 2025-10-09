@@ -26,12 +26,13 @@ const Pricing = () => {
     navigate('/upgrade')
   }
 
-  // Static plan data
+  // Static plan data - All prices in INR
   const plans = [
     {
       id: 'free',
       name: 'Free',
       price: 0,
+      currency: 'INR',
       description: 'Perfect for getting started',
       features: [
         'Unlimited use of free tools',
@@ -44,7 +45,8 @@ const Pricing = () => {
     {
       id: 'basic',
       name: 'Basic',
-      price: 1,
+      price: 99,
+      currency: 'INR',
       description: 'Great for regular users',
       popular: true,
       features: [
@@ -60,7 +62,8 @@ const Pricing = () => {
     {
       id: 'pro',
       name: 'Pro',
-      price: 10,
+      price: 499,
+      currency: 'INR',
       description: 'For power users and teams',
       bestValue: true,
       features: [
@@ -76,13 +79,13 @@ const Pricing = () => {
     }
   ]
 
-  // Plan comparison data
+  // Plan comparison data - All prices in INR
   const comparisonFeatures = [
     {
       feature: 'Monthly Price',
       free: 'Free',
-      basic: '$1/month',
-      pro: '$10/month'
+      basic: '₹99/month',
+      pro: '₹499/month'
     },
     {
       feature: 'Free Tools Usage',
@@ -207,7 +210,7 @@ const Pricing = () => {
                     <span className="text-xl sm:text-2xl font-bold">Free</span>
                   ) : (
                     <>
-                      <span className="text-2xl sm:text-3xl font-bold">${plan.price}</span>
+                      <span className="text-2xl sm:text-3xl font-bold">₹{plan.price}</span>
                       <span className="text-xs sm:text-sm text-muted-foreground">/month</span>
                     </>
                   )}

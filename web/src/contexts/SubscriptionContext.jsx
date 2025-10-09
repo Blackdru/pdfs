@@ -22,9 +22,56 @@ export const SubscriptionProvider = ({ children }) => {
 
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
+  // Helper function to get auth token (same logic as API client)
+  const getAuthToken = () => {
+    // First, try to get JWT token from new auth system
+    const authSession = localStorage.getItem('auth_session')
+    if (authSession) {
+      try {
+        const sessionData = JSON.parse(authSession)
+        if (sessionData.access_token) {
+          return sessionData.access_token
+        }
+      } catch (e) {
+        
+      }
+    }
+
+    // Fallback to Supabase token (for Google OAuth backward compatibility)
+    let token = localStorage.getItem('supabase.auth.token')
+    
+    if (!token) {
+      // Try to get token from Supabase session - search for project-specific key
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i)
+        if (key && key.startsWith('sb-') && key.endsWith('-auth-token')) {
+          const supabaseSession = localStorage.getItem(key)
+          if (supabaseSession) {
+            try {
+              const sessionData = JSON.parse(supabaseSession)
+              if (sessionData.access_token) {
+                token = sessionData.access_token
+                break
+              }
+            } catch (e) {
+              
+            }
+          }
+        }
+      }
+    }
+
+    // Fallback to session prop if available
+    if (!token && session?.access_token) {
+      token = session.access_token
+    }
+
+    return token
+  }
+
   // Helper function to make authenticated API calls
   const apiCall = async (endpoint, options = {}) => {
-    const token = session?.access_token
+    const token = getAuthToken()
     if (!token) {
       throw new Error('No authentication token available')
     }
@@ -60,7 +107,7 @@ export const SubscriptionProvider = ({ children }) => {
 
   // Load user's current subscription
   const loadSubscription = async () => {
-    if (!user || !session) return
+    if (!user) return
 
     try {
       setLoading(true)
@@ -76,7 +123,7 @@ export const SubscriptionProvider = ({ children }) => {
 
   // Load usage statistics
   const loadUsage = async () => {
-    if (!user || !session) return
+    if (!user) return
 
     try {
       const data = await apiCall('/subscriptions/usage')
@@ -102,7 +149,7 @@ export const SubscriptionProvider = ({ children }) => {
 
   // Load billing history
   const loadBillingHistory = async () => {
-    if (!user || !session) return
+    if (!user) return
 
     try {
       const data = await apiCall('/subscriptions/billing-history')

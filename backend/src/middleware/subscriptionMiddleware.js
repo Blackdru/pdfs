@@ -47,13 +47,18 @@ const enforceFileLimit = async (req, res, next) => {
     const limitCheck = await subscriptionService.checkPlanLimit(userId, 'filesPerMonth', fileCount);
     
     if (!limitCheck.allowed) {
+      const planName = limitCheck.plan.charAt(0).toUpperCase() + limitCheck.plan.slice(1);
       return res.status(403).json({
         error: 'File limit exceeded',
-        message: `Your ${limitCheck.plan} plan allows ${limitCheck.limit} files per month. You have ${limitCheck.remaining} remaining.`,
+        message: limitCheck.remaining === 0 
+          ? `You've reached your monthly file limit of ${limitCheck.limit} files on the ${planName} plan. Upgrade to Pro for unlimited file processing.`
+          : `You have ${limitCheck.remaining} files remaining this month. You're trying to upload ${fileCount} files. Upgrade to Pro for unlimited files.`,
         limit: limitCheck.limit,
         current: limitCheck.current,
         remaining: limitCheck.remaining,
-        plan: limitCheck.plan
+        plan: limitCheck.plan,
+        upgradeUrl: '/upgrade',
+        limitType: 'filesPerMonth'
       });
     }
 
@@ -88,13 +93,23 @@ const enforceStorageLimit = (req, res, next) => {
       const limitCheck = await subscriptionService.checkPlanLimit(userId, 'storageLimit', totalSize);
       
       if (!limitCheck.allowed) {
+        const planName = limitCheck.plan.charAt(0).toUpperCase() + limitCheck.plan.slice(1);
+        const formatBytes = (bytes) => {
+          const k = 1024;
+          const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+          const i = Math.floor(Math.log(bytes) / Math.log(k));
+          return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        };
+        
         return res.status(403).json({
           error: 'Storage limit exceeded',
-          message: `Your ${limitCheck.plan} plan storage limit would be exceeded by this upload.`,
+          message: `You've used ${formatBytes(limitCheck.current)} of your ${formatBytes(limitCheck.limit)} storage on the ${planName} plan. This upload would exceed your limit. Upgrade to Pro for unlimited storage.`,
           limit: limitCheck.limit,
           current: limitCheck.current,
           remaining: limitCheck.remaining,
-          plan: limitCheck.plan
+          plan: limitCheck.plan,
+          upgradeUrl: '/upgrade',
+          limitType: 'storageLimit'
         });
       }
 
@@ -283,13 +298,18 @@ const enforceAILimit = async (req, res, next) => {
     const limitCheck = await subscriptionService.checkPlanLimit(userId, 'aiOperations', 1);
     
     if (!limitCheck.allowed) {
+      const planName = limitCheck.plan.charAt(0).toUpperCase() + limitCheck.plan.slice(1);
       return res.status(403).json({
         error: 'AI operation limit exceeded',
-        message: `Your ${limitCheck.plan} plan allows ${limitCheck.limit} AI operations per month. You have ${limitCheck.remaining} remaining.`,
+        message: limitCheck.remaining === 0
+          ? `You've used all ${limitCheck.limit} AI operations on your ${planName} plan this month. Upgrade to Pro for unlimited AI features (OCR, Chat, Summaries).`
+          : `You have ${limitCheck.remaining} AI operations remaining this month. Upgrade to Pro for unlimited AI features.`,
         limit: limitCheck.limit,
         current: limitCheck.current,
         remaining: limitCheck.remaining,
-        plan: limitCheck.plan
+        plan: limitCheck.plan,
+        upgradeUrl: '/upgrade',
+        limitType: 'aiOperations'
       });
     }
 

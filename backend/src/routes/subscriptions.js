@@ -360,7 +360,7 @@ router.post('/verify-payment', authenticateUser, async (req, res) => {
           user_id: req.user.id,
           razorpay_payment_id: paymentId,
           razorpay_order_id: orderId,
-          amount: plan === 'basic' ? 8800 : 88000, // Amount in paise (₹88 or ₹880)
+          amount: plan === 'basic' ? 9900 : 49900, // Amount in paise (₹99 or ₹499)
           currency: 'INR',
           status: 'succeeded',
           payment_method: 'razorpay',

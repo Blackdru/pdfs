@@ -45,7 +45,8 @@ const PLAN_LIMITS = {
       'pdf_chat',
       'summaries',
       'search',
-      'advanced_tools'
+      'advanced_tools',
+      'advanced_settings'
     ],
     restrictions: {
       maxFilesPerBatch: 10,
@@ -58,7 +59,7 @@ const PLAN_LIMITS = {
       advancedTools: true, // Access to all advanced tools
       encryptAccess: true,
       digitalSignatureAccess: true,
-      advancedSettings: false // No advanced settings
+      advancedSettings: true // Enable advanced settings for basic users
     }
   },
   pro: {
@@ -266,7 +267,13 @@ const PLAN_COMPARISON = [
   {
     feature: 'Advanced Settings',
     free: false,
-    basic: false,
+    basic: true,
+    pro: true
+  },
+  {
+    feature: 'Ad-Free Experience',
+    free: false,
+    basic: true,
     pro: true
   },
   {

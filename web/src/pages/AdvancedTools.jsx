@@ -88,18 +88,15 @@ const AdvancedTools = () => {
   }
 
   const handleToolSelect = (tool) => {
-    console.log('Advanced tool selected:', tool.id, 'Current plan:', subscription?.plan)
-    
+
     // Check if user has access to this advanced tool
     const hasToolAccess = checkAccess(tool.id, tool.title, tool.description)
-    console.log('Advanced tool access check result:', hasToolAccess)
-    
+
     if (!hasToolAccess) {
-      console.log('Access denied for advanced tool, showing upgrade modal')
+      
       return // Access denied, upgrade modal will be shown
     }
 
-    console.log('Access granted for advanced tool, proceeding with tool selection')
     setSelectedTool(tool)
     setUploadedFiles([])
     setProcessedFiles([])
@@ -170,10 +167,6 @@ const AdvancedTools = () => {
   const handleAutoProcess = async (files, toolSettings = {}) => {
     if (!selectedTool || files.length === 0) return
 
-    console.log('=== Processing Started ===')
-    console.log('Tool:', selectedTool.id)
-    console.log('Settings received:', toolSettings)
-    
     // Initialize processing modal
     initializeProcessingSteps(selectedTool.id)
     setIsProcessing(true)
@@ -344,8 +337,7 @@ const AdvancedTools = () => {
 
   // Individual tool handlers
   const handleAdvancedOCR = async (fileId, settings = {}) => {
-    console.log('Starting Advanced OCR processing for file ID:', fileId)
-    
+
     try {
       updateProgress(40, 'Processing with AI-enhanced OCR...', 2)
       
@@ -390,28 +382,25 @@ const AdvancedTools = () => {
 
   const handleAIChat = async (fileId, files) => {
     if (initializingAIChat) {
-      console.log('AI Chat initialization already in progress, skipping...')
+      
       return { initialized: false, message: 'Already initializing' }
     }
     
     setInitializingAIChat(true)
     
     try {
-      console.log('Starting AI Chat initialization for file ID:', fileId)
+      
       toast.loading('Preparing document for AI chat...', { id: 'ai-chat-init' })
       
       try {
         const result = await api.post('/ai/create-embeddings', { 
           fileId: fileId 
         })
-        
-        console.log('Embeddings created successfully:', result)
+
         toast.dismiss('ai-chat-init')
         toast.success('AI Chat initialized! You can now chat with your document.')
         
       } catch (embeddingError) {
-        console.log('Embeddings failed, checking if OCR is needed:', embeddingError?.message || String(embeddingError))
-        
         const errorMsg = embeddingError?.message || String(embeddingError)
         if (errorMsg.includes('No text content found') || 
             errorMsg.includes('Please run OCR')) {
@@ -428,8 +417,7 @@ const AdvancedTools = () => {
             }),
             timeout: 180000 // 3 minutes for OCR
           })
-          
-          console.log('OCR completed for AI chat:', ocrResult)
+
           toast.dismiss('ai-chat-ocr')
           
           await new Promise(resolve => setTimeout(resolve, 1000))
@@ -439,8 +427,7 @@ const AdvancedTools = () => {
           const embeddingResult = await api.post('/ai/create-embeddings', { 
             fileId: fileId 
           })
-          
-          console.log('Embeddings created after OCR:', embeddingResult)
+
           toast.dismiss('ai-chat-embeddings')
           toast.success('AI Chat initialized! Text extracted and processed successfully.')
         } else {
@@ -472,8 +459,7 @@ const AdvancedTools = () => {
   }
 
   const handleSmartSummary = async (fileId, settings = {}) => {
-    console.log('Starting smart summary for fileId:', fileId)
-    
+
     updateProgress(30, 'Analyzing document text...', 1)
     
     try {
@@ -636,7 +622,7 @@ const AdvancedTools = () => {
           await navigator.clipboard.writeText(password)
           toast.success('Password copied to clipboard!')
         } catch (clipboardError) {
-          console.warn('Could not copy to clipboard:', clipboardError)
+          
         }
       }
     }
@@ -669,10 +655,7 @@ const AdvancedTools = () => {
         height: parseFloat(settings.customHeight)
       }
     }
-    
-    console.log('Images to PDF - Settings received:', settings)
-    console.log('Images to PDF - Options being sent:', options)
-    
+
     const response = await fetch(`${API_BASE_URL}/pdf/advanced/advanced-images-to-pdf`, {
       method: 'POST',
       headers: {
@@ -702,8 +685,7 @@ const AdvancedTools = () => {
   }
 
   const handlePDFToOffice = async (fileId, settings = {}) => {
-    console.log('Starting PDF to Office conversion for file ID:', fileId)
-    
+
     updateProgress(30, 'Analyzing PDF structure...', 1)
     
     try {
@@ -733,9 +715,6 @@ const AdvancedTools = () => {
         options.preserveColors = settings.preserveColors !== false
         options.createTOC = settings.createTOC || false
       }
-
-      console.log('PDF to Office - Settings received:', settings)
-      console.log('PDF to Office - Options being sent:', options)
 
       updateProgress(50, `Converting to ${options.outputFormat.toUpperCase()}...`, 2)
 
@@ -818,7 +797,6 @@ const AdvancedTools = () => {
   const canProcess = uploadedFiles.length >= (selectedTool?.minFiles || 1)
   const usageExceeded = usage && usage.current >= usage.limit && subscription?.plan !== 'premium'
 
-  
   return (
     <div className="min-h-screen bg-page relative overflow-hidden">
       {/* Premium Background */}

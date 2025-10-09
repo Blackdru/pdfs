@@ -157,14 +157,18 @@ const PaymentModal = ({ isOpen, onClose, plan, onSuccess }) => {
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Price</span>
                   <span className="font-bold text-foreground">
-                    {userLocation === 'IN' ? '₹88' : '$1'}/month
+                    ₹{plan?.id === 'basic' ? '99' : '499'}/month
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Payment Method</span>
                   <span className="text-sm text-foreground">
-                    {userLocation === 'IN' ? 'All methods' : 'Card only'}
+                    {userLocation === 'IN' ? 'All methods available' : 'Card payments only'}
                   </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Gateway</span>
+                  <span className="text-sm text-foreground">Razorpay</span>
                 </div>
               </div>
 

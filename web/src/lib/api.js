@@ -40,13 +40,12 @@ class ApiClient {
         }, config.timeout)
       }
     } catch (controllerError) {
-      console.warn('AbortController creation failed:', controllerError)
+      
       // Continue without timeout control
     }
 
     try {
-      console.log(`API Request: ${options.method || 'GET'} ${url}`)
-      
+
       const response = await fetch(url, config)
       
       // Clear timeout safely
@@ -143,7 +142,7 @@ class ApiClient {
           return sessionData.access_token
         }
       } catch (e) {
-        console.warn('Failed to parse auth session:', e)
+        
       }
     }
 
@@ -151,16 +150,23 @@ class ApiClient {
     let token = localStorage.getItem('supabase.auth.token')
     
     if (!token) {
-      // Try to get token from Supabase session
-      const supabaseSession = localStorage.getItem('sb-localhost-auth-token')
-      if (supabaseSession) {
-        try {
-          const sessionData = JSON.parse(supabaseSession)
-          if (sessionData.access_token) {
-            token = sessionData.access_token
+      // Try to get token from Supabase session - search for project-specific key
+      // Supabase stores session with key format: sb-{project-ref}-auth-token
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i)
+        if (key && key.startsWith('sb-') && key.endsWith('-auth-token')) {
+          const supabaseSession = localStorage.getItem(key)
+          if (supabaseSession) {
+            try {
+              const sessionData = JSON.parse(supabaseSession)
+              if (sessionData.access_token) {
+                token = sessionData.access_token
+                break
+              }
+            } catch (e) {
+              
+            }
           }
-        } catch (e) {
-          console.warn('Failed to parse Supabase session:', e)
         }
       }
     }
@@ -168,6 +174,7 @@ class ApiClient {
     if (!token) {
       // Try alternative storage keys
       const altKeys = [
+        'sb-localhost-auth-token',
         'sb-auth-token',
         'supabase-auth-token',
         'auth-token'
@@ -208,6 +215,14 @@ class ApiClient {
     keys.forEach(key => {
       localStorage.removeItem(key)
     })
+    
+    // Also clear any Supabase project-specific auth tokens
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const key = localStorage.key(i)
+      if (key && key.startsWith('sb-') && key.endsWith('-auth-token')) {
+        localStorage.removeItem(key)
+      }
+    }
   }
 
   // Health check method
@@ -221,7 +236,7 @@ class ApiClient {
       }
       return false
     } catch (error) {
-      console.warn('Health check failed:', error.message)
+      
       return false
     }
   }
@@ -258,7 +273,6 @@ class ApiClient {
         
         if (attempt < maxRetries) {
           const delay = Math.min(1000 * Math.pow(2, attempt - 1), 5000) // Exponential backoff
-          console.log(`Request failed, retrying in ${delay}ms... (attempt ${attempt}/${maxRetries})`)
           await new Promise(resolve => setTimeout(resolve, delay))
         }
       }

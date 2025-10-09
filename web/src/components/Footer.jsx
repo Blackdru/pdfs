@@ -28,10 +28,18 @@ const Footer = () => {
               Transform your PDF workflow with intelligent OCR, AI-powered summaries, 
               and advanced document processing tools. Built for professionals who demand excellence.
             </p>
-            <div className="flex items-center text-secondary text-sm">
-              <span>Made with</span>
-              <Heart className="h-4 w-4 mx-1 text-red-500 fill-current" />
-              <span>for document productivity</span>
+            <div className="flex flex-col space-y-2">
+              <div className="flex items-center text-secondary text-sm">
+                <span>Made with</span>
+                <Heart className="h-4 w-4 mx-1 text-red-500 fill-current" />
+                <span>for document productivity</span>
+              </div>
+              <div className="flex items-center text-sm font-semibold">
+                <span className="text-orange-500">🇮🇳</span>
+                <span className="ml-2 bg-gradient-to-r from-orange-500 via-white to-green-500 bg-clip-text text-transparent">
+                  Proudly Made in India
+                </span>
+              </div>
             </div>
           </div>
 
@@ -93,11 +101,19 @@ const Footer = () => {
         </div>
 
         {/* Bottom */}
-        <div className="border-t border-border mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <p className="text-secondary text-sm">
-            © 2025 RobotPDF. All rights reserved.
-          </p>
-          <div className="flex items-center space-x-6 mt-4 md:mt-0">
+        <div className="border-t border-border mt-8 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="flex flex-col md:flex-row items-center gap-4">
+            <p className="text-secondary text-sm">
+              © 2025 RobotPDF. All rights reserved.
+            </p>
+            <div className="flex items-center px-3 py-1.5 rounded-full bg-gradient-to-r from-orange-500/10 via-white/5 to-green-500/10 border border-orange-500/20">
+              <span className="text-lg mr-1.5">🇮🇳</span>
+              <span className="text-xs font-semibold bg-gradient-to-r from-orange-500 via-white to-green-500 bg-clip-text text-transparent">
+                Made in India
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center space-x-6">
             <span className="text-secondary text-sm">Secure & Private</span>
             <div className="flex items-center space-x-2">
               <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>

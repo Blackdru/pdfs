@@ -5,6 +5,7 @@ import { Badge } from '../ui/badge';
 import { useAuth } from '../../contexts/AuthContext';
 import RazorpayPayment from './RazorpayPayment';
 import PayPalPayment from './PayPalPayment';
+import SubscriptionSuccessModal from '../SubscriptionSuccessModal';
 import { Loader2, MapPin, CreditCard } from 'lucide-react';
 import toast from 'react-hot-toast';
 
@@ -14,6 +15,8 @@ const PaymentModal = ({ isOpen, onClose, plan, onSuccess }) => {
   const [paymentData, setPaymentData] = useState(null);
   const [gateway, setGateway] = useState(null);
   const [userLocation, setUserLocation] = useState(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [subscriptionDetails, setSubscriptionDetails] = useState(null);
 
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
@@ -80,14 +83,26 @@ const PaymentModal = ({ isOpen, onClose, plan, onSuccess }) => {
   };
 
   const handlePaymentSuccess = async (response) => {
-    toast.success('Payment successful! Your subscription is now active.');
+    // Store subscription details for success modal
+    setSubscriptionDetails({
+      plan: plan?.id,
+      expires_at: response?.subscription?.expires_at || new Date(Date.now() + 30*24*60*60*1000).toISOString()
+    });
+    
+    // Close payment modal
+    onClose();
+    
+    // Show success modal
+    setShowSuccessModal(true);
+  };
+  
+  const handleSuccessModalClose = async () => {
+    setShowSuccessModal(false);
     
     // Refresh subscription data
     if (onSuccess) {
       await onSuccess();
     }
-    
-    onClose();
   };
 
   const handlePaymentError = (error) => {
@@ -109,6 +124,7 @@ const PaymentModal = ({ isOpen, onClose, plan, onSuccess }) => {
   };
 
   return (
+    <>
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[500px] dark-card">
         <DialogHeader>
@@ -217,6 +233,15 @@ const PaymentModal = ({ isOpen, onClose, plan, onSuccess }) => {
         </div>
       </DialogContent>
     </Dialog>
+    
+    {/* Success Modal */}
+    <SubscriptionSuccessModal
+      isOpen={showSuccessModal}
+      onClose={handleSuccessModalClose}
+      plan={plan?.id}
+      details={subscriptionDetails}
+    />
+    </>
   );
 };
 

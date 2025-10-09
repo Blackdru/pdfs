@@ -318,6 +318,10 @@ router.post('/verify-payment', authenticateUser, async (req, res) => {
       return res.status(400).json({ error: 'Missing payment verification data' });
     }
 
+    if (!plan || !PLAN_LIMITS[plan]) {
+      return res.status(400).json({ error: 'Invalid plan specified' });
+    }
+
     const isValid = paymentService.verifyPaymentSignature(orderId, paymentId, signature);
 
     if (!isValid) {
@@ -325,59 +329,111 @@ router.post('/verify-payment', authenticateUser, async (req, res) => {
     }
 
     // Activate subscription after successful payment
-    if (plan) {
-      const now = new Date();
-      const periodEnd = new Date(now);
-      periodEnd.setMonth(periodEnd.getMonth() + 1); // 1 month subscription
+    const now = new Date();
+    const periodEnd = new Date(now);
+    periodEnd.setMonth(periodEnd.getMonth() + 1); // 1 month subscription
 
-      const { error: updateError } = await supabaseAdmin
-        .from('subscriptions')
-        .upsert(
-          {
-            user_id: req.user.id,
-            plan: plan,
-            status: 'active',
-            payment_method: 'razorpay',
-            razorpay_payment_id: paymentId,
-            razorpay_order_id: orderId,
-            current_period_start: now.toISOString(),
-            current_period_end: periodEnd.toISOString(),
-            started_at: now.toISOString(),
-            updated_at: now.toISOString()
-          },
-          { onConflict: 'user_id' }
-        );
-
-      if (updateError) {
-        console.error('Error updating subscription:', updateError);
-        return res.status(500).json({ error: 'Payment verified but failed to activate subscription' });
-      }
-
-      // Record payment transaction
-      await supabaseAdmin
-        .from('payment_transactions')
-        .insert({
+    const { data: subscription, error: updateError } = await supabaseAdmin
+      .from('subscriptions')
+      .upsert(
+        {
           user_id: req.user.id,
+          plan: plan,
+          status: 'active',
+          payment_method: 'razorpay',
+          payment_gateway: 'razorpay',
           razorpay_payment_id: paymentId,
           razorpay_order_id: orderId,
-          amount: plan === 'basic' ? 9900 : 49900, // Amount in paise (₹99 or ₹499)
-          currency: 'INR',
-          status: 'succeeded',
-          payment_method: 'razorpay',
-          metadata: {
-            plan: plan,
-            verified_at: new Date().toISOString()
+          current_period_start: now.toISOString(),
+          current_period_end: periodEnd.toISOString(),
+          expires_at: periodEnd.toISOString(),
+          started_at: now.toISOString(),
+          updated_at: now.toISOString()
+        },
+        { onConflict: 'user_id' }
+      )
+      .select()
+      .single();
+
+    if (updateError) {
+      console.error('Error creating subscription:', updateError);
+      return res.status(500).json({ 
+        error: 'Payment verified but failed to create subscription',
+        details: updateError.message 
+      });
+    }
+
+    // Get plan pricing
+    const pricing = paymentService.getPlanPricing(plan, 'razorpay', 'INR');
+
+    // Record payment transaction
+    const { data: transaction, error: transactionError } = await supabaseAdmin
+      .from('payment_transactions')
+      .insert({
+        user_id: req.user.id,
+        subscription_id: subscription?.id,
+        razorpay_payment_id: paymentId,
+        razorpay_order_id: orderId,
+        amount: pricing.amount,
+        currency: pricing.currency,
+        status: 'succeeded',
+        payment_method: 'razorpay',
+        metadata: {
+          plan: plan,
+          verified_at: now.toISOString()
+        }
+      })
+      .select()
+      .single();
+
+    if (transactionError) {
+      console.error('Error recording payment transaction:', transactionError);
+      console.error('Transaction error details:', JSON.stringify(transactionError, null, 2));
+      // Log but don't fail - subscription is already created
+    } else {
+      console.log('Payment transaction recorded successfully:', transaction?.id);
+    }
+
+    // Send subscription upgrade email
+    try {
+      const { data: user } = await supabaseAdmin
+        .from('users')
+        .select('email, name')
+        .eq('id', req.user.id)
+        .single();
+
+      if (user) {
+        const emailService = require('../services/emailService');
+        await emailService.sendSubscriptionUpgradeEmail(
+          user.email,
+          user.name,
+          plan,
+          {
+            current_period_start: subscription.current_period_start,
+            current_period_end: subscription.current_period_end
           }
-        });
+        );
+      }
+    } catch (emailError) {
+      console.error('Error sending upgrade email:', emailError);
+      // Don't fail the request if email fails
     }
 
     res.json({ 
       success: true, 
-      message: 'Payment verified and subscription activated successfully' 
+      message: 'Payment verified and subscription activated successfully',
+      subscription: {
+        plan: subscription.plan,
+        status: subscription.status,
+        expires_at: subscription.expires_at
+      }
     });
   } catch (error) {
     console.error('Error verifying payment:', error);
-    res.status(500).json({ error: 'Failed to verify payment' });
+    res.status(500).json({ 
+      error: 'Failed to verify payment',
+      details: error.message 
+    });
   }
 });
 

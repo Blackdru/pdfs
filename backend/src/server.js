@@ -8,6 +8,7 @@ require('dotenv').config();
 
 // Import cleanup scheduler
 const cleanupScheduler = require('./services/cleanupScheduler');
+const subscriptionExpiryService = require('./services/subscriptionExpiryService');
 
 const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
@@ -23,6 +24,7 @@ const webhookRoutes = require('./routes/webhooks');
 const contactRoutes = require('./routes/contact');
 const pricingRoutes = require('./routes/pricing');
 const testLocationRoutes = require('./routes/test-location');
+const debugRoutes = require('./routes/debug');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -125,6 +127,8 @@ app.use('/api/pricing', pricingRoutes);
 console.log('Pricing routes loaded');
 app.use('/api', testLocationRoutes);
 console.log('Test location routes loaded');
+app.use('/api/debug', debugRoutes);
+console.log('Debug routes loaded');
 
 // 404 handler
 app.use('*', (req, res) => {
@@ -188,6 +192,9 @@ const server = app.listen(PORT, () => {
   
   // Start cleanup scheduler
   cleanupScheduler.start();
+  
+  // Start subscription expiry checker
+  subscriptionExpiryService.startPeriodicCheck();
 });
 
 // Increase timeout for long-running operations (OCR, AI processing, large files)
@@ -199,6 +206,7 @@ server.headersTimeout = 610000; // Slightly more than keepAliveTimeout
 process.on('SIGTERM', () => {
   console.log('SIGTERM signal received: closing HTTP server');
   cleanupScheduler.stop();
+  subscriptionExpiryService.stopPeriodicCheck();
   server.close(() => {
     console.log('HTTP server closed');
     process.exit(0);
@@ -208,6 +216,7 @@ process.on('SIGTERM', () => {
 process.on('SIGINT', () => {
   console.log('SIGINT signal received: closing HTTP server');
   cleanupScheduler.stop();
+  subscriptionExpiryService.stopPeriodicCheck();
   server.close(() => {
     console.log('HTTP server closed');
     process.exit(0);

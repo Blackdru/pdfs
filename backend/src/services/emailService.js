@@ -234,8 +234,181 @@ const sendWelcomeEmail = async (email, name) => {
   }
 };
 
+// Send subscription upgrade email
+const sendSubscriptionUpgradeEmail = async (email, name, plan, details) => {
+  try {
+    const transporter = createTransporter();
+    const planName = plan.charAt(0).toUpperCase() + plan.slice(1);
+    const price = plan === 'basic' ? '₹99' : '₹499';
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; }
+          .header { background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%); color: white; padding: 30px; text-align: center; border-radius: 5px 5px 0 0; }
+          .content { background-color: white; padding: 30px; border-radius: 0 0 5px 5px; }
+          .plan-box { background: linear-gradient(135deg, #f0f7ff 0%, #f3e8ff 100%); border: 2px solid #3B82F6; padding: 20px; margin: 20px 0; border-radius: 10px; }
+          .feature { padding: 8px 0; border-bottom: 1px solid #eee; }
+          .feature:last-child { border-bottom: none; }
+          .button { display: inline-block; padding: 12px 30px; background-color: #3B82F6; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+          .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>🎉 Welcome to ${planName} Plan!</h1>
+          </div>
+          <div class="content">
+            <h2>Hello ${name}!</h2>
+            <p>Thank you for upgrading to the <strong>${planName} Plan</strong>! Your subscription is now active.</p>
+            
+            <div class="plan-box">
+              <h3 style="margin-top: 0; color: #3B82F6;">${planName} Plan Details</h3>
+              <p><strong>Price:</strong> ${price}/month</p>
+              <p><strong>Billing Period:</strong> ${new Date(details.current_period_start).toLocaleDateString()} - ${new Date(details.current_period_end).toLocaleDateString()}</p>
+              <p><strong>Next Billing Date:</strong> ${new Date(details.current_period_end).toLocaleDateString()}</p>
+            </div>
+            
+            <h3>Your ${planName} Features:</h3>
+            <div>
+              ${plan === 'basic' ? `
+                <div class="feature">✓ 50 files per month</div>
+                <div class="feature">✓ 50MB max file size</div>
+                <div class="feature">✓ 500MB storage</div>
+                <div class="feature">✓ 25 Advanced OCR pages</div>
+                <div class="feature">✓ 25 AI chat messages</div>
+                <div class="feature">✓ 25 AI summaries</div>
+                <div class="feature">✓ Advanced tools access</div>
+                <div class="feature">✓ Ad-free experience</div>
+              ` : `
+                <div class="feature">✓ Unlimited files</div>
+                <div class="feature">✓ 200MB max file size</div>
+                <div class="feature">✓ Unlimited storage</div>
+                <div class="feature">✓ Unlimited OCR</div>
+                <div class="feature">✓ Unlimited AI chat</div>
+                <div class="feature">✓ Unlimited AI summaries</div>
+                <div class="feature">✓ All advanced tools</div>
+                <div class="feature">✓ Priority support</div>
+                <div class="feature">✓ API access</div>
+              `}
+            </div>
+            
+            <div style="text-align: center;">
+              <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/dashboard" class="button">
+                Start Using Your Plan
+              </a>
+            </div>
+            
+            <p>Need help? Contact us anytime at support@robotpdf.com</p>
+            <p>Best regards,<br>The RobotPDF Team</p>
+          </div>
+          <div class="footer">
+            <p>This is an automated email. Please do not reply.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const mailOptions = {
+      from: `"RobotPDF" <${process.env.SMTP_USER}>`,
+      to: email,
+      subject: `Welcome to ${planName} Plan - RobotPDF`,
+      html: html,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log('✓ Subscription upgrade email sent:', info.messageId);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error('✗ Error sending subscription upgrade email:', error);
+    return { success: false, error: error.message };
+  }
+};
+
+// Send subscription expiry email
+const sendSubscriptionExpiryEmail = async (email, name, plan) => {
+  try {
+    const transporter = createTransporter();
+    const planName = plan.charAt(0).toUpperCase() + plan.slice(1);
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9; }
+          .header { background-color: #EF4444; color: white; padding: 30px; text-align: center; border-radius: 5px 5px 0 0; }
+          .content { background-color: white; padding: 30px; border-radius: 0 0 5px 5px; }
+          .notice-box { background-color: #FEF2F2; border-left: 4px solid #EF4444; padding: 15px; margin: 20px 0; }
+          .button { display: inline-block; padding: 12px 30px; background-color: #3B82F6; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+          .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Your Subscription Has Expired</h1>
+          </div>
+          <div class="content">
+            <h2>Hello ${name},</h2>
+            <p>Your <strong>${planName} Plan</strong> subscription has expired and your account has been downgraded to the Free plan.</p>
+            
+            <div class="notice-box">
+              <strong>What this means:</strong>
+              <ul style="margin: 10px 0;">
+                <li>You now have access to free plan features only</li>
+                <li>Limited file processing (10MB max)</li>
+                <li>No AI features or advanced tools</li>
+                <li>Your files are safe and accessible</li>
+              </ul>
+            </div>
+            
+            <h3>Want to Continue with ${planName} Features?</h3>
+            <p>Renew your subscription now and get back all your premium features instantly!</p>
+            
+            <div style="text-align: center;">
+              <a href="${process.env.FRONTEND_URL || 'http://localhost:3000'}/pricing" class="button">
+                Renew Subscription
+              </a>
+            </div>
+            
+            <p>Questions? We're here to help at support@robotpdf.com</p>
+            <p>Best regards,<br>The RobotPDF Team</p>
+          </div>
+          <div class="footer">
+            <p>This is an automated email. Please do not reply.</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    const mailOptions = {
+      from: `"RobotPDF" <${process.env.SMTP_USER}>`,
+      to: email,
+      subject: 'Your Subscription Has Expired - RobotPDF',
+      html: html,
+    };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log('✓ Subscription expiry email sent:', info.messageId);
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    console.error('✗ Error sending subscription expiry email:', error);
+    return { success: false, error: error.message };
+  }
+};
+
 module.exports = {
   generateOTP,
   sendOTPEmail,
   sendWelcomeEmail,
+  sendSubscriptionUpgradeEmail,
+  sendSubscriptionExpiryEmail,
 };

@@ -129,13 +129,18 @@ const RazorpayPayment = ({
       };
 
       const razorpay = new window.Razorpay(options);
+      razorpay.on('payment.failed', function (response) {
+        console.error('Payment failed:', response.error);
+        toast.error(response.error.description || 'Payment failed');
+        setLoading(false);
+      });
       razorpay.open();
       
     } catch (error) {
       console.error('Payment error:', error);
-      toast.error('Failed to initiate payment');
+      const errorMessage = error.message || 'Failed to initiate payment';
+      toast.error(errorMessage);
       onError(error);
-    } finally {
       setLoading(false);
     }
   };

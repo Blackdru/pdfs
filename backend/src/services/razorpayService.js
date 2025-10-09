@@ -11,53 +11,12 @@ const razorpay = new Razorpay({
 class RazorpayService {
   /**
    * Create a Razorpay subscription for recurring payments
-   * This creates an actual subscription that auto-renews monthly
+   * Using one-time orders for simplicity and better compatibility
    */
   async createSubscription(userId, plan, email, name, currency = 'INR') {
-    try {
-      // Get plan details based on currency
-      const planDetails = this.getPlanDetails(plan, currency);
-      
-      if (!planDetails) {
-        throw new Error(`Invalid plan: ${plan}`);
-      }
-
-      console.log(`Creating Razorpay subscription for ${plan} plan in ${currency}:`, planDetails);
-
-      // For recurring subscriptions, we need to use Razorpay's subscription API
-      // First, create a subscription
-      const subscription = await razorpay.subscriptions.create({
-        plan_id: planDetails.razorpayPlanId,
-        customer_notify: 1, // Notify customer via email/SMS
-        quantity: 1,
-        total_count: 12, // 12 billing cycles (1 year)
-        start_at: Math.floor(Date.now() / 1000) + 300, // Start after 5 minutes (for payment completion)
-        notes: {
-          userId,
-          plan,
-          email,
-          name,
-          currency: planDetails.currency
-        }
-      });
-
-      console.log('Razorpay subscription created:', subscription.id);
-
-      return {
-        id: subscription.id,
-        subscriptionId: subscription.id,
-        amount: planDetails.amount,
-        currency: planDetails.currency,
-        subscription,
-        short_url: subscription.short_url // Payment link for customer
-      };
-    } catch (error) {
-      console.error('Error creating Razorpay subscription:', error);
-      
-      // Fallback to one-time order if subscription creation fails
-      console.log('Falling back to one-time order...');
-      return await this.createOneTimeOrder(userId, plan, email, name, currency);
-    }
+    // Use one-time orders instead of subscriptions for better compatibility
+    console.log('Creating one-time order for subscription...');
+    return await this.createOneTimeOrder(userId, plan, email, name, currency);
   }
 
   /**

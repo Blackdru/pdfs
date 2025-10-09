@@ -109,7 +109,7 @@ const Footer = () => {
             <div className="flex items-center px-3 py-1.5 rounded-full bg-gradient-to-r from-orange-500/10 via-white/5 to-green-500/10 border border-orange-500/20">
               <span className="text-lg mr-1.5">🇮🇳</span>
               <span className="text-xs font-semibold bg-gradient-to-r from-orange-500 via-white to-green-500 bg-clip-text text-transparent">
-                Made in India
+                Made in India and made by Karna Prasad Pun
               </span>
             </div>
           </div>

@@ -1,6 +1,5 @@
 import { useAuth } from '../contexts/AuthContext'
 import FileManager from '../components/FileManager'
-import { BannerAd, ResponsiveAd } from '../components/AdPlaceholder'
 
 const FileManagerPage = () => {
   const { user } = useAuth()
@@ -14,17 +13,7 @@ const FileManagerPage = () => {
       </div>
 
       <div className="layout-dark-container py-12 relative">
-        {/* Top Banner Ad */}
-        <div className="mb-8">
-          <BannerAd className="w-full" />
-        </div>
-        
         <FileManager />
-
-        {/* Bottom Responsive Ad */}
-        <div className="mt-12">
-          <ResponsiveAd className="w-full" />
-        </div>
       </div>
     </div>
   )

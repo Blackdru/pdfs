@@ -217,6 +217,12 @@ const STRIPE_PRICE_IDS = {
 // Plan comparison data for frontend
 const PLAN_COMPARISON = [
   {
+    feature: 'Advertisements',
+    free: 'Supported by ads',
+    basic: '✨ Ad-Free',
+    pro: '✨ Ad-Free'
+  },
+  {
     feature: 'Free Tools Usage',
     free: 'Unlimited',
     basic: 'Unlimited',
@@ -266,12 +272,6 @@ const PLAN_COMPARISON = [
   },
   {
     feature: 'Advanced Settings',
-    free: false,
-    basic: true,
-    pro: true
-  },
-  {
-    feature: 'Ad-Free Experience',
     free: false,
     basic: true,
     pro: true

@@ -37,6 +37,7 @@ const Pricing = () => {
       features: [
         'Unlimited use of free tools',
         '10 MB max file size',
+        'Supported by ads',
         'No storage',
         'No AI features',
         'No advanced tools access'
@@ -50,6 +51,7 @@ const Pricing = () => {
       description: 'Great for regular users',
       popular: true,
       features: [
+        '✨ Ad-Free Experience',
         '50 files per month',
         '50 MB max file size',
         '500 MB storage',
@@ -67,6 +69,7 @@ const Pricing = () => {
       description: 'For power users and teams',
       bestValue: true,
       features: [
+        '✨ Ad-Free Experience',
         'Unlimited files per month',
         '200 MB max file size',
         'Unlimited storage',
@@ -86,6 +89,12 @@ const Pricing = () => {
       free: 'Free',
       basic: '₹99/month',
       pro: '₹499/month'
+    },
+    {
+      feature: 'Advertisements',
+      free: 'Supported by ads',
+      basic: '✨ Ad-Free',
+      pro: '✨ Ad-Free'
     },
     {
       feature: 'Free Tools Usage',

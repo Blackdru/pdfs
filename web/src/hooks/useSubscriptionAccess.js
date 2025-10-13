@@ -19,6 +19,8 @@ const TOOL_REQUIREMENTS = {
   'smart-compress': 'pro',
   'images-to-pdf': 'pro',
   'pdf-to-office': 'pro',
+  'office-to-pdf': 'pro',
+  'advanced-html-to-pdf': 'pro',
   
   // Premium tools - require premium
   'encrypt-pro': 'pro',

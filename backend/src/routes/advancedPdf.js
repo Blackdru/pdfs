@@ -1191,6 +1191,8 @@ router.post('/pdf-to-office',
 // Advanced HTML to PDF - Convert webpage URL to PDF with advanced settings
 router.post('/advanced-html-to-pdf',
   authenticateUser,
+  requireProPlan,
+  trackUsage('pdf_operation', 1),
   async (req, res) => {
     try {
       const { url, outputName = 'webpage.pdf', options = {} } = req.body;
@@ -1347,6 +1349,8 @@ router.post('/advanced-html-to-pdf',
 // Advanced HTML File to PDF - Convert uploaded HTML file to PDF with advanced settings
 router.post('/advanced-html-file-to-pdf',
   authenticateUser,
+  requireProPlan,
+  trackUsage('pdf_operation', 1),
   async (req, res) => {
     try {
       const { fileId, outputName = 'webpage.pdf', options = {} } = req.body;

@@ -16,7 +16,8 @@ import {
   Zap,
   Shield,
   Download,
-  FileSpreadsheet
+  FileSpreadsheet,
+  FileType
 } from 'lucide-react'
 
 export const proTools = [
@@ -181,6 +182,43 @@ export const proTools = [
     popularity: 96,
     processingTime: '< 90s',
     features: ['Word conversion', 'Excel extraction', 'PowerPoint export', 'Format preservation']
+  },
+  {
+    id: 'office-to-pdf',
+    icon: FileType,
+    title: 'Office to PDF Converter',
+    description: 'Convert Word, Excel, PowerPoint to PDF with 100% accuracy',
+    color: 'from-orange-500 to-red-700',
+    bgColor: 'bg-orange-50',
+    borderColor: 'border-orange-200',
+    textColor: 'text-orange-700',
+    iconBg: 'bg-orange-500',
+    acceptedFiles: '.doc,.docx,.xls,.xlsx,.ppt,.pptx,.rtf,.odt,.txt',
+    multipleFiles: true,
+    minFiles: 1,
+    category: 'Professional',
+    popularity: 96,
+    processingTime: '< 90s',
+    features: ['Word to PDF', 'Excel to PDF', 'PowerPoint to PDF', 'Format preservation']
+  },
+  {
+    id: 'advanced-html-to-pdf',
+    icon: FileText,
+    title: 'Advanced HTML to PDF',
+    description: 'Convert webpages or HTML files to PDF with custom settings',
+    color: 'from-teal-500 to-cyan-700',
+    bgColor: 'bg-teal-50',
+    borderColor: 'border-teal-200',
+    textColor: 'text-teal-700',
+    iconBg: 'bg-teal-500',
+    acceptedFiles: '.html,.htm',
+    multipleFiles: false,
+    minFiles: 0,
+    category: 'Professional',
+    popularity: 82,
+    processingTime: '< 60s',
+    requiresUrl: true,
+    features: ['Full page capture', 'Custom page size', 'Header/Footer', 'Background graphics']
   }
 ]
 
@@ -248,6 +286,21 @@ export const PROCESSING_STEPS_CONFIG = {
     { name: 'Extracting Content', icon: Eye },
     { name: 'Converting Format', icon: FileSpreadsheet },
     { name: 'Optimizing Output', icon: Zap },
+    { name: 'Complete', icon: CheckCircle }
+  ],
+  'office-to-pdf': [
+    { name: 'Uploading Files', icon: Upload },
+    { name: 'Analyzing Content', icon: Brain },
+    { name: 'Processing Document', icon: FileText },
+    { name: 'Converting to PDF', icon: FileType },
+    { name: 'Optimizing Output', icon: Zap },
+    { name: 'Complete', icon: CheckCircle }
+  ],
+  'advanced-html-to-pdf': [
+    { name: 'Fetching URL', icon: Upload },
+    { name: 'Rendering Page', icon: Eye },
+    { name: 'Applying Settings', icon: Zap },
+    { name: 'Creating PDF', icon: FileText },
     { name: 'Complete', icon: CheckCircle }
   ]
 }

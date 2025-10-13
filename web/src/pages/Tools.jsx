@@ -35,7 +35,9 @@ import {
   TrendingUp,
   Users,
   Award,
-  Copy
+  Copy,
+  FileSpreadsheet,
+  FileType
 } from 'lucide-react'
 
 const Tools = () => {
@@ -135,6 +137,94 @@ const Tools = () => {
       popularity: 85,
       processingTime: '< 90s'
     },
+    {
+      id: 'html-to-pdf',
+      icon: FileText,
+      title: 'HTML to PDF',
+      description: 'Convert webpage URL or HTML file to PDF',
+      color: 'from-teal-500 to-teal-700',
+      bgColor: 'bg-teal-50',
+      borderColor: 'border-teal-200',
+      textColor: 'text-teal-700',
+      iconBg: 'bg-teal-500',
+      acceptedFiles: '.html,.htm',
+      multipleFiles: false,
+      minFiles: 0,
+      category: 'Conversion',
+      popularity: 78,
+      processingTime: '< 60s',
+      requiresUrlOrFile: true
+    },
+    {
+      id: 'pdf-to-word',
+      icon: FileText,
+      title: 'PDF to Word',
+      description: 'Convert PDF files to editable Word documents',
+      color: 'from-blue-600 to-indigo-700',
+      bgColor: 'bg-blue-50',
+      borderColor: 'border-blue-200',
+      textColor: 'text-blue-700',
+      iconBg: 'bg-blue-600',
+      acceptedFiles: '.pdf',
+      multipleFiles: false,
+      minFiles: 1,
+      category: 'Conversion',
+      popularity: 94,
+      processingTime: '< 60s'
+    },
+    {
+      id: 'word-to-pdf',
+      icon: FileType,
+      title: 'Word to PDF',
+      description: 'Convert Word documents to PDF format (Pro)',
+      color: 'from-indigo-600 to-purple-700',
+      bgColor: 'bg-indigo-50',
+      borderColor: 'border-indigo-200',
+      textColor: 'text-indigo-700',
+      iconBg: 'bg-indigo-600',
+      acceptedFiles: '.doc,.docx',
+      multipleFiles: false,
+      minFiles: 1,
+      category: 'Conversion',
+      popularity: 93,
+      processingTime: '< 60s',
+      requiresPro: true
+    },
+    {
+      id: 'pdf-to-excel',
+      icon: FileSpreadsheet,
+      title: 'PDF to Excel',
+      description: 'Convert PDF files to Excel spreadsheets',
+      color: 'from-green-600 to-emerald-700',
+      bgColor: 'bg-green-50',
+      borderColor: 'border-green-200',
+      textColor: 'text-green-700',
+      iconBg: 'bg-green-600',
+      acceptedFiles: '.pdf',
+      multipleFiles: false,
+      minFiles: 1,
+      category: 'Conversion',
+      popularity: 90,
+      processingTime: '< 60s'
+    },
+    {
+      id: 'excel-to-pdf',
+      icon: FileSpreadsheet,
+      title: 'Excel to PDF',
+      description: 'Convert Excel spreadsheets to PDF format (Pro)',
+      color: 'from-emerald-600 to-teal-700',
+      bgColor: 'bg-emerald-50',
+      borderColor: 'border-emerald-200',
+      textColor: 'text-emerald-700',
+      iconBg: 'bg-emerald-600',
+      acceptedFiles: '.xls,.xlsx',
+      multipleFiles: false,
+      minFiles: 1,
+      category: 'Conversion',
+      popularity: 89,
+      processingTime: '< 60s',
+      requiresPro: true
+    },
       ]
 
   const categories = ['All', 'Basic', 'Optimization', 'Conversion']
@@ -198,6 +288,12 @@ const Tools = () => {
         { name: 'Text Processing', icon: FileText },
         { name: 'AI Initialization', icon: MessageSquare },
         { name: 'Complete', icon: CheckCircle }
+      ],
+      'html-to-pdf': [
+        { name: 'Fetching URL', icon: Upload },
+        { name: 'Rendering Page', icon: Eye },
+        { name: 'Creating PDF', icon: FileText },
+        { name: 'Complete', icon: CheckCircle }
       ]
     }
 
@@ -256,7 +352,9 @@ const Tools = () => {
     setUploadedFiles(validFiles)
     
     // Auto-process if we have enough files
-    if (validFiles.length >= (selectedTool?.minFiles || 1)) {
+    // For HTML to PDF (minFiles = 0), auto-process if at least 1 file is uploaded
+    const minRequired = selectedTool?.minFiles === 0 ? 1 : (selectedTool?.minFiles || 1)
+    if (validFiles.length >= minRequired) {
       await handleAutoProcess(validFiles)
     }
   }
@@ -288,7 +386,9 @@ const Tools = () => {
   }
 
   const handleAutoProcess = async (files) => {
-    if (!selectedTool || files.length === 0) return
+    // For HTML to PDF, allow processing with no files if URL is provided
+    if (!selectedTool) return
+    if (selectedTool.id !== 'html-to-pdf' && files.length === 0) return
 
     // Free tools don't require authentication
     // Only check usage limits if user is authenticated
@@ -307,38 +407,44 @@ const Tools = () => {
     try {
       let uploadedFileIds = []
       
-      // Upload files with detailed progress
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i]
-        const fileNum = i + 1
-        const totalFiles = files.length
-        
-        try {
-          // Calculate progress: 5% to 30% for uploads
-          const uploadProgress = 5 + ((fileNum - 1) / totalFiles) * 25
-          updateProgress(uploadProgress, `Uploading file ${fileNum}/${totalFiles}: ${file.name}...`, 0)
+      // Upload files with detailed progress (skip if no files for HTML to PDF with URL)
+      if (files.length > 0) {
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i]
+          const fileNum = i + 1
+          const totalFiles = files.length
+          
+          try {
+            // Calculate progress: 5% to 30% for uploads
+            const uploadProgress = 5 + ((fileNum - 1) / totalFiles) * 25
+            updateProgress(uploadProgress, `Uploading file ${fileNum}/${totalFiles}: ${file.name}...`, 0)
 
-          const response = await api.uploadFile(file)
-          
-          uploadedFileIds.push(response.file.id)
-          
-          // Show completion for this file
-          const completedProgress = 5 + (fileNum / totalFiles) * 25
-          updateProgress(completedProgress, `Uploaded ${fileNum}/${totalFiles} files`, 0)
-          await new Promise(resolve => setTimeout(resolve, 200))
-        } catch (error) {
-          console.error('Upload error for', file.name, ':', error)
-          toast.error(`Failed to upload ${file.name}: ${error.message}`)
+            const response = await api.uploadFile(file)
+            
+            uploadedFileIds.push(response.file.id)
+            
+            // Show completion for this file
+            const completedProgress = 5 + (fileNum / totalFiles) * 25
+            updateProgress(completedProgress, `Uploaded ${fileNum}/${totalFiles} files`, 0)
+            await new Promise(resolve => setTimeout(resolve, 200))
+          } catch (error) {
+            console.error('Upload error for', file.name, ':', error)
+            toast.error(`Failed to upload ${file.name}: ${error.message}`)
+          }
         }
-      }
 
-      if (uploadedFileIds.length === 0) {
-        toast.error('No files were uploaded successfully. Please check your connection and try again.')
-        return
-      }
+        if (uploadedFileIds.length === 0 && selectedTool.id !== 'html-to-pdf') {
+          toast.error('No files were uploaded successfully. Please check your connection and try again.')
+          return
+        }
 
-      updateProgress(35, `All ${uploadedFileIds.length} file(s) uploaded successfully`, 1)
-      await new Promise(resolve => setTimeout(resolve, 500))
+        updateProgress(35, `All ${uploadedFileIds.length} file(s) uploaded successfully`, 1)
+        await new Promise(resolve => setTimeout(resolve, 500))
+      } else {
+        // For HTML to PDF with URL only, skip file upload
+        updateProgress(30, 'Preparing to convert URL...', 0)
+        await new Promise(resolve => setTimeout(resolve, 300))
+      }
 
       // Process based on tool type with detailed progress
       let result
@@ -481,6 +587,57 @@ const Tools = () => {
           setIsProcessing(false)
           return
           
+        case 'html-to-pdf':
+          // Convert HTML/URL to PDF
+          updateProgress(50, 'Processing...', 1)
+          await new Promise(resolve => setTimeout(resolve, 500))
+          
+          // Check if URL or file was provided
+          const urlInput = document.getElementById('html-url-input')
+          const url = urlInput?.value?.trim()
+          
+          if (url) {
+            // URL conversion
+            // Validate URL format
+            try {
+              new URL(url)
+            } catch (e) {
+              toast.error('Please enter a valid URL (e.g., https://example.com)')
+              setIsProcessing(false)
+              return
+            }
+            
+            updateProgress(65, 'Fetching and rendering webpage...', 2)
+            
+            try {
+              result = await api.convertHTMLToPDF(url, `${outputName}.pdf`)
+              
+              updateProgress(85, 'PDF created successfully!', 2)
+              toast.success('Webpage converted to PDF!')
+            } catch (error) {
+              console.error('HTML to PDF error:', error)
+              throw error
+            }
+          } else if (uploadedFileIds.length > 0) {
+            // HTML file conversion
+            updateProgress(65, 'Converting HTML file to PDF...', 2)
+            
+            try {
+              result = await api.convertHTMLFileToPDF(uploadedFileIds[0], `${outputName}.pdf`)
+              
+              updateProgress(85, 'PDF created successfully!', 2)
+              toast.success('HTML file converted to PDF!')
+            } catch (error) {
+              console.error('HTML file to PDF error:', error)
+              throw error
+            }
+          } else {
+            toast.error('Please enter a URL or upload an HTML file')
+            setIsProcessing(false)
+            return
+          }
+          break
+          
         case 'ai-chat':
           // Initialize AI chat for the uploaded PDF
           
@@ -546,6 +703,54 @@ const Tools = () => {
           setUploadedFiles([])
           setIsProcessing(false)
           return
+          
+        case 'pdf-to-word':
+          // Convert PDF to Word (DOCX)
+          updateProgress(50, 'Analyzing PDF structure...', 1)
+          await new Promise(resolve => setTimeout(resolve, 500))
+          updateProgress(70, 'Converting to Word...', 2)
+          
+          result = await api.convertPDFToWord(uploadedFileIds[0], `${outputName}.docx`)
+          
+          updateProgress(85, 'Conversion complete!', 2)
+          toast.success('PDF converted to Word successfully!')
+          break
+          
+        case 'word-to-pdf':
+          // Convert Word to PDF
+          updateProgress(50, 'Processing Word document...', 1)
+          await new Promise(resolve => setTimeout(resolve, 500))
+          updateProgress(70, 'Converting to PDF...', 2)
+          
+          result = await api.convertWordToPDF(uploadedFileIds[0], `${outputName}.pdf`)
+          
+          updateProgress(85, 'Conversion complete!', 2)
+          toast.success('Word converted to PDF successfully!')
+          break
+          
+        case 'pdf-to-excel':
+          // Convert PDF to Excel (XLSX)
+          updateProgress(50, 'Analyzing PDF structure...', 1)
+          await new Promise(resolve => setTimeout(resolve, 500))
+          updateProgress(70, 'Converting to Excel...', 2)
+          
+          result = await api.convertPDFToExcel(uploadedFileIds[0], `${outputName}.xlsx`)
+          
+          updateProgress(85, 'Conversion complete!', 2)
+          toast.success('PDF converted to Excel successfully!')
+          break
+          
+        case 'excel-to-pdf':
+          // Convert Excel to PDF
+          updateProgress(50, 'Processing Excel spreadsheet...', 1)
+          await new Promise(resolve => setTimeout(resolve, 500))
+          updateProgress(70, 'Converting to PDF...', 2)
+          
+          result = await api.convertExcelToPDF(uploadedFileIds[0], `${outputName}.pdf`)
+          
+          updateProgress(85, 'Conversion complete!', 2)
+          toast.success('Excel converted to PDF successfully!')
+          break
           
         default:
           throw new Error('Unknown tool type')
@@ -649,6 +854,8 @@ const Tools = () => {
         toast.error('Service temporarily unavailable. Please try again later.')
       } else if (errorMsg.includes('Too many requests')) {
         toast.error('Rate limit exceeded. Please wait a moment and try again.')
+      } else if (errorMsg.includes('requires advanced processing') || errorMsg.includes('Upgrade to Pro')) {
+        toast.error(errorMsg, { duration: 8000 })
       } else {
         toast.error(`Processing failed: ${errorMsg}`, { duration: 5000 })
       }
@@ -665,7 +872,7 @@ const Tools = () => {
   const usageExceeded = usage && usage.current >= usage.limit && subscription?.plan === 'free'
 
   return (
-    <div className="min-h-screen bg-page relative overflow-hidden">
+    <div className="bg-page relative overflow-hidden">
       {/* Modern Background */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -right-40 w-80 h-80 bg-blue-900 rounded-full blur-3xl opacity-20 animate-float"></div>
@@ -674,6 +881,42 @@ const Tools = () => {
       </div>
 
       <div className="relative z-10">
+        {/* Hero Section - Mobile First */}
+        <div className="bg-gradient-to-br from-grey-900 via-grey-800 to-grey-900 border-b border-border">
+          <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-8 sm:py-12 md:py-16">
+            <div className="text-center">
+              <div className="inline-flex items-center px-3 py-1.5 sm:px-4 sm:py-2 bg-blue-900 text-blue-300 rounded-full text-xs sm:text-sm font-medium mb-4 sm:mb-6">
+                <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                Professional PDF Tools
+              </div>
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-foreground mb-4 sm:mb-6 px-2">
+                Transform Your PDFs
+                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 mt-1 sm:mt-2">
+                  Like Magic
+                </span>
+              </h1>
+              <p className="text-sm sm:text-base md:text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto mb-6 sm:mb-8 px-4">
+                Choose from our powerful suite of PDF tools to merge, split, compress, and convert your documents with professional-grade quality.
+              </p>
+              
+              {/* Stats - Mobile Optimized */}
+              <div className="grid grid-cols-3 gap-4 sm:gap-6 md:gap-8 max-w-2xl mx-auto px-4">
+                <div className="text-center">
+                  <div className="text-xl sm:text-2xl md:text-3xl font-bold text-blue-400 mb-1 sm:mb-2">1M+</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Files Processed</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-xl sm:text-2xl md:text-3xl font-bold text-green-400 mb-1 sm:mb-2">99.9%</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Uptime</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-xl sm:text-2xl md:text-3xl font-bold text-purple-400 mb-1 sm:mb-2">50K+</div>
+                  <div className="text-xs sm:text-sm text-muted-foreground">Happy Users</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* Usage Warning */}
         {usageExceeded && (
@@ -783,24 +1026,80 @@ const Tools = () => {
                 </div>
               </div>
 
-              {/* File Upload Button */}
+              {/* File Upload Button or URL Input */}
               <div id="upload-section" className="bg-elevated rounded-xl sm:rounded-2xl p-4 sm:p-6 mb-4 sm:mb-6 text-center">
-                <h3 className="text-base sm:text-lg font-semibold text-card-foreground mb-3 sm:mb-4">
-                  {selectedTool.multipleFiles ? 'Upload Files' : 'Upload File'}
-                </h3>
-                
-                <Button
-                  onClick={() => setShowUploadModal(true)}
-                  className={`bg-gradient-to-r ${selectedTool.color} text-white px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base lg:text-lg font-semibold hover:shadow-lg transition-all duration-300 mobile-touch-target w-full sm:w-auto`}
-                >
-                  <Upload className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-                  {selectedTool.multipleFiles ? 'Select Files' : 'Select File'}
-                </Button>
+                {selectedTool.requiresUrlOrFile ? (
+                  <>
+                    <h3 className="text-base sm:text-lg font-semibold text-card-foreground mb-3 sm:mb-4">
+                      Enter Webpage URL or Upload HTML File
+                    </h3>
+                    
+                    <div className="max-w-2xl mx-auto mb-4">
+                      <input
+                        id="html-url-input"
+                        type="url"
+                        placeholder="https://example.com"
+                        className="w-full px-4 py-3 bg-accent border border-border rounded-lg text-card-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
+                      />
+                    </div>
+                    
+                    <div className="flex items-center gap-3 my-4">
+                      <div className="flex-1 h-px bg-border"></div>
+                      <span className="text-xs text-muted-foreground">OR</span>
+                      <div className="flex-1 h-px bg-border"></div>
+                    </div>
+                    
+                    <Button
+                      onClick={() => setShowUploadModal(true)}
+                      variant="outline"
+                      className="border-border text-card-foreground hover:bg-accent mb-4 w-full sm:w-auto mobile-touch-target"
+                    >
+                      <Upload className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                      Upload HTML File
+                    </Button>
+                    
+                    <p className="text-xs sm:text-sm text-muted-foreground mb-4">
+                      Enter a URL or upload an HTML file (.html, .htm)
+                    </p>
+                    
+                    <Button
+                      onClick={async () => {
+                        const urlInput = document.getElementById('html-url-input')
+                        const url = urlInput?.value?.trim()
+                        if (url || uploadedFiles.length > 0) {
+                          // Pass empty array if only URL is provided
+                          await handleAutoProcess(url && uploadedFiles.length === 0 ? [] : uploadedFiles)
+                        } else {
+                          toast.error('Please enter a URL or upload an HTML file')
+                        }
+                      }}
+                      disabled={isProcessing}
+                      className={`bg-gradient-to-r ${selectedTool.color} text-white px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base lg:text-lg font-semibold hover:shadow-lg transition-all duration-300 mobile-touch-target w-full sm:w-auto`}
+                    >
+                      <Download className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                      Convert to PDF
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <h3 className="text-base sm:text-lg font-semibold text-card-foreground mb-3 sm:mb-4">
+                      {selectedTool.multipleFiles ? 'Upload Files' : 'Upload File'}
+                    </h3>
+                    
+                    <Button
+                      onClick={() => setShowUploadModal(true)}
+                      className={`bg-gradient-to-r ${selectedTool.color} text-white px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base lg:text-lg font-semibold hover:shadow-lg transition-all duration-300 mobile-touch-target w-full sm:w-auto`}
+                    >
+                      <Upload className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+                      {selectedTool.multipleFiles ? 'Select Files' : 'Select File'}
+                    </Button>
 
-                <p className="text-xs sm:text-sm text-muted-foreground mt-3">
-                  Supports: {selectedTool.acceptedFiles.replace(/\./g, '').toUpperCase()}
-                  {selectedTool.multipleFiles && ` • Up to 10 files`}
-                </p>
+                    <p className="text-xs sm:text-sm text-muted-foreground mt-3">
+                      Supports: {selectedTool.acceptedFiles.replace(/\./g, '').toUpperCase()}
+                      {selectedTool.multipleFiles && ` • Up to 10 files`}
+                    </p>
+                  </>
+                )}
 
                 {/* Uploaded Files Display */}
                 {uploadedFiles.length > 0 && (
@@ -1056,43 +1355,6 @@ const Tools = () => {
         currentStep={currentStep}
         estimatedTime={selectedTool ? parseInt(selectedTool.processingTime.replace(/[^\d]/g, '')) : 60}
       />
-
-        {/* Hero Section - Mobile First */}
-        <div className="bg-gradient-to-br from-grey-900 via-grey-800 to-grey-900 border-b border-border">
-          <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-8 sm:py-12 md:py-16">
-            <div className="text-center">
-              <div className="inline-flex items-center px-3 py-1.5 sm:px-4 sm:py-2 bg-blue-900 text-blue-300 rounded-full text-xs sm:text-sm font-medium mb-4 sm:mb-6">
-                <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                Professional PDF Tools
-              </div>
-              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-foreground mb-4 sm:mb-6 px-2">
-                Transform Your PDFs
-                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 mt-1 sm:mt-2">
-                  Like Magic
-                </span>
-              </h1>
-              <p className="text-sm sm:text-base md:text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto mb-6 sm:mb-8 px-4">
-                Choose from our powerful suite of PDF tools to merge, split, compress, and convert your documents with professional-grade quality.
-              </p>
-              
-              {/* Stats - Mobile Optimized */}
-              <div className="grid grid-cols-3 gap-4 sm:gap-6 md:gap-8 max-w-2xl mx-auto px-4">
-                <div className="text-center">
-                  <div className="text-xl sm:text-2xl md:text-3xl font-bold text-blue-400 mb-1 sm:mb-2">1M+</div>
-                  <div className="text-xs sm:text-sm text-muted-foreground">Files Processed</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-xl sm:text-2xl md:text-3xl font-bold text-green-400 mb-1 sm:mb-2">99.9%</div>
-                  <div className="text-xs sm:text-sm text-muted-foreground">Uptime</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-xl sm:text-2xl md:text-3xl font-bold text-purple-400 mb-1 sm:mb-2">50K+</div>
-                  <div className="text-xs sm:text-sm text-muted-foreground">Happy Users</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
 
       {/* AI Assistant */}
       {showAIAssistant && currentFileForAI && (

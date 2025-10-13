@@ -1384,97 +1384,19 @@ class AdvancedPdfService {
 
       console.log('Content extracted successfully');
 
-      // Convert to target format
-      let convertedBuffer;
-      let mimeType;
-      let fileExtension;
-
-      switch (outputFormat.toLowerCase()) {
-        case 'docx':
-          convertedBuffer = await this.convertToDocx(extractedContent, {
-            preserveFormatting,
-            preserveImages,
-            preserveTables,
-            preserveHyperlinks,
-            preserveHeaders,
-            detectColumns,
-            preserveFonts,
-            preserveColors,
-            createTOC,
-            imageQuality
-          });
-          mimeType = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-          fileExtension = 'docx';
-          break;
-
-        case 'doc':
-          // Convert to DOCX first, then to DOC format
-          const docxBuffer = await this.convertToDocx(extractedContent, options);
-          convertedBuffer = docxBuffer; // In production, use a library to convert DOCX to DOC
-          mimeType = 'application/msword';
-          fileExtension = 'doc';
-          break;
-
-        case 'xlsx':
-          convertedBuffer = await this.convertToExcel(extractedContent, {
-            detectTables,
-            oneSheetPerPage,
-            preserveFormulas,
-            preserveFormatting,
-            imageQuality
-          });
-          mimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-          fileExtension = 'xlsx';
-          break;
-
-        case 'xls':
-          // Convert to XLSX first
-          const xlsxBuffer = await this.convertToExcel(extractedContent, options);
-          convertedBuffer = xlsxBuffer; // In production, use a library to convert XLSX to XLS
-          mimeType = 'application/vnd.ms-excel';
-          fileExtension = 'xls';
-          break;
-
-        case 'pptx':
-          convertedBuffer = await this.convertToPowerPoint(extractedContent, {
-            preserveImages,
-            preserveFormatting,
-            oneSlidePerPage: true,
-            imageQuality
-          });
-          mimeType = 'application/vnd.openxmlformats-officedocument.presentationml.presentation';
-          fileExtension = 'pptx';
-          break;
-
-        case 'rtf':
-          convertedBuffer = await this.convertToRtf(extractedContent, {
-            preserveFormatting,
-            preserveImages,
-            preserveTables
-          });
-          mimeType = 'application/rtf';
-          fileExtension = 'rtf';
-          break;
-
-        case 'odt':
-          convertedBuffer = await this.convertToOdt(extractedContent, {
-            preserveFormatting,
-            preserveImages,
-            preserveTables
-          });
-          mimeType = 'application/vnd.oasis.opendocument.text';
-          fileExtension = 'odt';
-          break;
-
-        case 'txt':
-          convertedBuffer = await this.convertToText(extractedContent);
-          mimeType = 'text/plain';
-          fileExtension = 'txt';
-          break;
-
-        default:
-          throw new Error(`Unsupported output format: ${outputFormat}`);
-      }
+      // Use the new office conversion service for better conversion
+      const officeConversionService = require('./officeConversionService');
+      const pdfBytes = await sourcePdf.save();
+      const pdfBuffer = Buffer.from(pdfBytes);
+      
+      const convertedBuffer = await officeConversionService.convertPdfToOffice(
+        pdfBuffer,
+        outputFormat.toLowerCase(),
+        file.filename
+      );
+      
+      const mimeType = officeConversionService.getMimeType(outputFormat.toLowerCase());
+      const fileExtension = outputFormat.toLowerCase();
 
       console.log(`Conversion to ${outputFormat} completed. Size: ${convertedBuffer.length} bytes`);
 
@@ -2014,6 +1936,73 @@ class AdvancedPdfService {
       .replace(/{/g, '\\{')
       .replace(/}/g, '\\}')
       .replace(/\n/g, '\\par\n');
+  }
+
+  // Office to PDF Converter - Convert Word, Excel, PowerPoint to PDF
+  async convertOfficeToPdf(file, options = {}) {
+    try {
+      console.log(`Starting Office to PDF conversion for file: ${file.filename}`);
+      console.log('File type:', file.type);
+
+      // Download file from Supabase storage
+      const { data: fileBuffer, error: downloadError } = await supabaseAdmin.storage
+        .from('files')
+        .download(file.path);
+
+      if (downloadError) {
+        throw new Error(`Failed to download file: ${downloadError.message}`);
+      }
+
+      const buffer = Buffer.from(await fileBuffer.arrayBuffer());
+      console.log('File downloaded, size:', buffer.length);
+
+      // Use the new office conversion service
+      const officeConversionService = require('./officeConversionService');
+      const pdfBuffer = await officeConversionService.convertOfficeToPdf(buffer, file.type, file.filename);
+      
+      console.log('Conversion completed, PDF size:', pdfBuffer.length);
+
+      // Generate output filename
+      const baseFilename = file.filename.replace(/\.[^/.]+$/, '');
+      const outputFilename = `${baseFilename}.pdf`;
+
+      // Upload to Supabase storage
+      const storagePath = `converted/${uuidv4()}-${outputFilename}`;
+      const { error: uploadError } = await supabaseAdmin.storage
+        .from('files')
+        .upload(storagePath, pdfBuffer, {
+          contentType: 'application/pdf',
+          upsert: false
+        });
+
+      if (uploadError) {
+        throw new Error('Failed to upload converted file: ' + uploadError.message);
+      }
+
+      console.log('Converted PDF uploaded successfully');
+
+      // Get page count from PDF
+      let pageCount = 1;
+      try {
+        const pdfDoc = await PDFLib.PDFDocument.load(pdfBuffer);
+        pageCount = pdfDoc.getPageCount();
+      } catch (e) {
+        console.warn('Could not determine page count:', e.message);
+      }
+
+      return {
+        filename: outputFilename,
+        size: pdfBuffer.length,
+        path: storagePath,
+        format: 'pdf',
+        pageCount: pageCount,
+        mimeType: 'application/pdf'
+      };
+
+    } catch (error) {
+      console.error('Office to PDF conversion error:', error);
+      throw new Error('Office to PDF conversion failed: ' + error.message);
+    }
   }
 }
 

@@ -50,24 +50,50 @@ const ToolProcessor = ({
         setToolSettings={setToolSettings}
       />
 
-      {/* File Upload Area - Mobile First */}
+      {/* File Upload Area or URL Input - Mobile First */}
       <div id="upload-section" className="bg-elevated rounded-xl sm:rounded-2xl p-4 sm:p-6 mb-4 sm:mb-6 text-center">
-        <h3 className="text-base sm:text-lg font-semibold text-card-foreground mb-3 sm:mb-4">
-          {selectedTool.multipleFiles ? 'Upload Files' : 'Upload File'}
-        </h3>
-        
-        <Button
-          onClick={() => setShowUploadModal(true)}
-          className={`bg-gradient-to-r ${selectedTool.color} text-white px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base lg:text-lg font-semibold hover:shadow-lg transition-all duration-300 w-full sm:w-auto mobile-touch-target`}
-        >
-          <Upload className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-          {selectedTool.multipleFiles ? 'Select Files' : 'Select File'}
-        </Button>
+        {selectedTool.id === 'advanced-html-to-pdf' ? (
+          <>
+            <h3 className="text-base sm:text-lg font-semibold text-card-foreground mb-3 sm:mb-4">
+              Upload HTML File (Optional if URL provided)
+            </h3>
+            <p className="text-xs sm:text-sm text-muted-foreground mb-4">
+              Upload an HTML file or enter a URL in settings above
+            </p>
+            
+            <Button
+              onClick={() => setShowUploadModal(true)}
+              variant="outline"
+              className="border-border text-card-foreground hover:bg-accent w-full sm:w-auto mobile-touch-target"
+            >
+              <Upload className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+              Upload HTML File
+            </Button>
+            
+            <p className="text-xs sm:text-sm text-muted-foreground mt-3">
+              Supports: HTML, HTM files
+            </p>
+          </>
+        ) : (
+          <>
+            <h3 className="text-base sm:text-lg font-semibold text-card-foreground mb-3 sm:mb-4">
+              {selectedTool.multipleFiles ? 'Upload Files' : 'Upload File'}
+            </h3>
+            
+            <Button
+              onClick={() => setShowUploadModal(true)}
+              className={`bg-gradient-to-r ${selectedTool.color} text-white px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base lg:text-lg font-semibold hover:shadow-lg transition-all duration-300 w-full sm:w-auto mobile-touch-target`}
+            >
+              <Upload className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
+              {selectedTool.multipleFiles ? 'Select Files' : 'Select File'}
+            </Button>
 
-        <p className="text-xs sm:text-sm text-muted-foreground mt-3">
-          Supports: {selectedTool.acceptedFiles.replace(/\./g, '').toUpperCase()}
-          {selectedTool.multipleFiles && ` • Up to 10 files`}
-        </p>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-3">
+              Supports: {selectedTool.acceptedFiles.replace(/\./g, '').toUpperCase()}
+              {selectedTool.multipleFiles && ` • Up to 10 files`}
+            </p>
+          </>
+        )}
 
         {/* Uploaded Files Display - Mobile First */}
         {uploadedFiles.length > 0 && (
@@ -103,17 +129,22 @@ const ToolProcessor = ({
       </div>
 
       {/* Process Button - Mobile First */}
-      {uploadedFiles.length > 0 && (
+      {(uploadedFiles.length > 0 || (selectedTool.id === 'advanced-html-to-pdf' && toolSettings?.url?.trim())) && (
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 sm:p-6 bg-elevated rounded-xl sm:rounded-2xl gap-4">
           <div className="flex-1">
             <h3 className="text-base sm:text-lg font-semibold text-card-foreground mb-1">Ready to Process</h3>
             <p className="text-xs sm:text-sm text-muted-foreground">
-              {uploadedFiles.length} file(s) ready for {selectedTool.title.toLowerCase()}
+              {selectedTool.id === 'advanced-html-to-pdf' 
+                ? (uploadedFiles.length > 0 
+                    ? `HTML file ready to convert` 
+                    : 'URL ready to convert')
+                : `${uploadedFiles.length} file(s) ready for ${selectedTool.title.toLowerCase()}`
+              }
             </p>
           </div>
           <Button
             onClick={() => onProcess(uploadedFiles, toolSettings)}
-            disabled={!canProcess || usageExceeded || isProcessing}
+            disabled={usageExceeded || isProcessing}
             className={`bg-gradient-to-r ${selectedTool.color} text-white px-6 sm:px-8 py-2.5 sm:py-3 hover:shadow-lg transition-all duration-300 w-full sm:w-auto mobile-touch-target text-sm sm:text-base`}
           >
             {isProcessing ? (
@@ -124,7 +155,7 @@ const ToolProcessor = ({
             ) : (
               <>
                 <Rocket className="h-3 w-3 sm:h-4 sm:w-4 mr-2" />
-                Process Files
+                Convert to PDF
               </>
             )}
           </Button>

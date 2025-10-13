@@ -1188,6 +1188,484 @@ router.post('/pdf-to-office',
   }
 );
 
+// Advanced HTML to PDF - Convert webpage URL to PDF with advanced settings
+router.post('/advanced-html-to-pdf',
+  authenticateUser,
+  async (req, res) => {
+    try {
+      const { url, outputName = 'webpage.pdf', options = {} } = req.body;
+
+      console.log('=== ADVANCED HTML TO PDF REQUEST ===');
+      console.log('User:', req.user.id);
+      console.log('URL:', url);
+      console.log('Options:', options);
+
+      if (!url) {
+        return res.status(400).json({ error: 'URL is required' });
+      }
+
+      // Validate URL format
+      try {
+        new URL(url);
+      } catch (e) {
+        return res.status(400).json({ error: 'Invalid URL format' });
+      }
+
+      // Use puppeteer to convert HTML to PDF with advanced options
+      const puppeteer = require('puppeteer');
+      
+      let browser;
+      try {
+        // Launch browser
+        browser = await puppeteer.launch({
+          headless: 'new',
+          args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-accelerated-2d-canvas',
+            '--disable-gpu'
+          ]
+        });
+
+        const page = await browser.newPage();
+        
+        // Set viewport
+        await page.setViewport({
+          width: 1920,
+          height: 1080,
+          deviceScaleFactor: 1
+        });
+
+        // Navigate to URL with timeout
+        await page.goto(url, {
+          waitUntil: 'networkidle2',
+          timeout: 30000
+        });
+
+        // Prepare PDF options
+        const pdfOptions = {
+          format: options.pageSize || 'A4',
+          landscape: options.orientation === 'landscape',
+          printBackground: options.printBackground !== false,
+          margin: options.margin || {
+            top: '20px',
+            right: '20px',
+            bottom: '20px',
+            left: '20px'
+          },
+          displayHeaderFooter: options.displayHeaderFooter || false,
+          headerTemplate: options.headerTemplate || '',
+          footerTemplate: options.footerTemplate || '',
+          scale: options.scale || 1,
+          preferCSSPageSize: options.preferCSSPageSize || false
+        };
+
+        // Generate PDF
+        const pdfBuffer = await page.pdf(pdfOptions);
+
+        await browser.close();
+
+        // Save PDF file
+        const userFolder = req.user.id;
+        const filePath = `${userFolder}/processed/${Date.now()}-${outputName}`;
+
+        // Upload to storage
+        const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
+          .from('files')
+          .upload(filePath, pdfBuffer, {
+            contentType: 'application/pdf',
+            upsert: false
+          });
+
+        if (uploadError) {
+          throw new Error(`Failed to save processed file: ${uploadError.message}`);
+        }
+
+        // Save metadata to database
+        const { data: fileData, error: dbError } = await supabaseAdmin
+          .from('files')
+          .insert([
+            {
+              user_id: req.user.id,
+              filename: outputName,
+              path: uploadData.path,
+              type: 'application/pdf',
+              size: pdfBuffer.length
+            }
+          ])
+          .select()
+          .single();
+
+        if (dbError) {
+          // Clean up uploaded file if database insert fails
+          await supabaseAdmin.storage.from('files').remove([uploadData.path]);
+          throw new Error(`Database error: ${dbError.message}`);
+        }
+
+        // Log operation
+        await supabaseAdmin
+          .from('history')
+          .insert([
+            {
+              user_id: req.user.id,
+              file_id: fileData.id,
+              action: 'advanced-html-to-pdf'
+            }
+          ]);
+
+        console.log('Advanced HTML to PDF completed successfully:', fileData.id);
+
+        res.json({
+          message: 'Webpage converted to PDF successfully',
+          file: fileData
+        });
+
+      } catch (error) {
+        if (browser) {
+          await browser.close();
+        }
+        throw error;
+      }
+
+    } catch (error) {
+      console.error('Advanced HTML to PDF error:', error);
+      
+      if (error.message.includes('timeout')) {
+        return res.status(408).json({ error: 'Request timeout. The webpage took too long to load.' });
+      }
+      
+      if (error.message.includes('net::ERR')) {
+        return res.status(400).json({ error: 'Failed to load webpage. Please check the URL and try again.' });
+      }
+      
+      res.status(500).json({ error: error.message || 'HTML to PDF conversion failed' });
+    }
+  }
+);
+
+// Advanced HTML File to PDF - Convert uploaded HTML file to PDF with advanced settings
+router.post('/advanced-html-file-to-pdf',
+  authenticateUser,
+  async (req, res) => {
+    try {
+      const { fileId, outputName = 'webpage.pdf', options = {} } = req.body;
+
+      console.log('=== ADVANCED HTML FILE TO PDF REQUEST ===');
+      console.log('User:', req.user.id);
+      console.log('File ID:', fileId);
+      console.log('Options:', options);
+
+      if (!fileId) {
+        return res.status(400).json({ error: 'File ID is required' });
+      }
+
+      // Get file metadata
+      const { data: file, error: fileError } = await supabaseAdmin
+        .from('files')
+        .select('*')
+        .eq('id', fileId)
+        .eq('user_id', req.user.id)
+        .single();
+
+      if (fileError || !file) {
+        return res.status(404).json({ error: 'File not found or access denied' });
+      }
+
+      // Validate file type
+      if (!file.type.includes('html') && !file.filename.match(/\.(html|htm)$/i)) {
+        return res.status(400).json({ error: 'File must be an HTML file (.html or .htm)' });
+      }
+
+      // Get file buffer
+      const { data: fileBuffer, error: downloadError } = await supabaseAdmin.storage
+        .from('files')
+        .download(file.path);
+
+      if (downloadError) {
+        throw new Error(`Failed to download file: ${downloadError.message}`);
+      }
+
+      const htmlContent = Buffer.from(await fileBuffer.arrayBuffer()).toString('utf-8');
+
+      // Use puppeteer to convert HTML to PDF
+      const puppeteer = require('puppeteer');
+      
+      let browser;
+      try {
+        // Launch browser
+        browser = await puppeteer.launch({
+          headless: 'new',
+          args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-accelerated-2d-canvas',
+            '--disable-gpu'
+          ]
+        });
+
+        const page = await browser.newPage();
+        
+        // Set viewport
+        await page.setViewport({
+          width: 1920,
+          height: 1080,
+          deviceScaleFactor: 1
+        });
+
+        // Set HTML content
+        await page.setContent(htmlContent, {
+          waitUntil: 'networkidle2',
+          timeout: 30000
+        });
+
+        // Prepare PDF options
+        const pdfOptions = {
+          format: options.pageSize || 'A4',
+          landscape: options.orientation === 'landscape',
+          printBackground: options.printBackground !== false,
+          margin: options.margin || {
+            top: '20px',
+            right: '20px',
+            bottom: '20px',
+            left: '20px'
+          },
+          displayHeaderFooter: options.displayHeaderFooter || false,
+          headerTemplate: options.headerTemplate || '',
+          footerTemplate: options.footerTemplate || '',
+          scale: options.scale || 1,
+          preferCSSPageSize: options.preferCSSPageSize || false
+        };
+
+        // Generate PDF
+        const pdfBuffer = await page.pdf(pdfOptions);
+
+        await browser.close();
+
+        // Save PDF file
+        const userFolder = req.user.id;
+        const filePath = `${userFolder}/processed/${Date.now()}-${outputName}`;
+
+        // Upload to storage
+        const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
+          .from('files')
+          .upload(filePath, pdfBuffer, {
+            contentType: 'application/pdf',
+            upsert: false
+          });
+
+        if (uploadError) {
+          throw new Error(`Failed to save processed file: ${uploadError.message}`);
+        }
+
+        // Save metadata to database
+        const { data: fileData, error: dbError } = await supabaseAdmin
+          .from('files')
+          .insert([
+            {
+              user_id: req.user.id,
+              filename: outputName,
+              path: uploadData.path,
+              type: 'application/pdf',
+              size: pdfBuffer.length
+            }
+          ])
+          .select()
+          .single();
+
+        if (dbError) {
+          // Clean up uploaded file if database insert fails
+          await supabaseAdmin.storage.from('files').remove([uploadData.path]);
+          throw new Error(`Database error: ${dbError.message}`);
+        }
+
+        // Log operation
+        await supabaseAdmin
+          .from('history')
+          .insert([
+            {
+              user_id: req.user.id,
+              file_id: fileData.id,
+              action: 'advanced-html-file-to-pdf'
+            }
+          ]);
+
+        console.log('Advanced HTML file to PDF completed successfully:', fileData.id);
+
+        res.json({
+          message: 'HTML file converted to PDF successfully',
+          file: fileData
+        });
+
+      } catch (error) {
+        if (browser) {
+          await browser.close();
+        }
+        throw error;
+      }
+
+    } catch (error) {
+      console.error('Advanced HTML file to PDF error:', error);
+      
+      if (error.message.includes('timeout')) {
+        return res.status(408).json({ error: 'Request timeout. The HTML file took too long to process.' });
+      }
+      
+      res.status(500).json({ error: error.message || 'HTML file to PDF conversion failed' });
+    }
+  }
+);
+
+// Office to PDF Converter - Convert Word, Excel, PowerPoint to PDF
+router.post('/office-to-pdf',
+  authenticateUser,
+  requireProPlan,
+  trackUsage('pdf_operation', 1),
+  validateRequest({
+    body: Joi.object({
+      fileIds: Joi.array().items(Joi.string().uuid()).min(1).required(),
+      options: Joi.object({
+        conversionQuality: Joi.string().valid('maximum', 'high', 'balanced', 'fast').default('high'),
+        pdfVersion: Joi.string().valid('1.4', '1.5', '1.6', '1.7', '2.0').default('1.7'),
+        pageSize: Joi.string().valid('auto', 'A4', 'A3', 'A5', 'Letter', 'Legal', 'Tabloid').default('auto'),
+        orientation: Joi.string().valid('auto', 'portrait', 'landscape').default('auto'),
+        preserveFormatting: Joi.boolean().default(true),
+        preserveImages: Joi.boolean().default(true),
+        preserveTables: Joi.boolean().default(true),
+        preserveHyperlinks: Joi.boolean().default(true),
+        preserveHeaders: Joi.boolean().default(true),
+        preserveBookmarks: Joi.boolean().default(false),
+        embedFonts: Joi.boolean().default(true),
+        compressImages: Joi.boolean().default(false),
+        linearize: Joi.boolean().default(false),
+        pdfA: Joi.boolean().default(false),
+        addMetadata: Joi.boolean().default(true),
+        createTOC: Joi.boolean().default(false),
+        imageQuality: Joi.number().min(50).max(100).default(90),
+        margins: Joi.object({
+          top: Joi.number().default(72),
+          right: Joi.number().default(72),
+          bottom: Joi.number().default(72),
+          left: Joi.number().default(72)
+        }).default({})
+      }).default({})
+    })
+  }),
+  async (req, res) => {
+    try {
+      const { fileIds, options } = req.body;
+
+      // Get file metadata
+      const { data: files, error: filesError } = await supabaseAdmin
+        .from('files')
+        .select('*')
+        .in('id', fileIds)
+        .eq('user_id', req.user.id);
+
+      if (filesError || !files || files.length !== fileIds.length) {
+        return res.status(404).json({ error: 'One or more files not found' });
+      }
+
+      // Validate all files are Office documents
+      const officeTypes = [
+        'application/msword',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.ms-excel',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/vnd.ms-powerpoint',
+        'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        'application/rtf',
+        'application/vnd.oasis.opendocument.text',
+        'text/plain'
+      ];
+      
+      const nonOfficeFiles = files.filter(file => !officeTypes.includes(file.type));
+      if (nonOfficeFiles.length > 0) {
+        return res.status(400).json({ 
+          error: 'All files must be Office documents (Word, Excel, PowerPoint, RTF, ODT, or TXT)',
+          invalidFiles: nonOfficeFiles.map(f => f.filename)
+        });
+      }
+
+      const convertedFiles = [];
+
+      // Convert each file
+      for (const file of files) {
+        try {
+          console.log(`Converting ${file.filename} to PDF`);
+          
+          // Perform conversion
+          const result = await advancedPdfService.convertOfficeToPdf(file, options);
+
+          // Save converted file to database
+          const { data: convertedFile, error: saveError } = await supabaseAdmin
+            .from('files')
+            .insert([{
+              user_id: req.user.id,
+              filename: result.filename,
+              original_name: result.filename,
+              type: 'application/pdf',
+              size: result.size,
+              path: result.path,
+              metadata: {
+                operation: 'office-to-pdf',
+                source_file: { id: file.id, filename: file.filename },
+                source_format: file.type,
+                page_count: result.pageCount,
+                options: options,
+                created_at: new Date().toISOString()
+              }
+            }])
+            .select()
+            .single();
+
+          if (saveError) {
+            console.error(`Failed to save converted file ${result.filename}:`, saveError.message);
+            continue;
+          }
+
+          convertedFiles.push(convertedFile);
+
+          // Log operation
+          await supabaseAdmin
+            .from('history')
+            .insert([{
+              user_id: req.user.id,
+              file_id: convertedFile.id,
+              action: 'office_to_pdf',
+              metadata: { 
+                source_file: file.id,
+                source_format: file.type,
+                page_count: result.pageCount,
+                options
+              }
+            }]);
+
+        } catch (conversionError) {
+          console.error(`Error converting ${file.filename}:`, conversionError.message);
+          // Continue with other files
+        }
+      }
+
+      if (convertedFiles.length === 0) {
+        return res.status(500).json({ error: 'Failed to convert any files' });
+      }
+
+      res.json({
+        message: `Successfully converted ${convertedFiles.length} file(s) to PDF`,
+        files: convertedFiles,
+        totalConverted: convertedFiles.length,
+        totalRequested: files.length
+      });
+
+    } catch (error) {
+      console.error('Office to PDF conversion error:', error);
+      res.status(500).json({ error: error.message || 'Office to PDF conversion failed' });
+    }
+  }
+);
+
 // Get supported output formats for PDF to Office conversion
 router.get('/pdf-to-office/formats',
   authenticateUser,

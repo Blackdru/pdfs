@@ -798,6 +798,482 @@ const AdvancedSettings = ({
             </div>
           )}
 
+          {/* Office to PDF Converter Settings */}
+          {selectedTool.id === 'office-to-pdf' && (
+            <div className="p-4 bg-accent rounded-xl">
+              <h4 className="font-medium text-card-foreground mb-3 flex items-center">
+                <Settings className="h-4 w-4 mr-2" />
+                Office to PDF Conversion Settings
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-card-foreground mb-2">
+                    Conversion Quality
+                  </label>
+                  <select 
+                    className="w-full bg-grey-600 border border-grey-500 text-card-foreground rounded-lg px-3 py-2"
+                    value={toolSettings.conversionQuality || 'high'}
+                    onChange={(e) => setToolSettings(prev => ({ ...prev, conversionQuality: e.target.value }))}
+                  >
+                    <option value="maximum">Maximum (Best Quality)</option>
+                    <option value="high">High Quality (Recommended)</option>
+                    <option value="balanced">Balanced (Fast & Good)</option>
+                    <option value="fast">Fast (Quick Processing)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-card-foreground mb-2">
+                    PDF Version
+                  </label>
+                  <select 
+                    className="w-full bg-grey-600 border border-grey-500 text-card-foreground rounded-lg px-3 py-2"
+                    value={toolSettings.pdfVersion || '1.7'}
+                    onChange={(e) => setToolSettings(prev => ({ ...prev, pdfVersion: e.target.value }))}
+                  >
+                    <option value="1.4">PDF 1.4 (Acrobat 5)</option>
+                    <option value="1.5">PDF 1.5 (Acrobat 6)</option>
+                    <option value="1.6">PDF 1.6 (Acrobat 7)</option>
+                    <option value="1.7">PDF 1.7 (Acrobat 8+) - Recommended</option>
+                    <option value="2.0">PDF 2.0 (Latest)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-card-foreground mb-2">
+                    Page Size
+                  </label>
+                  <select 
+                    className="w-full bg-grey-600 border border-grey-500 text-card-foreground rounded-lg px-3 py-2"
+                    value={toolSettings.pageSize || 'auto'}
+                    onChange={(e) => setToolSettings(prev => ({ ...prev, pageSize: e.target.value }))}
+                  >
+                    <option value="auto">Auto (Keep Original)</option>
+                    <option value="A4">A4 (210 × 297 mm)</option>
+                    <option value="A3">A3 (297 × 420 mm)</option>
+                    <option value="A5">A5 (148 × 210 mm)</option>
+                    <option value="Letter">Letter (8.5 × 11 in)</option>
+                    <option value="Legal">Legal (8.5 × 14 in)</option>
+                    <option value="Tabloid">Tabloid (11 × 17 in)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-card-foreground mb-2">
+                    Orientation
+                  </label>
+                  <select 
+                    className="w-full bg-grey-600 border border-grey-500 text-card-foreground rounded-lg px-3 py-2"
+                    value={toolSettings.orientation || 'auto'}
+                    onChange={(e) => setToolSettings(prev => ({ ...prev, orientation: e.target.value }))}
+                  >
+                    <option value="auto">Auto-detect</option>
+                    <option value="portrait">Portrait</option>
+                    <option value="landscape">Landscape</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="mt-4 space-y-3">
+                <h5 className="text-sm font-medium text-card-foreground">Formatting Options</h5>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      checked={toolSettings.preserveFormatting !== false}
+                      onChange={(e) => setToolSettings(prev => ({ ...prev, preserveFormatting: e.target.checked }))}
+                      className="rounded border-grey-500 text-purple-600 focus:ring-purple-500"
+                    />
+                    <span className="text-sm text-card-foreground">Preserve formatting</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      checked={toolSettings.preserveImages !== false}
+                      onChange={(e) => setToolSettings(prev => ({ ...prev, preserveImages: e.target.checked }))}
+                      className="rounded border-grey-500 text-purple-600 focus:ring-purple-500"
+                    />
+                    <span className="text-sm text-card-foreground">Preserve images</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      checked={toolSettings.preserveTables !== false}
+                      onChange={(e) => setToolSettings(prev => ({ ...prev, preserveTables: e.target.checked }))}
+                      className="rounded border-grey-500 text-purple-600 focus:ring-purple-500"
+                    />
+                    <span className="text-sm text-card-foreground">Preserve tables</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      checked={toolSettings.preserveHyperlinks !== false}
+                      onChange={(e) => setToolSettings(prev => ({ ...prev, preserveHyperlinks: e.target.checked }))}
+                      className="rounded border-grey-500 text-purple-600 focus:ring-purple-500"
+                    />
+                    <span className="text-sm text-card-foreground">Preserve hyperlinks</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      checked={toolSettings.preserveHeaders !== false}
+                      onChange={(e) => setToolSettings(prev => ({ ...prev, preserveHeaders: e.target.checked }))}
+                      className="rounded border-grey-500 text-purple-600 focus:ring-purple-500"
+                    />
+                    <span className="text-sm text-card-foreground">Preserve headers/footers</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      checked={toolSettings.preserveBookmarks !== false}
+                      onChange={(e) => setToolSettings(prev => ({ ...prev, preserveBookmarks: e.target.checked }))}
+                      className="rounded border-grey-500 text-purple-600 focus:ring-purple-500"
+                    />
+                    <span className="text-sm text-card-foreground">Create bookmarks</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-4 space-y-3">
+                <h5 className="text-sm font-medium text-card-foreground">PDF Options</h5>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      checked={toolSettings.embedFonts !== false}
+                      onChange={(e) => setToolSettings(prev => ({ ...prev, embedFonts: e.target.checked }))}
+                      className="rounded border-grey-500 text-purple-600 focus:ring-purple-500"
+                    />
+                    <span className="text-sm text-card-foreground">Embed fonts</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      checked={toolSettings.compressImages !== false}
+                      onChange={(e) => setToolSettings(prev => ({ ...prev, compressImages: e.target.checked }))}
+                      className="rounded border-grey-500 text-purple-600 focus:ring-purple-500"
+                    />
+                    <span className="text-sm text-card-foreground">Compress images</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      checked={toolSettings.linearize || false}
+                      onChange={(e) => setToolSettings(prev => ({ ...prev, linearize: e.target.checked }))}
+                      className="rounded border-grey-500 text-purple-600 focus:ring-purple-500"
+                    />
+                    <span className="text-sm text-card-foreground">Optimize for web</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      checked={toolSettings.pdfA || false}
+                      onChange={(e) => setToolSettings(prev => ({ ...prev, pdfA: e.target.checked }))}
+                      className="rounded border-grey-500 text-purple-600 focus:ring-purple-500"
+                    />
+                    <span className="text-sm text-card-foreground">PDF/A compliance</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      checked={toolSettings.addMetadata !== false}
+                      onChange={(e) => setToolSettings(prev => ({ ...prev, addMetadata: e.target.checked }))}
+                      className="rounded border-grey-500 text-purple-600 focus:ring-purple-500"
+                    />
+                    <span className="text-sm text-card-foreground">Add metadata</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      checked={toolSettings.createTOC || false}
+                      onChange={(e) => setToolSettings(prev => ({ ...prev, createTOC: e.target.checked }))}
+                      className="rounded border-grey-500 text-purple-600 focus:ring-purple-500"
+                    />
+                    <span className="text-sm text-card-foreground">Create table of contents</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-card-foreground mb-2">
+                  Image Quality in PDF
+                </label>
+                <div className="flex items-center space-x-4">
+                  <input
+                    type="range"
+                    min="50"
+                    max="100"
+                    step="5"
+                    value={toolSettings.imageQuality || 90}
+                    onChange={(e) => setToolSettings(prev => ({ ...prev, imageQuality: parseInt(e.target.value) }))}
+                    className="flex-1"
+                  />
+                  <span className="text-sm text-card-foreground min-w-[3rem]">
+                    {toolSettings.imageQuality || 90}%
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Higher quality = larger file size</p>
+              </div>
+
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-card-foreground mb-2">
+                  Page Margins (points)
+                </label>
+                <div className="grid grid-cols-4 gap-2">
+                  <div>
+                    <input
+                      type="number"
+                      placeholder="Top"
+                      value={toolSettings.marginTop || 72}
+                      onChange={(e) => setToolSettings(prev => ({ ...prev, marginTop: parseInt(e.target.value) }))}
+                      className="w-full bg-grey-600 border border-grey-500 text-card-foreground rounded-lg px-2 py-1 text-sm"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">Top</p>
+                  </div>
+                  <div>
+                    <input
+                      type="number"
+                      placeholder="Right"
+                      value={toolSettings.marginRight || 72}
+                      onChange={(e) => setToolSettings(prev => ({ ...prev, marginRight: parseInt(e.target.value) }))}
+                      className="w-full bg-grey-600 border border-grey-500 text-card-foreground rounded-lg px-2 py-1 text-sm"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">Right</p>
+                  </div>
+                  <div>
+                    <input
+                      type="number"
+                      placeholder="Bottom"
+                      value={toolSettings.marginBottom || 72}
+                      onChange={(e) => setToolSettings(prev => ({ ...prev, marginBottom: parseInt(e.target.value) }))}
+                      className="w-full bg-grey-600 border border-grey-500 text-card-foreground rounded-lg px-2 py-1 text-sm"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">Bottom</p>
+                  </div>
+                  <div>
+                    <input
+                      type="number"
+                      placeholder="Left"
+                      value={toolSettings.marginLeft || 72}
+                      onChange={(e) => setToolSettings(prev => ({ ...prev, marginLeft: parseInt(e.target.value) }))}
+                      className="w-full bg-grey-600 border border-grey-500 text-card-foreground rounded-lg px-2 py-1 text-sm"
+                    />
+                    <p className="text-xs text-muted-foreground mt-1">Left</p>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">1 inch = 72 points</p>
+              </div>
+
+              <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                <p className="text-xs text-blue-700 dark:text-blue-300">
+                  💡 <strong>Pro Tip:</strong> For best results, enable "Embed fonts" and "Preserve formatting" 
+                  to ensure your document looks exactly the same in PDF format.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* HTML to PDF Settings */}
+          {selectedTool.id === 'advanced-html-to-pdf' && (
+            <div className="p-4 bg-accent rounded-xl">
+              <h4 className="font-medium text-card-foreground mb-3 flex items-center">
+                <Settings className="h-4 w-4 mr-2" />
+                HTML to PDF Configuration
+              </h4>
+              
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-card-foreground mb-2">
+                  Webpage URL (Optional if uploading HTML file)
+                </label>
+                <input
+                  type="url"
+                  placeholder="https://example.com"
+                  value={toolSettings.url || ''}
+                  onChange={(e) => {
+                    const value = e.target.value.trim();
+                    setToolSettings(prev => ({ ...prev, url: value }));
+                  }}
+                  className="w-full bg-grey-600 border border-grey-500 text-card-foreground rounded-lg px-3 py-2"
+                />
+                <p className="text-xs text-muted-foreground mt-1">Enter URL or upload HTML file below - one is required</p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-card-foreground mb-2">
+                    Page Size
+                  </label>
+                  <select 
+                    className="w-full bg-grey-600 border border-grey-500 text-card-foreground rounded-lg px-3 py-2"
+                    value={toolSettings.pageSize || 'A4'}
+                    onChange={(e) => setToolSettings(prev => ({ ...prev, pageSize: e.target.value }))}
+                  >
+                    <option value="A4">A4 (210 × 297 mm)</option>
+                    <option value="A3">A3 (297 × 420 mm)</option>
+                    <option value="A5">A5 (148 × 210 mm)</option>
+                    <option value="Letter">Letter (8.5 × 11 in)</option>
+                    <option value="Legal">Legal (8.5 × 14 in)</option>
+                    <option value="Tabloid">Tabloid (11 × 17 in)</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-card-foreground mb-2">
+                    Orientation
+                  </label>
+                  <select 
+                    className="w-full bg-grey-600 border border-grey-500 text-card-foreground rounded-lg px-3 py-2"
+                    value={toolSettings.orientation || 'portrait'}
+                    onChange={(e) => setToolSettings(prev => ({ ...prev, orientation: e.target.value }))}
+                  >
+                    <option value="portrait">Portrait</option>
+                    <option value="landscape">Landscape</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="mt-4 grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-card-foreground mb-2">
+                    Margin Top (px)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="20px"
+                    value={toolSettings.marginTop || '20px'}
+                    onChange={(e) => setToolSettings(prev => ({ ...prev, marginTop: e.target.value }))}
+                    className="w-full bg-grey-600 border border-grey-500 text-card-foreground rounded-lg px-3 py-2"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-card-foreground mb-2">
+                    Margin Right (px)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="20px"
+                    value={toolSettings.marginRight || '20px'}
+                    onChange={(e) => setToolSettings(prev => ({ ...prev, marginRight: e.target.value }))}
+                    className="w-full bg-grey-600 border border-grey-500 text-card-foreground rounded-lg px-3 py-2"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-card-foreground mb-2">
+                    Margin Bottom (px)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="20px"
+                    value={toolSettings.marginBottom || '20px'}
+                    onChange={(e) => setToolSettings(prev => ({ ...prev, marginBottom: e.target.value }))}
+                    className="w-full bg-grey-600 border border-grey-500 text-card-foreground rounded-lg px-3 py-2"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-card-foreground mb-2">
+                    Margin Left (px)
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="20px"
+                    value={toolSettings.marginLeft || '20px'}
+                    onChange={(e) => setToolSettings(prev => ({ ...prev, marginLeft: e.target.value }))}
+                    className="w-full bg-grey-600 border border-grey-500 text-card-foreground rounded-lg px-3 py-2"
+                  />
+                </div>
+              </div>
+
+              <div className="mt-4">
+                <label className="block text-sm font-medium text-card-foreground mb-2">
+                  Scale
+                </label>
+                <div className="flex items-center space-x-4">
+                  <input
+                    type="range"
+                    min="0.5"
+                    max="2.0"
+                    step="0.1"
+                    value={toolSettings.scale || 1}
+                    onChange={(e) => setToolSettings(prev => ({ ...prev, scale: parseFloat(e.target.value) }))}
+                    className="flex-1"
+                  />
+                  <span className="text-sm text-card-foreground min-w-[3rem]">
+                    {toolSettings.scale || 1}x
+                  </span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Adjust page zoom level</p>
+              </div>
+
+              <div className="mt-4 space-y-3">
+                <h5 className="text-sm font-medium text-card-foreground">PDF Options</h5>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      checked={toolSettings.printBackground !== false}
+                      onChange={(e) => setToolSettings(prev => ({ ...prev, printBackground: e.target.checked }))}
+                      className="rounded border-grey-500 text-purple-600 focus:ring-purple-500"
+                    />
+                    <span className="text-sm text-card-foreground">Print background graphics</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      checked={toolSettings.displayHeaderFooter || false}
+                      onChange={(e) => setToolSettings(prev => ({ ...prev, displayHeaderFooter: e.target.checked }))}
+                      className="rounded border-grey-500 text-purple-600 focus:ring-purple-500"
+                    />
+                    <span className="text-sm text-card-foreground">Display header/footer</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <input
+                      type="checkbox"
+                      checked={toolSettings.preferCSSPageSize || false}
+                      onChange={(e) => setToolSettings(prev => ({ ...prev, preferCSSPageSize: e.target.checked }))}
+                      className="rounded border-grey-500 text-purple-600 focus:ring-purple-500"
+                    />
+                    <span className="text-sm text-card-foreground">Use CSS page size</span>
+                  </div>
+                </div>
+              </div>
+
+              {toolSettings.displayHeaderFooter && (
+                <div className="mt-4 space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium text-card-foreground mb-2">
+                      Header Template (HTML)
+                    </label>
+                    <textarea
+                      placeholder="<div style='font-size:10px; text-align:center;'>Header</div>"
+                      value={toolSettings.headerTemplate || ''}
+                      onChange={(e) => setToolSettings(prev => ({ ...prev, headerTemplate: e.target.value }))}
+                      className="w-full bg-grey-600 border border-grey-500 text-card-foreground rounded-lg px-3 py-2"
+                      rows="2"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-card-foreground mb-2">
+                      Footer Template (HTML)
+                    </label>
+                    <textarea
+                      placeholder="<div style='font-size:10px; text-align:center;'>Page <span class='pageNumber'></span></div>"
+                      value={toolSettings.footerTemplate || ''}
+                      onChange={(e) => setToolSettings(prev => ({ ...prev, footerTemplate: e.target.value }))}
+                      className="w-full bg-grey-600 border border-grey-500 text-card-foreground rounded-lg px-3 py-2"
+                      rows="2"
+                    />
+                  </div>
+                </div>
+              )}
+
+              <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                <p className="text-xs text-blue-700 dark:text-blue-300">
+                  💡 <strong>Pro Tip:</strong> Make sure the URL is publicly accessible. 
+                  Enable "Print background graphics" to capture the full design of the webpage.
+                </p>
+              </div>
+            </div>
+          )}
+
           {/* Images to PDF Settings */}
           {selectedTool.id === 'images-to-pdf' && (
             <div className="p-4 bg-accent rounded-xl">

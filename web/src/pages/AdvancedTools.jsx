@@ -165,7 +165,10 @@ const AdvancedTools = () => {
   }
 
   const handleAutoProcess = async (files, toolSettings = {}) => {
-    if (!selectedTool || files.length === 0) return
+    if (!selectedTool) return
+    
+    // Allow processing with no files for advanced-html-to-pdf if URL is provided
+    if (files.length === 0 && !(selectedTool.id === 'advanced-html-to-pdf' && toolSettings.url)) return
 
     // Initialize processing modal
     initializeProcessingSteps(selectedTool.id)
@@ -174,39 +177,48 @@ const AdvancedTools = () => {
     try {
       let uploadedFileIds = []
       
-      // Step 1: Upload files with detailed progress
-      updateProgress(5, 'Preparing files for upload...', 0)
-      await new Promise(resolve => setTimeout(resolve, 300)) // Brief pause for UI update
+      // Skip file upload if using URL-only mode for advanced-html-to-pdf
+      const isUrlOnlyMode = selectedTool.id === 'advanced-html-to-pdf' && files.length === 0 && toolSettings.url
       
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i]
-        const fileNum = i + 1
-        const totalFiles = files.length
+      if (!isUrlOnlyMode) {
+        // Step 1: Upload files with detailed progress
+        updateProgress(5, 'Preparing files for upload...', 0)
+        await new Promise(resolve => setTimeout(resolve, 300)) // Brief pause for UI update
         
-        try {
-          // Calculate progress: 5% to 25% for uploads
-          const uploadProgress = 5 + ((fileNum - 1) / totalFiles) * 20
-          updateProgress(uploadProgress, `Uploading file ${fileNum}/${totalFiles}: ${file.name}...`, 0)
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i]
+          const fileNum = i + 1
+          const totalFiles = files.length
           
-          const response = await api.uploadFile(file)
-          uploadedFileIds.push(response.file.id)
-          
-          // Show completion for this file
-          const completedProgress = 5 + (fileNum / totalFiles) * 20
-          updateProgress(completedProgress, `Uploaded ${fileNum}/${totalFiles} files`, 0)
-          await new Promise(resolve => setTimeout(resolve, 200)) // Brief pause for UI update
-        } catch (error) {
-          console.error(`Upload failed for ${file.name}:`, error)
-          toast.error(`Failed to upload ${file.name}: ${error.message}`)
+          try {
+            // Calculate progress: 5% to 25% for uploads
+            const uploadProgress = 5 + ((fileNum - 1) / totalFiles) * 20
+            updateProgress(uploadProgress, `Uploading file ${fileNum}/${totalFiles}: ${file.name}...`, 0)
+            
+            const response = await api.uploadFile(file)
+            uploadedFileIds.push(response.file.id)
+            
+            // Show completion for this file
+            const completedProgress = 5 + (fileNum / totalFiles) * 20
+            updateProgress(completedProgress, `Uploaded ${fileNum}/${totalFiles} files`, 0)
+            await new Promise(resolve => setTimeout(resolve, 200)) // Brief pause for UI update
+          } catch (error) {
+            console.error(`Upload failed for ${file.name}:`, error)
+            toast.error(`Failed to upload ${file.name}: ${error.message}`)
+          }
         }
-      }
 
-      if (uploadedFileIds.length === 0) {
-        throw new Error('No files were uploaded successfully')
+        if (uploadedFileIds.length === 0) {
+          throw new Error('No files were uploaded successfully')
+        }
+        
+        updateProgress(30, `All ${uploadedFileIds.length} file(s) uploaded successfully`, 1)
+        await new Promise(resolve => setTimeout(resolve, 500)) // Brief pause for UI update
+      } else {
+        // URL-only mode - skip file upload
+        updateProgress(30, 'Preparing URL conversion...', 1)
+        await new Promise(resolve => setTimeout(resolve, 300))
       }
-      
-      updateProgress(30, `All ${uploadedFileIds.length} file(s) uploaded successfully`, 1)
-      await new Promise(resolve => setTimeout(resolve, 500)) // Brief pause for UI update
 
       let result
       const outputName = `${selectedTool.id}-${Date.now()}`
@@ -246,6 +258,12 @@ const AdvancedTools = () => {
           break
         case 'pdf-to-office':
           result = await handlePDFToOffice(uploadedFileIds[0], toolSettings)
+          break
+        case 'office-to-pdf':
+          result = await handleOfficeToPDF(uploadedFileIds, toolSettings)
+          break
+        case 'advanced-html-to-pdf':
+          result = await handleAdvancedHTMLToPDF(uploadedFileIds, toolSettings)
           break
         default:
           throw new Error('Tool not implemented yet')
@@ -684,6 +702,82 @@ const AdvancedTools = () => {
     return { file: result.file }
   }
 
+  const handleAdvancedHTMLToPDF = async (fileIds, settings = {}) => {
+    updateProgress(30, 'Preparing conversion...', 1)
+    
+    try {
+      const hasFile = fileIds && fileIds.length > 0
+      const hasUrl = settings.url && settings.url.trim()
+      
+      if (!hasFile && !hasUrl) {
+        throw new Error('Please enter a URL or upload an HTML file')
+      }
+      
+      if (hasUrl) {
+        try {
+          new URL(settings.url)
+        } catch (e) {
+          throw new Error('Please enter a valid URL (e.g., https://example.com)')
+        }
+      }
+      
+      updateProgress(50, hasFile ? 'Processing HTML file...' : 'Rendering webpage...', 2)
+      
+      const options = {
+        pageSize: settings.pageSize || 'A4',
+        orientation: settings.orientation || 'portrait',
+        margin: {
+          top: settings.marginTop || '20px',
+          right: settings.marginRight || '20px',
+          bottom: settings.marginBottom || '20px',
+          left: settings.marginLeft || '20px'
+        },
+        printBackground: settings.printBackground !== false,
+        displayHeaderFooter: settings.displayHeaderFooter || false,
+        headerTemplate: settings.headerTemplate || '',
+        footerTemplate: settings.footerTemplate || '',
+        scale: settings.scale || 1,
+        preferCSSPageSize: settings.preferCSSPageSize || false
+      }
+      
+      updateProgress(70, 'Creating PDF...', 3)
+      
+      const endpoint = hasFile 
+        ? `${API_BASE_URL}/pdf/advanced/advanced-html-file-to-pdf`
+        : `${API_BASE_URL}/pdf/advanced/advanced-html-to-pdf`
+      
+      const requestBody = hasFile
+        ? { fileId: fileIds[0], outputName: `webpage_${Date.now()}.pdf`, options }
+        : { url: settings.url, outputName: `webpage_${Date.now()}.pdf`, options }
+      
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
+        },
+        body: JSON.stringify(requestBody)
+      })
+      
+      updateProgress(90, 'Finalizing...', 4)
+      
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'HTML to PDF conversion failed')
+      }
+      
+      const result = await response.json()
+      updateProgress(100, 'Complete!', 5)
+      
+      toast.success(hasFile ? 'HTML file converted to PDF successfully!' : 'Webpage converted to PDF successfully!')
+      return { file: result.file }
+      
+    } catch (error) {
+      console.error('Advanced HTML to PDF error:', error)
+      throw error
+    }
+  }
+
   const handlePDFToOffice = async (fileId, settings = {}) => {
 
     updateProgress(30, 'Analyzing PDF structure...', 1)
@@ -747,6 +841,71 @@ const AdvancedTools = () => {
 
     } catch (error) {
       console.error('PDF to Office conversion error:', error)
+      throw error
+    }
+  }
+
+  const handleOfficeToPDF = async (fileIds, settings = {}) => {
+    updateProgress(30, 'Analyzing document content...', 1)
+    
+    try {
+      // Prepare conversion options
+      const options = {
+        conversionQuality: settings.conversionQuality || 'high',
+        pdfVersion: settings.pdfVersion || '1.7',
+        pageSize: settings.pageSize || 'auto',
+        orientation: settings.orientation || 'auto',
+        preserveFormatting: settings.preserveFormatting !== false,
+        preserveImages: settings.preserveImages !== false,
+        preserveTables: settings.preserveTables !== false,
+        preserveHyperlinks: settings.preserveHyperlinks !== false,
+        preserveHeaders: settings.preserveHeaders !== false,
+        preserveBookmarks: settings.preserveBookmarks !== false,
+        embedFonts: settings.embedFonts !== false,
+        compressImages: settings.compressImages !== false,
+        linearize: settings.linearize || false,
+        pdfA: settings.pdfA || false,
+        addMetadata: settings.addMetadata !== false,
+        createTOC: settings.createTOC || false,
+        imageQuality: settings.imageQuality || 90,
+        margins: {
+          top: settings.marginTop || 72,
+          right: settings.marginRight || 72,
+          bottom: settings.marginBottom || 72,
+          left: settings.marginLeft || 72
+        }
+      }
+
+      updateProgress(50, 'Converting to PDF...', 2)
+
+      const response = await fetch(`${API_BASE_URL}/pdf/advanced/office-to-pdf`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
+        },
+        body: JSON.stringify({
+          fileIds: fileIds,
+          options: options
+        })
+      })
+
+      updateProgress(80, 'Finalizing conversion...', 3)
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Office to PDF conversion failed')
+      }
+
+      const result = await response.json()
+      updateProgress(100, 'Conversion complete!', 4)
+
+      toast.success(`${fileIds.length} file(s) converted to PDF successfully!`)
+      // Backend returns files array
+      return { files: result.files || [] }
+
+    } catch (error) {
+      console.error('Office to PDF conversion error:', error)
       throw error
     }
   }

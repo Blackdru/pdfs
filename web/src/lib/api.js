@@ -469,6 +469,69 @@ class ApiClient {
     return this.request(`/pdf/info/${fileId}`)
   }
 
+  // Simple conversion endpoints
+  async convertPDFToWord(fileId, outputName = 'converted.docx') {
+    return this.request('/pdf/simple-convert', {
+      method: 'POST',
+      body: JSON.stringify({ 
+        fileId, 
+        outputFormat: 'docx',
+        outputName 
+      }),
+    })
+  }
+
+  async convertWordToPDF(fileId, outputName = 'converted.pdf') {
+    return this.request('/pdf/simple-convert', {
+      method: 'POST',
+      body: JSON.stringify({ 
+        fileId, 
+        outputFormat: 'pdf',
+        sourceFormat: 'word',
+        outputName 
+      }),
+    })
+  }
+
+  async convertPDFToExcel(fileId, outputName = 'converted.xlsx') {
+    return this.request('/pdf/simple-convert', {
+      method: 'POST',
+      body: JSON.stringify({ 
+        fileId, 
+        outputFormat: 'xlsx',
+        outputName 
+      }),
+    })
+  }
+
+  async convertExcelToPDF(fileId, outputName = 'converted.pdf') {
+    return this.request('/pdf/simple-convert', {
+      method: 'POST',
+      body: JSON.stringify({ 
+        fileId, 
+        outputFormat: 'pdf',
+        sourceFormat: 'excel',
+        outputName 
+      }),
+    })
+  }
+
+  async convertHTMLToPDF(url, outputName = 'webpage.pdf') {
+    return this.request('/pdf/html-to-pdf', {
+      method: 'POST',
+      body: JSON.stringify({ url, outputName }),
+      timeout: 60000, // 1 minute for webpage conversion
+    })
+  }
+
+  async convertHTMLFileToPDF(fileId, outputName = 'webpage.pdf') {
+    return this.request('/pdf/html-file-to-pdf', {
+      method: 'POST',
+      body: JSON.stringify({ fileId, outputName }),
+      timeout: 60000, // 1 minute for HTML file conversion
+    })
+  }
+
   // Advanced PDF operations
   async advancedMergePDFs(fileIds, outputName, options = {}) {
     return this.request('/pdf/advanced/advanced-merge', {

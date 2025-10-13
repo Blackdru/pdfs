@@ -139,9 +139,9 @@ const AppContent = () => {
   }, [location.pathname])
   
   return (
-    <div className="min-h-screen bg-background font-inter">
+    <div className="min-h-screen bg-background font-inter flex flex-col">
       <ModernNavbar />
-      <main className="modern-scrollbar">
+      <main className="modern-scrollbar flex-1">
         <Routes>
                 <Route path="/" element={<ModernHome />} />
                 <Route path="/login" element={<Login />} />

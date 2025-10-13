@@ -13,14 +13,17 @@ const uploadFree = multer({
     files: 10, // Max 10 files at once
   },
   fileFilter: (req, file, cb) => {
+    console.log('File upload attempt:', { filename: file.originalname, mimetype: file.mimetype });
     const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/bmp', 'image/webp', 'image/tiff', 'image/tif',
                          'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                         'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
+                         'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                         'text/html'];
     
-    if (allowedTypes.includes(file.mimetype)) {
+    if (allowedTypes.includes(file.mimetype) || file.originalname.match(/\.(html|htm)$/i)) {
       cb(null, true);
     } else {
-      cb(new Error('Invalid file type. Only PDF, images (JPG, PNG, GIF, BMP, WebP, TIFF), Word, and Excel files are allowed.'));
+      console.log('File rejected - mimetype not allowed:', file.mimetype);
+      cb(new Error('Invalid file type. Only PDF, images (JPG, PNG, GIF, BMP, WebP, TIFF), Word, Excel, and HTML files are allowed.'));
     }
   }
 });
@@ -33,14 +36,17 @@ const uploadAdvanced = multer({
     files: 10, // Max 10 files at once
   },
   fileFilter: (req, file, cb) => {
+    console.log('File upload attempt:', { filename: file.originalname, mimetype: file.mimetype });
     const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/bmp', 'image/webp', 'image/tiff', 'image/tif',
                          'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                         'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
+                         'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                         'text/html'];
     
-    if (allowedTypes.includes(file.mimetype)) {
+    if (allowedTypes.includes(file.mimetype) || file.originalname.match(/\.(html|htm)$/i)) {
       cb(null, true);
     } else {
-      cb(new Error('Invalid file type. Only PDF, images (JPG, PNG, GIF, BMP, WebP, TIFF), Word, and Excel files are allowed.'));
+      console.log('File rejected - mimetype not allowed:', file.mimetype);
+      cb(new Error('Invalid file type. Only PDF, images (JPG, PNG, GIF, BMP, WebP, TIFF), Word, Excel, and HTML files are allowed.'));
     }
   }
 });

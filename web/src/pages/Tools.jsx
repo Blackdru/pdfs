@@ -141,7 +141,7 @@ const Tools = () => {
       id: 'html-to-pdf',
       icon: FileText,
       title: 'HTML to PDF',
-      description: 'Convert webpage URL or HTML file to PDF',
+      description: 'Convert webpage URL to PDF',
       color: 'from-teal-500 to-teal-700',
       bgColor: 'bg-teal-50',
       borderColor: 'border-teal-200',
@@ -1031,7 +1031,7 @@ const Tools = () => {
                 {selectedTool.requiresUrlOrFile ? (
                   <>
                     <h3 className="text-base sm:text-lg font-semibold text-card-foreground mb-3 sm:mb-4">
-                      Enter Webpage URL or Upload HTML File
+                      Enter Webpage URL
                     </h3>
                     
                     <div className="max-w-2xl mx-auto mb-4">
@@ -1042,25 +1042,7 @@ const Tools = () => {
                         className="w-full px-4 py-3 bg-accent border border-border rounded-lg text-card-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                       />
                     </div>
-                    
-                    <div className="flex items-center gap-3 my-4">
-                      <div className="flex-1 h-px bg-border"></div>
-                      <span className="text-xs text-muted-foreground">OR</span>
-                      <div className="flex-1 h-px bg-border"></div>
-                    </div>
-                    
-                    <Button
-                      onClick={() => setShowUploadModal(true)}
-                      variant="outline"
-                      className="border-border text-card-foreground hover:bg-accent mb-4 w-full sm:w-auto mobile-touch-target"
-                    >
-                      <Upload className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-                      Upload HTML File
-                    </Button>
-                    
-                    <p className="text-xs sm:text-sm text-muted-foreground mb-4">
-                      Enter a URL or upload an HTML file (.html, .htm)
-                    </p>
+                   
                     
                     <Button
                       onClick={async () => {

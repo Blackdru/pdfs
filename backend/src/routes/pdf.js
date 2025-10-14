@@ -803,6 +803,90 @@ router.post('/html-file-to-pdf', optionalAuth, async (req, res) => {
     
     res.status(500).json({ error: error.message || 'HTML file to PDF conversion failed' });
   }
+});t puppeteer.launch({
+        headless: 'new',
+        executablePath: '/usr/bin/chromium-browser',
+        args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+          '--disable-accelerated-2d-canvas',
+          '--disable-gpu',
+          '--disable-software-rasterizer'
+        ],
+        timeout: 30000
+      }).catch(err => {
+        console.error('Browser launch failed:', err);
+        throw new Error('Failed to initialize browser.');
+      });
+
+      const page = await browser.newPage();
+      
+      // Set viewport
+      await page.setViewport({
+        width: 1920,
+        height: 1080,
+        deviceScaleFactor: 1
+      });
+
+      // Set HTML content
+      await page.setContent(htmlContent, {
+        waitUntil: 'networkidle2',
+        timeout: 30000
+      });
+
+      // Generate PDF
+      const pdfBuffer = await page.pdf({
+        format: 'A4',
+        printBackground: true,
+        margin: {
+          top: '20px',
+          right: '20px',
+          bottom: '20px',
+          left: '20px'
+        }
+      });
+
+      await browser.close();
+
+      // Save PDF file
+      const savedFile = await saveProcessedFile(
+        req.user?.id || null,
+        pdfBuffer,
+        outputName,
+        'application/pdf',
+        isAnonymous
+      );
+
+      // Log operation (only for authenticated users)
+      if (req.user) {
+        await logOperation(req.user.id, savedFile.id, 'html-file-to-pdf');
+      }
+
+      console.log('HTML file to PDF completed successfully:', savedFile.id);
+
+      res.json({
+        message: 'HTML file converted to PDF successfully',
+        file: savedFile,
+        isAnonymous: isAnonymous
+      });
+
+    } catch (error) {
+      if (browser) {
+        await browser.close();
+      }
+      throw error;
+    }
+
+  } catch (error) {
+    console.error('HTML file to PDF error:', error);
+    
+    if (error.message.includes('timeout')) {
+      return res.status(408).json({ error: 'Request timeout. The HTML file took too long to process.' });
+    }
+    
+    res.status(500).json({ error: error.message || 'HTML file to PDF conversion failed' });
+  }
 });
 
 // Simple Convert - PDF to Word, Word to PDF, PDF to Excel, Excel to PDF

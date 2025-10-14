@@ -564,9 +564,10 @@ router.post('/html-to-pdf', optionalAuth, async (req, res) => {
     
     let browser;
     try {
-      // Launch browser
+      // Launch browser - use system Chromium on ARM architecture
       browser = await puppeteer.launch({
         headless: 'new',
+        executablePath: '/usr/bin/chromium-browser',
         args: [
           '--no-sandbox',
           '--disable-setuid-sandbox',
@@ -717,9 +718,10 @@ router.post('/html-file-to-pdf', optionalAuth, async (req, res) => {
     
     let browser;
     try {
-      // Launch browser
+      // Launch browser - use system Chromium on ARM architecture
       browser = await puppeteer.launch({
         headless: 'new',
+        executablePath: '/usr/bin/chromium-browser',
         args: [
           '--no-sandbox',
           '--disable-setuid-sandbox',

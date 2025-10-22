@@ -97,6 +97,12 @@ const AdvancedTools = () => {
       return // Access denied, upgrade modal will be shown
     }
 
+    // If it's the resume generator, navigate to dedicated page
+    if (tool.isGenerator) {
+      window.location.href = '/resume-generator'
+      return
+    }
+
     setSelectedTool(tool)
     setUploadedFiles([])
     setProcessedFiles([])

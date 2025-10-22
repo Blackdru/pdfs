@@ -29,6 +29,7 @@ import Contact from './pages/Contact'
 import AIEnhancedOCR from './pages/AIEnhancedOCR'
 import AIChatWithPDF from './pages/AIChatWithPDF'
 import AISmartSummary from './pages/AISmartSummary'
+import ResumeGenerator from './pages/ResumeGenerator'
 
 // Components
 import Navbar from './components/Navbar'
@@ -86,6 +87,10 @@ const AppContent = () => {
       '/ai-smart-summary': {
         title: 'AI Smart Summary — Summarize PDFs in Seconds | RobotPDF',
         description: 'Generate intelligent summaries of PDF documents instantly. Save 90% reading time with AI-powered summaries. Perfect for research papers and reports.'
+      },
+      '/resume-generator': {
+        title: 'AI Resume Generator — Create Professional Resumes | RobotPDF',
+        description: 'Generate ATS-optimized professional resumes with AI. Multiple templates, industry-specific content, and instant download. Free to start.'
       }
     }
 
@@ -197,6 +202,14 @@ const AppContent = () => {
                 <Route path="/ai-enhanced-ocr-pdf" element={<AIEnhancedOCR />} />
                 <Route path="/ai-chat-with-pdf" element={<AIChatWithPDF />} />
                 <Route path="/ai-smart-summary" element={<AISmartSummary />} />
+                <Route 
+                  path="/resume-generator" 
+                  element={
+                    <ProtectedRoute>
+                      <ResumeGenerator />
+                    </ProtectedRoute>
+                  } 
+                />
                 <Route 
                   path="/admin" 
                   element={

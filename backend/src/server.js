@@ -25,6 +25,9 @@ const contactRoutes = require('./routes/contact');
 const pricingRoutes = require('./routes/pricing');
 const testLocationRoutes = require('./routes/test-location');
 const debugRoutes = require('./routes/debug');
+const resumeRoutes = require('./routes/resumes');
+const jobRoutes = require('./routes/jobs');
+const studyRoutes = require('./routes/study');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -132,6 +135,12 @@ app.use('/api', testLocationRoutes);
 console.log('Test location routes loaded');
 app.use('/api/debug', debugRoutes);
 console.log('Debug routes loaded');
+app.use('/api/v1/resumes', resumeRoutes);
+console.log('Resume routes loaded');
+app.use('/api/v1/jobs', jobRoutes);
+console.log('Job routes loaded');
+app.use('/api/study', studyRoutes);
+console.log('Study routes loaded');
 
 // 404 handler
 app.use('*', (req, res) => {

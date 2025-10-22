@@ -573,6 +573,21 @@
     background-color: rgb(30, 41, 59);
   }
   
+  /* Select Dropdown Solid Background Override */
+  [data-radix-select-content] {
+    background-color: rgb(30, 41, 59) !important;
+    border-color: rgb(45, 95, 200) !important;
+  }
+  
+  [data-radix-select-item] {
+    background-color: transparent !important;
+  }
+  
+  [data-radix-select-item]:hover,
+  [data-radix-select-item][data-highlighted] {
+    background-color: rgb(45, 95, 200) !important;
+  }
+  
   /* Scrollbar */
   .modern-scrollbar {
     scrollbar-width: thin;

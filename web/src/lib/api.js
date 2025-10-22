@@ -13,7 +13,7 @@ class ApiClient {
         'Content-Type': 'application/json',
         ...options.headers,
       },
-      timeout: options.timeout || 30000, // 30 second default timeout
+      timeout: options.timeout || 60000, // 60 second default timeout
       ...options,
     }
 
@@ -791,6 +791,91 @@ class ApiClient {
 
   async getFolderStats(folderId) {
     return this.request(`/folders/${folderId}/stats`)
+  }
+
+  // Resume generation endpoints
+  async generateResume(userData, options = {}) {
+    return this.request('/v1/resumes/generate', {
+      method: 'POST',
+      body: JSON.stringify({ userData, options }),
+      timeout: 120000, // 2 minutes for AI generation
+    })
+  }
+
+  async enhanceResumeSection(resumeId, sectionType, content, context = {}) {
+    return this.request(`/v1/resumes/${resumeId}/enhance-section`, {
+      method: 'POST',
+      body: JSON.stringify({ sectionType, content, context }),
+    })
+  }
+
+  async generateMultipleResumes(userData, targetRoles) {
+    return this.request('/v1/resumes/generate-multiple', {
+      method: 'POST',
+      body: JSON.stringify({ userData, targetRoles }),
+      timeout: 120000, // 2 minutes for multiple resumes
+    })
+  }
+
+  async getResumeSuggestions(resumeId) {
+    return this.request(`/v1/resumes/${resumeId}/suggestions`, {
+      method: 'POST',
+    })
+  }
+
+  async getResumeTemplates() {
+    return this.request('/v1/resumes/templates')
+  }
+
+  async getResumeIndustries() {
+    return this.request('/v1/resumes/industries')
+  }
+
+  async getResumeExperienceLevels() {
+    return this.request('/v1/resumes/experience-levels')
+  }
+
+  async downloadResume(resumeId, format = 'pdf', version = 'optimized') {
+    const token = this.getAuthToken()
+    const url = `${this.baseURL}/v1/resumes/${resumeId}/download?format=${format}&version=${version}`
+    
+    const response = await fetch(url, {
+      headers: {
+        ...(token && { Authorization: `Bearer ${token}` }),
+      },
+    })
+
+    if (!response.ok) {
+      throw new Error('Download failed')
+    }
+
+    return response.blob()
+  }
+
+  async getResumeHistory() {
+    return this.request('/v1/resumes/history')
+  }
+
+  async optimizeResume(resumeId, jobDescription, tone = 'professional') {
+    return this.request(`/v1/resumes/${resumeId}/optimize`, {
+      method: 'POST',
+      body: JSON.stringify({ job_description: jobDescription, tone }),
+      timeout: 60000,
+    })
+  }
+
+  async calculateATSScore(resumeId, jobDescription) {
+    return this.request(`/v1/resumes/${resumeId}/score`, {
+      method: 'POST',
+      body: JSON.stringify({ job_description: jobDescription }),
+    })
+  }
+
+  async generateCoverLetter(resumeId, jobDescription, companyName, tone = 'professional') {
+    return this.request(`/v1/resumes/${resumeId}/cover-letter`, {
+      method: 'POST',
+      body: JSON.stringify({ job_description: jobDescription, company_name: companyName, tone }),
+    })
   }
 
   // Generic GET/POST methods for flexibility

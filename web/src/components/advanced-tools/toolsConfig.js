@@ -17,10 +17,30 @@ import {
   Shield,
   Download,
   FileSpreadsheet,
-  FileType
+  FileType,
+  Wand2
 } from 'lucide-react'
 
 export const proTools = [
+  {
+    id: 'ai-resume-generator',
+    icon: Wand2,
+    title: 'AI Resume Generator',
+    description: 'Create professional, ATS-optimized resumes from scratch with advanced AI',
+    color: 'from-violet-500 to-purple-700',
+    bgColor: 'bg-violet-50',
+    borderColor: 'border-violet-200',
+    textColor: 'text-violet-700',
+    iconBg: 'bg-violet-500',
+    acceptedFiles: '',
+    multipleFiles: false,
+    minFiles: 0,
+    category: 'AI-Powered',
+    popularity: 99,
+    processingTime: '< 45s',
+    features: ['AI-powered generation', 'Multiple templates', 'ATS optimization', 'Industry-specific content'],
+    isGenerator: true
+  },
   {
     id: 'advanced-ocr',
     icon: Eye,
@@ -223,6 +243,13 @@ export const proTools = [
 ]
 
 export const PROCESSING_STEPS_CONFIG = {
+  'ai-resume-generator': [
+    { name: 'Analyzing Input', icon: Brain },
+    { name: 'AI Generation', icon: Wand2 },
+    { name: 'Optimizing Content', icon: Sparkles },
+    { name: 'Formatting Resume', icon: FileText },
+    { name: 'Complete', icon: CheckCircle }
+  ],
   'advanced-ocr': [
     { name: 'Uploading File', icon: Upload },
     { name: 'AI Enhancement', icon: Brain },

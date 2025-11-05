@@ -9,10 +9,13 @@ import FileUploadModal from '../components/FileUploadModal'
 import ProcessingModal from '../components/ProcessingModal'
 import AIAssistant from '../components/AIAssistant'
 import UpgradeModal from '../components/UpgradeModal'
+import FileOrderPreview from '../components/FileOrderPreview'
 import ToolsGrid from '../components/advanced-tools/ToolsGrid'
 import ToolProcessor from '../components/advanced-tools/ToolProcessor'
 import ResultsDisplay from '../components/advanced-tools/ResultsDisplay'
 import EnhancedOCRModal from '../components/EnhancedOCRModal'
+import PasswordProtectModal from '../components/PasswordProtectModal'
+import PasswordRemoveModal from '../components/PasswordRemoveModal'
 import { proTools, PROCESSING_STEPS_CONFIG } from '../components/advanced-tools/toolsConfig'
 import toast from 'react-hot-toast'
 import { AlertCircle, FileText } from 'lucide-react'
@@ -51,6 +54,11 @@ const AdvancedTools = () => {
   const [enhancedOCRResult, setEnhancedOCRResult] = useState(null)
   const [currentFileId, setCurrentFileId] = useState(null)
   const [toolSettings, setToolSettings] = useState({})
+  const [showFileOrderPreview, setShowFileOrderPreview] = useState(false)
+  const [pendingFiles, setPendingFiles] = useState([])
+  const [showPasswordProtectModal, setShowPasswordProtectModal] = useState(false)
+  const [showPasswordRemoveModal, setShowPasswordRemoveModal] = useState(false)
+  const [pendingPasswordFiles, setPendingPasswordFiles] = useState([])
 
   const categories = ['All', 'AI-Powered', 'Professional', 'Security']
   const [selectedCategory, setSelectedCategory] = useState('All')
@@ -135,13 +143,53 @@ const AdvancedTools = () => {
       return
     }
     
-    setUploadedFiles(validFiles)
-    setShowUploadModal(false)
-    
-    // Auto-process if minimum files requirement is met
-    if (validFiles.length >= (selectedTool?.minFiles || 1)) {
-      await handleAutoProcess(validFiles, toolSettings)
+    // Check if tool needs password settings modal
+    if (selectedTool?.id === 'password-protect') {
+      setPendingPasswordFiles(validFiles)
+      setShowPasswordProtectModal(true)
+      setShowUploadModal(false)
+      return
     }
+    
+    if (selectedTool?.id === 'password-remove') {
+      setPendingPasswordFiles(validFiles)
+      setShowPasswordRemoveModal(true)
+      setShowUploadModal(false)
+      return
+    }
+    
+    // Check if tool needs file ordering (pro-merge, images-to-pdf with multiple files)
+    const needsOrdering = ['pro-merge', 'images-to-pdf'].includes(selectedTool?.id) && validFiles.length > 1
+    
+    if (needsOrdering) {
+      // Show file order preview
+      setPendingFiles(validFiles)
+      setShowFileOrderPreview(true)
+      setShowUploadModal(false)
+    } else {
+      // Process directly
+      setUploadedFiles(validFiles)
+      setShowUploadModal(false)
+      
+      // Auto-process if minimum files requirement is met
+      if (validFiles.length >= (selectedTool?.minFiles || 1)) {
+        await handleAutoProcess(validFiles, toolSettings)
+      }
+    }
+  }
+
+  const handleFileOrderConfirm = async (orderedFiles) => {
+    setShowFileOrderPreview(false)
+    setUploadedFiles(orderedFiles)
+    setPendingFiles([])
+    
+    // Auto-process with ordered files
+    await handleAutoProcess(orderedFiles, toolSettings)
+  }
+
+  const handleFileOrderCancel = () => {
+    setShowFileOrderPreview(false)
+    setPendingFiles([])
   }
 
   const validateFilesForTool = (files, tool) => {
@@ -256,8 +304,11 @@ const AdvancedTools = () => {
         case 'smart-compress':
           result = await handleSmartCompress(uploadedFileIds, toolSettings)
           break
-        case 'encrypt-pro':
-          result = await handleEncryptPro(uploadedFileIds, toolSettings)
+        case 'password-protect':
+          result = await handlePasswordProtect(uploadedFileIds, toolSettings)
+          break
+        case 'password-remove':
+          result = await handlePasswordRemove(uploadedFileIds, toolSettings)
           break
         case 'images-to-pdf':
           result = await handleImagesToPDF(uploadedFileIds, toolSettings)
@@ -600,7 +651,7 @@ const AdvancedTools = () => {
     return { files: compressedFiles }
   }
 
-  const handleEncryptPro = async (fileIds, settings = {}) => {
+  const handlePasswordProtect = async (fileIds, settings = {}) => {
     const encryptedFiles = []
     
     for (const fileId of fileIds) {
@@ -627,32 +678,90 @@ const AdvancedTools = () => {
             assembling: false,
             printingHighRes: false
           },
-          outputName: `encrypted_${Date.now()}.pdf`,
+          outputName: `protected_${Date.now()}.pdf`,
           encryptionLevel: settings.encryptionLevel || '256-bit'
         })
       })
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.error || 'Encryption failed')
+        throw new Error(errorData.error || 'Password protection failed')
       }
 
       const result = await response.json()
       encryptedFiles.push(result.file)
       
       if (settings.passwordType !== 'custom') {
-        toast.success(`File encrypted! Password: ${password}`, { duration: 10000 })
+        toast.success(`🔒 File protected! Password: ${password}`, { duration: 15000 })
         try {
           await navigator.clipboard.writeText(password)
-          toast.success('Password copied to clipboard!')
+          toast.success('📋 Password copied to clipboard!', { duration: 5000 })
         } catch (clipboardError) {
-          
+          console.error('Failed to copy password:', clipboardError)
         }
+      } else {
+        toast.success(`🔒 File protected with your custom password!`, { duration: 5000 })
       }
     }
 
-    toast.success(`${encryptedFiles.length} file(s) encrypted successfully!`)
+    if (encryptedFiles.length > 1) {
+      toast.success(`✅ ${encryptedFiles.length} files password protected successfully!`)
+    }
     return { files: encryptedFiles }
+  }
+
+  const handlePasswordProtectConfirm = async (settings) => {
+    setUploadedFiles(pendingPasswordFiles)
+    setPendingPasswordFiles([])
+    await handleAutoProcess(pendingPasswordFiles, settings)
+  }
+
+  const handlePasswordRemoveConfirm = async (settings) => {
+    setUploadedFiles(pendingPasswordFiles)
+    setPendingPasswordFiles([])
+    await handleAutoProcess(pendingPasswordFiles, settings)
+  }
+
+  const handlePasswordRemove = async (fileIds, settings = {}) => {
+    const unlockedFiles = []
+    
+    if (!settings.password) {
+      throw new Error('Password is required to unlock the PDF')
+    }
+    
+    for (const fileId of fileIds) {
+      const password = settings.password
+      
+      const response = await fetch(`${API_BASE_URL}/pdf/advanced/password-remove`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session?.access_token}`
+        },
+        body: JSON.stringify({
+          fileId: fileId,
+          password: password,
+          outputName: `unlocked_${Date.now()}.pdf`
+        })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        const errorMessage = errorData.error || 'Password removal failed'
+        
+        // Show specific error for incorrect password
+        if (errorMessage.includes('Incorrect password')) {
+          throw new Error('❌ Incorrect password. Please try again with the correct password.')
+        }
+        throw new Error(errorMessage)
+      }
+
+      const result = await response.json()
+      unlockedFiles.push(result.file)
+    }
+
+    toast.success(`✅ ${unlockedFiles.length} file(s) unlocked successfully!`)
+    return { files: unlockedFiles }
   }
 
   const handleImagesToPDF = async (fileIds, settings = {}) => {
@@ -1100,6 +1209,37 @@ const AdvancedTools = () => {
               onResultUpdate={handleOCRResultUpdate}
             />
           )}
+
+          {/* File Order Preview Modal */}
+          {showFileOrderPreview && (
+            <FileOrderPreview
+              files={pendingFiles}
+              onConfirm={handleFileOrderConfirm}
+              onCancel={handleFileOrderCancel}
+            />
+          )}
+
+          {/* Password Protect Modal */}
+          <PasswordProtectModal
+            isOpen={showPasswordProtectModal}
+            onClose={() => {
+              setShowPasswordProtectModal(false)
+              setPendingPasswordFiles([])
+            }}
+            onConfirm={handlePasswordProtectConfirm}
+            fileCount={pendingPasswordFiles.length}
+          />
+
+          {/* Password Remove Modal */}
+          <PasswordRemoveModal
+            isOpen={showPasswordRemoveModal}
+            onClose={() => {
+              setShowPasswordRemoveModal(false)
+              setPendingPasswordFiles([])
+            }}
+            onConfirm={handlePasswordRemoveConfirm}
+            fileCount={pendingPasswordFiles.length}
+          />
         </div>
       </div>
     </div>

@@ -64,18 +64,31 @@ class ApiClient {
         }
         
         // Handle specific HTTP status codes
+        // Only override error message if we don't have a specific one from the server
         if (response.status === 401) {
-          errorMessage = 'Authentication required. Please sign in again.'
+          if (!errorMessage || errorMessage.includes('HTTP 401')) {
+            errorMessage = 'Authentication required. Please sign in again.'
+          }
           // Clear invalid token
           this.clearAuthToken()
         } else if (response.status === 403) {
-          errorMessage = 'Access denied. Please check your permissions.'
+          if (!errorMessage || errorMessage.includes('HTTP 403')) {
+            errorMessage = 'Access denied. Please check your permissions.'
+          }
         } else if (response.status === 404) {
-          errorMessage = 'Resource not found. Please check the URL or try again.'
+          if (!errorMessage || errorMessage.includes('HTTP 404')) {
+            errorMessage = 'Resource not found. Please check the URL or try again.'
+          }
         } else if (response.status === 429) {
-          errorMessage = 'Too many requests. Please wait a moment and try again.'
+          if (!errorMessage || errorMessage.includes('HTTP 429')) {
+            errorMessage = 'Too many requests. Please wait a moment and try again.'
+          }
         } else if (response.status >= 500) {
-          errorMessage = 'Server error. Please try again later.'
+          // For 500 errors, only use generic message if we don't have a specific error from server
+          if (!errorMessage || errorMessage.includes('HTTP 500') || errorMessage === 'Internal Server Error') {
+            errorMessage = 'Server error. Please try again later.'
+          }
+          // Otherwise keep the specific error message from the server (like "Incorrect password")
         }
         
         throw new Error(errorMessage)

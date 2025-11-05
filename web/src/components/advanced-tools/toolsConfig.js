@@ -150,9 +150,9 @@ export const proTools = [
     features: ['Quality control', 'Image optimization', 'Size prediction', 'Batch processing']
   },
   {
-    id: 'encrypt-pro',
+    id: 'password-protect',
     icon: Lock,
-    title: 'Encrypt Pro',
+    title: 'Password Protect',
     description: 'Military-grade encryption with advanced security features',
     color: 'from-red-500 to-pink-700',
     bgColor: 'bg-red-50',
@@ -165,7 +165,25 @@ export const proTools = [
     category: 'Security',
     popularity: 85,
     processingTime: '< 60s',
-    features: ['AES-256 encryption', 'Password protection', 'Digital signatures', 'Audit trails']
+    features: ['AES-256 encryption', 'Password protection', 'Permission control', 'Audit trails']
+  },
+  {
+    id: 'password-remove',
+    icon: Shield,
+    title: 'Password Remover',
+    description: 'Remove password protection from PDFs with advanced decryption',
+    color: 'from-amber-500 to-orange-700',
+    bgColor: 'bg-amber-50',
+    borderColor: 'border-amber-200',
+    textColor: 'text-amber-700',
+    iconBg: 'bg-amber-500',
+    acceptedFiles: '.pdf',
+    multipleFiles: true,
+    minFiles: 1,
+    category: 'Security',
+    popularity: 82,
+    processingTime: '< 45s',
+    features: ['Password removal', 'Batch processing', 'Permission unlock', 'Fast decryption']
   },
   {
     id: 'images-to-pdf',
@@ -293,12 +311,18 @@ export const PROCESSING_STEPS_CONFIG = {
     { name: 'Compressing PDFs', icon: Archive },
     { name: 'Complete', icon: CheckCircle }
   ],
-  'encrypt-pro': [
+  'password-protect': [
     { name: 'Uploading Files', icon: Upload },
     { name: 'Generating Keys', icon: Shield },
     { name: 'Applying Encryption', icon: Lock },
     { name: 'Security Verification', icon: CheckCircle },
     { name: 'Complete', icon: Download }
+  ],
+  'password-remove': [
+    { name: 'Uploading Files', icon: Upload },
+    { name: 'Verifying Password', icon: Shield },
+    { name: 'Removing Protection', icon: Lock },
+    { name: 'Complete', icon: CheckCircle }
   ],
   'images-to-pdf': [
     { name: 'Uploading Images', icon: Upload },

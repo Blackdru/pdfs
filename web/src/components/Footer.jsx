@@ -25,7 +25,7 @@ const Footer = () => {
               </div>
             </div>
             <p className="text-muted-foreground text-sm mb-4 max-w-md">
-              Transform your PDF workflow with intelligent OCR, AI-powered summaries, 
+              Transform your PDF workflow with intelligent OCR, AI-powered summaries,
               and advanced document processing tools. Built for professionals who demand excellence.
             </p>
             <div className="flex flex-col space-y-2">
@@ -37,7 +37,7 @@ const Footer = () => {
               <div className="flex items-center text-sm font-semibold">
                 <span className="text-orange-500">🇮🇳</span>
                 <span className="ml-2 bg-gradient-to-r from-orange-500 via-white to-green-500 bg-clip-text text-transparent">
-                  Proudly Made in India
+                  Made in India
                 </span>
               </div>
             </div>
@@ -47,22 +47,22 @@ const Footer = () => {
           <div>
             <h3 className="text-card-foreground font-semibold mb-4">Legal</h3>
             <div className="space-y-3">
-              <Link 
-                to="/privacy-policy" 
+              <Link
+                to="/privacy-policy"
                 className="flex items-center text-muted-foreground hover:text-card-foreground transition-colors text-sm"
               >
                 <Shield className="h-4 w-4 mr-2" />
                 Privacy Policy
               </Link>
-              <Link 
-                to="/terms-conditions" 
+              <Link
+                to="/terms-conditions"
                 className="flex items-center text-muted-foreground hover:text-card-foreground transition-colors text-sm"
               >
                 <FileText className="h-4 w-4 mr-2" />
                 Terms & Conditions
               </Link>
-              <Link 
-                to="/cancellation-refunds" 
+              <Link
+                to="/cancellation-refunds"
                 className="flex items-center text-muted-foreground hover:text-card-foreground transition-colors text-sm"
               >
                 <RefreshCw className="h-4 w-4 mr-2" />
@@ -75,22 +75,22 @@ const Footer = () => {
           <div>
             <h3 className="text-card-foreground font-semibold mb-4">Support</h3>
             <div className="space-y-3">
-              <Link 
-                to="/pricing" 
+              <Link
+                to="/pricing"
                 className="flex items-center text-muted-foreground hover:text-card-foreground transition-colors text-sm"
               >
                 <CreditCard className="h-4 w-4 mr-2" />
                 Pricing
               </Link>
-              <Link 
-                to="/contact" 
+              <Link
+                to="/contact"
                 className="flex items-center text-muted-foreground hover:text-card-foreground transition-colors text-sm"
               >
                 <Mail className="h-4 w-4 mr-2" />
                 Contact Us
               </Link>
-              <Link 
-                to="/help" 
+              <Link
+                to="/help"
                 className="flex items-center text-muted-foreground hover:text-card-foreground transition-colors text-sm"
               >
                 <HelpCircle className="h-4 w-4 mr-2" />
@@ -103,8 +103,8 @@ const Footer = () => {
         {/* Bottom */}
         <div className="border-t border-border mt-8 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex flex-col md:flex-row items-center gap-4">
-            <p className="text-secondary text-sm">
-              © 2025 RobotPDF. All rights reserved.
+            <p className="text-primary text-sm">
+              © 2025 Budrock Technologies Private Limited. All rights reserved.
             </p>
             <div className="flex items-center px-3 py-1.5 rounded-full bg-gradient-to-r from-orange-500/10 via-white/5 to-green-500/10 border border-orange-500/20">
               <span className="text-lg mr-1.5">🇮🇳</span>

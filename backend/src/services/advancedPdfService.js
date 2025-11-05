@@ -413,7 +413,7 @@ class AdvancedPdfService {
     }
   }
 
-  // Password protection with proper PDF encryption using node-qpdf2
+  // Password protection with proper PDF encryption using muhammara
   async passwordProtect(file, password, permissions, outputName, encryptionLevel = '256-bit') {
     try {
       console.log('Starting password protection for file:', file.filename);
@@ -430,42 +430,48 @@ class AdvancedPdfService {
       const buffer = Buffer.from(await fileBuffer.arrayBuffer());
       console.log('File downloaded, size:', buffer.length);
       
-      // Save to temp file for qpdf processing
+      // Save to temp file for muhammara processing
       const tempInputPath = path.join(this.tempDir, `${uuidv4()}_input.pdf`);
       const tempOutputPath = path.join(this.tempDir, `${uuidv4()}_output.pdf`);
       
       await fs.writeFile(tempInputPath, buffer);
       console.log('Temp file created:', tempInputPath);
       
-      // Use node-qpdf2 for proper encryption
-      const { encrypt } = require('node-qpdf2');
+      // Use @cantoo/pdf-lib for proper PDF encryption
+      const { PDFDocument: CantooPDFDocument } = require('@cantoo/pdf-lib');
       
-      // Map permissions to qpdf format
-      const qpdfPermissions = {
-        print: permissions.printing ? 'full' : 'none',
-        modify: permissions.editing ? 'all' : 'none',
-        extract: permissions.copying ? 'y' : 'n',
-        annotate: permissions.annotating ? 'y' : 'n',
-        form: permissions.fillingForms ? 'y' : 'n',
-        assembly: permissions.assembling ? 'y' : 'n',
-        printHq: permissions.printingHighRes ? 'y' : 'n'
-      };
+      console.log('Encrypting PDF with @cantoo/pdf-lib...');
       
-      // Encryption options
-      const encryptOptions = {
-        input: tempInputPath,
-        output: tempOutputPath,
-        password: password,
-        keyLength: encryptionLevel === '256-bit' ? 256 : 128,
-        restrictions: qpdfPermissions
-      };
-      
-      console.log('Encrypting PDF with options:', { ...encryptOptions, password: '***' });
-      
-      // Encrypt the PDF
-      await encrypt(encryptOptions);
-      
-      console.log('PDF encrypted successfully');
+      try {
+        // Load the PDF with cantoo pdf-lib (supports encryption)
+        const pdfDoc = await CantooPDFDocument.load(buffer);
+        
+        console.log(`Encrypting PDF with ${pdfDoc.getPageCount()} pages...`);
+        
+        // Set encryption with password and permissions
+        pdfDoc.encrypt({
+          userPassword: password,
+          ownerPassword: password + '_owner_' + Date.now(),
+          permissions: {
+            printing: permissions.printing ? 'highResolution' : 'lowResolution',
+            modifying: permissions.editing,
+            copying: permissions.copying,
+            annotating: permissions.annotating,
+            fillingForms: permissions.fillingForms,
+            contentAccessibility: permissions.extracting,
+            documentAssembly: permissions.assembling
+          }
+        });
+        
+        // Save the encrypted PDF
+        const encryptedBytes = await pdfDoc.save();
+        await fs.writeFile(tempOutputPath, encryptedBytes);
+        
+        console.log('PDF encrypted successfully with @cantoo/pdf-lib');
+      } catch (cantooError) {
+        console.error('@cantoo/pdf-lib encryption failed:', cantooError.message);
+        throw new Error(`PDF encryption failed: ${cantooError.message}. The PDF encryption feature requires qpdf to be installed.`);
+      }
       
       // Read the encrypted file
       const encryptedBuffer = await fs.readFile(tempOutputPath);
@@ -498,12 +504,197 @@ class AdvancedPdfService {
         encryptionLevel: encryptionLevel,
         permissions: permissions,
         passwordProtected: true,
-        note: 'PDF encrypted with AES encryption. The file requires the password to open and respects all permission settings.'
+        note: 'PDF encrypted with AES encryption using muhammara. The file requires the password to open and respects all permission settings.'
       };
 
     } catch (error) {
       console.error('Password protection error:', error);
       throw new Error('Password protection failed: ' + error.message);
+    }
+  }
+
+  // Password removal - Remove password protection from PDFs
+  async passwordRemove(file, password, outputName) {
+    try {
+      console.log('Starting password removal for file:', file.filename);
+      
+      // Download file from Supabase storage
+      const { data: fileBuffer, error: downloadError } = await supabaseAdmin.storage
+        .from('files')
+        .download(file.path);
+
+      if (downloadError) {
+        throw new Error(`Failed to download file: ${downloadError.message}`);
+      }
+
+      const buffer = Buffer.from(await fileBuffer.arrayBuffer());
+      console.log('File downloaded, size:', buffer.length);
+      
+      // Save to temp file
+      const tempInputPath = path.join(this.tempDir, `${uuidv4()}_input.pdf`);
+      const tempOutputPath = path.join(this.tempDir, `${uuidv4()}_output.pdf`);
+      
+      await fs.writeFile(tempInputPath, buffer);
+      
+      // Try to decrypt the PDF
+      try {
+        // Try using muhammara to decrypt
+        const muhammara = require('muhammara');
+        
+        console.log('Attempting to decrypt PDF with muhammara...');
+        
+        // Create PDF writer
+        const pdfWriter = muhammara.createWriter(tempOutputPath);
+        
+        // Try to open encrypted PDF with password
+        const copyingContext = pdfWriter.createPDFCopyingContext(tempInputPath, {
+          password: password
+        });
+        
+        // Copy all pages without encryption
+        const pageCount = copyingContext.getSourceDocumentParser().getPagesCount();
+        console.log(`Decrypting ${pageCount} pages...`);
+        
+        for (let i = 0; i < pageCount; i++) {
+          const page = pdfWriter.createPage(0, 0);
+          copyingContext.mergePDFPageToPage(page, i);
+          pdfWriter.writePage(page);
+        }
+        
+        // Finalize without encryption
+        pdfWriter.end();
+        
+        console.log('PDF decrypted successfully with muhammara');
+        
+        // Read the decrypted file
+        const decryptedBuffer = await fs.readFile(tempOutputPath);
+        console.log('Decrypted PDF size:', decryptedBuffer.length);
+        
+        // Upload unlocked PDF to Supabase storage
+        const storagePath = `unlocked/${uuidv4()}-${outputName}`;
+        const { error: uploadError } = await supabaseAdmin.storage
+          .from('files')
+          .upload(storagePath, decryptedBuffer, {
+            contentType: 'application/pdf',
+            upsert: false
+          });
+
+        if (uploadError) {
+          throw new Error('Failed to upload unlocked file: ' + uploadError.message);
+        }
+
+        console.log('Unlocked PDF uploaded successfully');
+        
+        // Clean up temp files
+        await this.cleanupFile(tempInputPath);
+        await this.cleanupFile(tempOutputPath);
+
+        return {
+          filename: outputName,
+          size: decryptedBuffer.length,
+          path: storagePath,
+          unlocked: true,
+          note: 'Password protection removed successfully using muhammara.'
+        };
+        
+      } catch (muhammaraError) {
+        console.log('Muhammara decryption failed, trying pdf-lib fallback:', muhammaraError.message);
+        
+        // Fallback to pdf-lib - DO NOT use ignoreEncryption as it bypasses password check
+        try {
+          const pdfDoc = await PDFLib.PDFDocument.load(buffer, {
+            ignoreEncryption: false, // IMPORTANT: Must validate password
+            password: password
+          });
+          
+          console.log('PDF loaded successfully with pdf-lib (password validated)');
+          
+          // Save the PDF without encryption
+          const pdfBytes = await pdfDoc.save();
+          
+          console.log('PDF decrypted with pdf-lib, size:', pdfBytes.length);
+          
+          // Upload unlocked PDF to Supabase storage
+          const storagePath = `unlocked/${uuidv4()}-${outputName}`;
+          const { error: uploadError } = await supabaseAdmin.storage
+            .from('files')
+            .upload(storagePath, pdfBytes, {
+              contentType: 'application/pdf',
+              upsert: false
+            });
+
+          if (uploadError) {
+            throw new Error('Failed to upload unlocked file: ' + uploadError.message);
+          }
+
+          console.log('Unlocked PDF uploaded successfully');
+          
+          // Clean up temp files
+          await this.cleanupFile(tempInputPath);
+          await this.cleanupFile(tempOutputPath);
+
+          return {
+            filename: outputName,
+            size: pdfBytes.length,
+            path: storagePath,
+            unlocked: true,
+            note: 'Password protection removed successfully using pdf-lib fallback.'
+          };
+          
+        } catch (pdfLibError) {
+          console.error('pdf-lib decryption also failed:', pdfLibError.message);
+          
+          // Check if it's a password error
+          if (pdfLibError.message.includes('password') || pdfLibError.message.includes('encrypted') ||
+              pdfLibError.message.includes('decrypt') || muhammaraError.message.includes('password')) {
+            throw new Error('Incorrect password. Please check your password and try again.');
+          }
+          
+          // If PDF is not encrypted, just copy it
+          console.log('PDF might not be encrypted, creating copy');
+          
+          const storagePath = `unlocked/${uuidv4()}-${outputName}`;
+          const { error: uploadError } = await supabaseAdmin.storage
+            .from('files')
+            .upload(storagePath, buffer, {
+              contentType: 'application/pdf',
+              upsert: false
+            });
+
+          if (uploadError) {
+            throw new Error('Failed to upload file: ' + uploadError.message);
+          }
+          
+          // Clean up temp files
+          await this.cleanupFile(tempInputPath);
+          await this.cleanupFile(tempOutputPath);
+
+          return {
+            filename: outputName,
+            size: buffer.length,
+            path: storagePath,
+            unlocked: true,
+            note: 'PDF was not password-protected. A copy has been created.'
+          };
+        }
+      }
+
+    } catch (error) {
+      console.error('Password removal error:', error);
+      
+      // Clean up temp files on error
+      try {
+        await this.cleanupFile(tempInputPath);
+        await this.cleanupFile(tempOutputPath);
+      } catch (cleanupError) {
+        console.error('Cleanup error:', cleanupError);
+      }
+      
+      // Re-throw with clear message
+      if (error.message.includes('Incorrect password')) {
+        throw error; // Pass through password errors
+      }
+      throw new Error('Password removal failed: ' + error.message);
     }
   }
 

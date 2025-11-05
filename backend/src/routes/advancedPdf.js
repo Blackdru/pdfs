@@ -398,6 +398,88 @@ router.post('/password-protect',
   }
 );
 
+// Password removal - Remove password protection from PDFs
+router.post('/password-remove',
+  authenticateUser,
+  trackUsage('pdf_operation', 1),
+  validateRequest({
+    body: Joi.object({
+      fileId: Joi.string().uuid().required(),
+      password: Joi.string().required(),
+      outputName: Joi.string().required()
+    })
+  }),
+  async (req, res) => {
+    try {
+      const { fileId, password, outputName } = req.body;
+
+      // Get file metadata
+      const { data: file, error: fileError } = await supabaseAdmin
+        .from('files')
+        .select('*')
+        .eq('id', fileId)
+        .eq('user_id', req.user.id)
+        .single();
+
+      if (fileError || !file) {
+        return res.status(404).json({ error: 'File not found' });
+      }
+
+      if (file.type !== 'application/pdf') {
+        return res.status(400).json({ error: 'File must be a PDF' });
+      }
+
+      // Perform password removal
+      const result = await advancedPdfService.passwordRemove(file, password, outputName);
+
+      // Save unlocked file
+      const { data: unlockedFile, error: saveError } = await supabaseAdmin
+        .from('files')
+        .insert([{
+          user_id: req.user.id,
+          filename: result.filename,
+          original_name: result.filename,
+          type: 'application/pdf',
+          size: result.size,
+          path: result.path,
+          metadata: {
+            operation: 'password-remove',
+            source_file: { id: file.id, filename: file.filename },
+            unlocked: true,
+            created_at: new Date().toISOString()
+          }
+        }])
+        .select()
+        .single();
+
+      if (saveError) {
+        throw new Error('Failed to save unlocked file: ' + saveError.message);
+      }
+
+      // Log operation (don't log the password)
+      await supabaseAdmin
+        .from('history')
+        .insert([{
+          user_id: req.user.id,
+          file_id: unlockedFile.id,
+          action: 'password_remove',
+          metadata: { 
+            source_file: fileId
+          }
+        }]);
+
+      res.json({
+        message: 'Password removed successfully',
+        file: unlockedFile
+      });
+
+    } catch (error) {
+      console.error('Password removal error:', error);
+      res.status(500).json({ error: error.message || 'Password removal failed' });
+    }
+  }
+);
+
 // Digital signature with certificate management
 router.post('/digital-sign',
   authenticateUser,

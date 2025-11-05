@@ -9,6 +9,8 @@ import FileUploadModal from '../components/FileUploadModal'
 import ProcessingModal from '../components/ProcessingModal'
 import AIAssistant from '../components/AIAssistant'
 import UpgradeModal from '../components/UpgradeModal'
+import FileOrderPreview from '../components/FileOrderPreview'
+import PasswordRemoveModal from '../components/PasswordRemoveModal'
 import toast from 'react-hot-toast'
 import { 
   GitMerge, 
@@ -31,6 +33,7 @@ import {
   Play,
   Clock,
   Shield,
+  Lock,
   Sparkles,
   TrendingUp,
   Users,
@@ -67,6 +70,11 @@ const Tools = () => {
   const [processingStage, setProcessingStage] = useState('Initializing...')
   const [processingSteps, setProcessingSteps] = useState([])
   const [currentStep, setCurrentStep] = useState(0)
+  const [showFileOrderPreview, setShowFileOrderPreview] = useState(false)
+  const [pendingFiles, setPendingFiles] = useState([])
+  const [toolSettings, setToolSettings] = useState({})
+  const [showPasswordRemoveModal, setShowPasswordRemoveModal] = useState(false)
+  const [pendingPasswordFiles, setPendingPasswordFiles] = useState([])
 
   const tools = [
     {
@@ -225,9 +233,26 @@ const Tools = () => {
       processingTime: '< 60s',
       requiresPro: true
     },
+    {
+      id: 'password-remove',
+      icon: Shield,
+      title: 'Password Remover',
+      description: 'Remove password protection from your PDFs',
+      color: 'from-amber-500 to-orange-700',
+      bgColor: 'bg-amber-50',
+      borderColor: 'border-amber-200',
+      textColor: 'text-amber-700',
+      iconBg: 'bg-amber-500',
+      acceptedFiles: '.pdf',
+      multipleFiles: true,
+      minFiles: 1,
+      category: 'Security',
+      popularity: 82,
+      processingTime: '< 45s'
+    },
       ]
 
-  const categories = ['All', 'Basic', 'Optimization', 'Conversion']
+  const categories = ['All', 'Basic', 'Optimization', 'Conversion', 'Security']
   const [selectedCategory, setSelectedCategory] = useState('All')
 
   // Filter tools based on category (show all tools regardless of plan)
@@ -294,6 +319,12 @@ const Tools = () => {
         { name: 'Rendering Page', icon: Eye },
         { name: 'Creating PDF', icon: FileText },
         { name: 'Complete', icon: CheckCircle }
+      ],
+      'password-remove': [
+        { name: 'Uploading Files', icon: Upload },
+        { name: 'Verifying Password', icon: Shield },
+        { name: 'Removing Protection', icon: Lock },
+        { name: 'Complete', icon: CheckCircle }
       ]
     }
 
@@ -349,14 +380,55 @@ const Tools = () => {
       return
     }
     
-    setUploadedFiles(validFiles)
-    
-    // Auto-process if we have enough files
-    // For HTML to PDF (minFiles = 0), auto-process if at least 1 file is uploaded
-    const minRequired = selectedTool?.minFiles === 0 ? 1 : (selectedTool?.minFiles || 1)
-    if (validFiles.length >= minRequired) {
-      await handleAutoProcess(validFiles)
+    // Check if tool needs password input
+    if (selectedTool?.id === 'password-remove') {
+      setPendingPasswordFiles(validFiles)
+      setShowPasswordRemoveModal(true)
+      setShowUploadModal(false)
+      return
     }
+    
+    // Check if tool needs file ordering (merge, convert with multiple files)
+    const needsOrdering = ['merge', 'convert'].includes(selectedTool?.id) && validFiles.length > 1
+    
+    if (needsOrdering) {
+      // Show file order preview
+      setPendingFiles(validFiles)
+      setShowFileOrderPreview(true)
+    } else {
+      // Process directly
+      setUploadedFiles(validFiles)
+      
+      // Auto-process if we have enough files
+      const minRequired = selectedTool?.minFiles === 0 ? 1 : (selectedTool?.minFiles || 1)
+      if (validFiles.length >= minRequired) {
+        await handleAutoProcess(validFiles)
+      }
+    }
+  }
+
+  const handlePasswordRemoveConfirm = async (settings) => {
+    setShowPasswordRemoveModal(false)
+    setUploadedFiles(pendingPasswordFiles)
+    setToolSettings(settings)
+    setPendingPasswordFiles([])
+    
+    // Auto-process with password settings
+    await handleAutoProcess(pendingPasswordFiles, settings)
+  }
+
+  const handleFileOrderConfirm = async (orderedFiles) => {
+    setShowFileOrderPreview(false)
+    setUploadedFiles(orderedFiles)
+    setPendingFiles([])
+    
+    // Auto-process with ordered files
+    await handleAutoProcess(orderedFiles)
+  }
+
+  const handleFileOrderCancel = () => {
+    setShowFileOrderPreview(false)
+    setPendingFiles([])
   }
 
   const validateFilesForTool = (files, tool) => {
@@ -385,7 +457,10 @@ const Tools = () => {
     return validFiles
   }
 
-  const handleAutoProcess = async (files) => {
+  const handleAutoProcess = async (files, settings = {}) => {
+    // Merge settings with toolSettings
+    const finalSettings = { ...toolSettings, ...settings }
+    
     // For HTML to PDF, allow processing with no files if URL is provided
     if (!selectedTool) return
     if (selectedTool.id !== 'html-to-pdf' && files.length === 0) return
@@ -552,6 +627,87 @@ const Tools = () => {
           updateProgress(70, 'Creating PDF...', 2)
           result = await api.convertImagesToPDF(uploadedFileIds, `${outputName}.pdf`)
           updateProgress(85, 'Conversion complete!', 2)
+          break
+          
+        case 'password-remove':
+          // Remove password protection from PDF
+          console.log('Password remove - Settings:', finalSettings)
+          
+          if (!finalSettings.password) {
+            toast.error('Password is required to unlock the PDF')
+            setIsProcessing(false)
+            return
+          }
+          
+          console.log('Password remove - Starting with password:', finalSettings.password.substring(0, 2) + '***')
+          updateProgress(50, 'Verifying password...', 2)
+          await new Promise(resolve => setTimeout(resolve, 500))
+          
+          const unlockedFiles = []
+          let passwordError = false
+          
+          for (const fileId of uploadedFileIds) {
+            if (passwordError) break // Stop if we already had an error
+            
+            try {
+              updateProgress(60, 'Removing password protection...', 2)
+              console.log('Attempting to unlock file:', fileId)
+              
+              const unlocked = await api.post('/pdf/advanced/password-remove', {
+                fileId: fileId,
+                password: finalSettings.password,
+                outputName: `unlocked_${Date.now()}.pdf`
+              })
+              
+              console.log('File unlocked successfully:', unlocked)
+              
+              // Verify we got a valid response
+              if (!unlocked || !unlocked.file) {
+                throw new Error('Invalid response from server')
+              }
+              
+              unlockedFiles.push(unlocked.file)
+            } catch (error) {
+              console.error('Password removal error:', error)
+              console.error('Error type:', typeof error)
+              console.error('Error object:', JSON.stringify(error, null, 2))
+              
+              passwordError = true
+              const errorMsg = error?.message || String(error)
+              
+              // Check if it's a password error
+              if (errorMsg.includes('Incorrect password') || 
+                  errorMsg.includes('password') || 
+                  errorMsg.includes('decrypt') ||
+                  errorMsg.includes('encrypted')) {
+                toast.error('❌ Incorrect password. Please check your password and try again.', { duration: 6000 })
+              } else {
+                toast.error(`Failed to remove password: ${errorMsg}`, { duration: 5000 })
+              }
+              
+              // Stop processing immediately
+              console.log('Stopping processing due to error')
+              setUploadedFiles([])
+              setIsProcessing(false)
+              setProcessingProgress(0)
+              setProcessingStage('')
+              setCurrentStep(0)
+              
+              // Force return to prevent any further processing
+              throw error
+            }
+          }
+          
+          // Only continue if no errors occurred
+          if (passwordError || unlockedFiles.length === 0) {
+            console.log('No files were unlocked, stopping')
+            setIsProcessing(false)
+            return
+          }
+          
+          console.log('All files unlocked successfully:', unlockedFiles.length)
+          updateProgress(85, 'Password removed successfully!', 2)
+          result = { files: unlockedFiles }
           break
           
         case 'ocr':
@@ -1358,6 +1514,26 @@ const Tools = () => {
         requiredPlan={upgradeModalData.requiredPlan}
         toolName={upgradeModalData.toolName}
         toolDescription={upgradeModalData.toolDescription}
+      />
+
+      {/* File Order Preview Modal */}
+      {showFileOrderPreview && (
+        <FileOrderPreview
+          files={pendingFiles}
+          onConfirm={handleFileOrderConfirm}
+          onCancel={handleFileOrderCancel}
+        />
+      )}
+
+      {/* Password Remove Modal */}
+      <PasswordRemoveModal
+        isOpen={showPasswordRemoveModal}
+        onClose={() => {
+          setShowPasswordRemoveModal(false)
+          setPendingPasswordFiles([])
+        }}
+        onConfirm={handlePasswordRemoveConfirm}
+        fileCount={pendingPasswordFiles.length}
       />
 
     </div>

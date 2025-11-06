@@ -875,29 +875,32 @@ class AdvancedPdfService {
 
         const buffer = Buffer.from(await imageBuffer.arrayBuffer());
 
-        // Get image info and optimize if needed
-        let processedBuffer = buffer;
-        if (imageQuality < 1.0) {
-          try {
-            processedBuffer = await sharp(buffer)
-              .jpeg({ quality: Math.round(imageQuality * 100) })
-              .toBuffer();
-          } catch (sharpError) {
-            console.warn(`Failed to optimize image ${file.filename}: ${sharpError.message}`);
-            processedBuffer = buffer;
-          }
+        // Validate and process image with Sharp
+        let processedBuffer;
+        try {
+          processedBuffer = await sharp(buffer)
+            .jpeg({ quality: Math.round(imageQuality * 100) })
+            .toBuffer();
+        } catch (sharpError) {
+          console.error(`Failed to process image ${file.filename}: ${sharpError.message}`);
+          continue;
         }
 
-        // Embed image
+        // Embed image with format validation and conversion
         let image;
         try {
-          if (file.type.includes('png')) {
-            image = await pdfDoc.embedPng(processedBuffer);
-          } else {
-            image = await pdfDoc.embedJpg(processedBuffer);
-          }
+          console.log(`Processing image: ${file.filename}, type: ${file.type}`);
+          
+          // Always convert to JPEG for reliable embedding
+          console.log(`Converting to JPEG for reliable embedding: ${file.filename}`);
+          const jpegBuffer = await sharp(processedBuffer)
+            .jpeg({ quality: Math.round(imageQuality * 100) })
+            .toBuffer();
+          
+          image = await pdfDoc.embedJpg(jpegBuffer);
+          console.log(`Successfully embedded image: ${file.filename}`);
         } catch (embedError) {
-          console.warn(`Failed to embed image ${file.filename}: ${embedError.message}`);
+          console.error(`Failed to embed image ${file.filename}: ${embedError.message}`);
           continue;
         }
 
@@ -992,6 +995,8 @@ class AdvancedPdfService {
       }
 
       if (pageCount === 0) {
+        console.error('No images were successfully processed');
+        console.error('Files attempted:', files.map(f => ({ name: f.filename, type: f.type })));
         throw new Error('No images could be processed');
       }
 

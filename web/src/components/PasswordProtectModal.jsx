@@ -86,7 +86,7 @@ const PasswordProtectModal = ({ isOpen, onClose, onConfirm, fileCount = 1 }) => 
 
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
+      <div className="bg-surface rounded-2xl shadow-2xl max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="sticky top-0 bg-gradient-to-r from-red-500 to-pink-700 text-white p-4 sm:p-6 rounded-t-2xl z-10">
           <div className="flex items-center justify-between gap-2">
@@ -114,7 +114,7 @@ const PasswordProtectModal = ({ isOpen, onClose, onConfirm, fileCount = 1 }) => 
         <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
           {/* Password Type Selection */}
           <div className="space-y-2 sm:space-y-3">
-            <label className="block text-xs sm:text-sm font-semibold text-gray-700">
+            <label className="block text-xs sm:text-sm font-semibold text-card-foreground">
               Password Type
             </label>
             <div className="grid grid-cols-2 gap-2 sm:gap-3">
@@ -158,7 +158,7 @@ const PasswordProtectModal = ({ isOpen, onClose, onConfirm, fileCount = 1 }) => 
                   onChange={(e) => setCustomPassword(e.target.value)}
                   placeholder="Minimum 6 characters"
                   minLength={6}
-                  className="w-full px-4 py-3 pr-24 border-2 border-gray-200 rounded-xl focus:border-red-500 focus:outline-none"
+                  className="w-full px-4 py-3 pr-24 bg-elevated border-2 border-border rounded-xl focus:border-red-500 focus:outline-none text-card-foreground"
                 />
                 <div className="absolute right-2 top-1/2 -translate-y-1/2 flex gap-1">
                   <button
@@ -256,7 +256,7 @@ const PasswordProtectModal = ({ isOpen, onClose, onConfirm, fileCount = 1 }) => 
               ].map(({ key, label, icon, desc }) => (
                 <label
                   key={key}
-                  className="flex items-center gap-3 p-3 rounded-xl border-2 border-gray-200 hover:border-gray-300 cursor-pointer transition-all"
+                  className="flex items-center gap-3 p-3 rounded-xl border-2 border-border hover:border-accent cursor-pointer transition-all bg-elevated"
                 >
                   <input
                     type="checkbox"
@@ -268,8 +268,8 @@ const PasswordProtectModal = ({ isOpen, onClose, onConfirm, fileCount = 1 }) => 
                   />
                   <span className="text-2xl">{icon}</span>
                   <div className="flex-1">
-                    <div className="text-sm font-medium text-gray-700">{label}</div>
-                    <div className="text-xs text-gray-500">{desc}</div>
+                    <div className="text-sm font-medium text-card-foreground">{label}</div>
+                    <div className="text-xs text-muted-foreground">{desc}</div>
                   </div>
                 </label>
               ))}
@@ -312,7 +312,7 @@ const PasswordProtectModal = ({ isOpen, onClose, onConfirm, fileCount = 1 }) => 
         </div>
 
         {/* Footer */}
-        <div className="sticky bottom-0 bg-gray-50 px-4 sm:px-6 py-3 sm:py-4 rounded-b-2xl border-t flex gap-2 sm:gap-3 z-10">
+        <div className="sticky bottom-0 bg-elevated px-4 sm:px-6 py-3 sm:py-4 rounded-b-2xl border-t border-border flex gap-2 sm:gap-3 z-10">
           <Button
             onClick={handleClose}
             variant="outline"

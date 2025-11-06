@@ -388,16 +388,18 @@ const Tools = () => {
       return
     }
     
-    // Check if tool needs file ordering (merge, convert with multiple files)
-    const needsOrdering = ['merge', 'convert'].includes(selectedTool?.id) && validFiles.length > 1
+    // Check if tool needs file ordering (any tool with multiple files support)
+    const needsOrdering = selectedTool?.multipleFiles && validFiles.length > 1
     
     if (needsOrdering) {
       // Show file order preview
       setPendingFiles(validFiles)
       setShowFileOrderPreview(true)
+      setShowUploadModal(false)
     } else {
       // Process directly
       setUploadedFiles(validFiles)
+      setShowUploadModal(false)
       
       // Auto-process if we have enough files
       const minRequired = selectedTool?.minFiles === 0 ? 1 : (selectedTool?.minFiles || 1)

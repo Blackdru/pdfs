@@ -20,6 +20,45 @@ export const AuthProvider = ({ children }) => {
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
 
   useEffect(() => {
+    // Check URL for OAuth callback tokens
+    const urlParams = new URLSearchParams(window.location.search)
+    const accessToken = urlParams.get('access_token')
+    const refreshToken = urlParams.get('refresh_token')
+    const tokenType = urlParams.get('type')
+    const error = urlParams.get('error')
+    const message = urlParams.get('message')
+
+    // Handle OAuth errors (like account already exists)
+    if (error) {
+      if (error === 'account_exists' && message) {
+        toast.error(decodeURIComponent(message))
+      } else if (error === 'oauth_failed') {
+        toast.error('Google sign-in failed. Please try again.')
+      }
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname)
+      setLoading(false)
+      return
+    }
+
+    if (accessToken && refreshToken && tokenType === 'custom') {
+      // OAuth callback with custom JWT tokens
+      const sessionData = {
+        access_token: accessToken,
+        refresh_token: refreshToken,
+        expires_in: 7 * 24 * 60 * 60
+      }
+      localStorage.setItem('auth_session', JSON.stringify(sessionData))
+      setSession(sessionData)
+      
+      // Clean up URL
+      window.history.replaceState({}, document.title, window.location.pathname)
+      
+      // Fetch user data
+      fetchCurrentUser(accessToken)
+      return
+    }
+
     // Check for stored session
     const storedSession = localStorage.getItem('auth_session')
     if (storedSession) {
@@ -47,7 +86,55 @@ export const AuthProvider = ({ children }) => {
       const {
         data: { subscription },
       } = supabase.auth.onAuthStateChange(async (event, session) => {
-        if (session) {
+        if (event === 'SIGNED_IN' && session) {
+          console.log('Google OAuth sign in detected');
+          
+          // Check if this is a Google OAuth user
+          if (session.user?.app_metadata?.provider === 'google') {
+            const googleEmail = session.user.email;
+            const googleId = session.user.id;
+            const googleName = session.user.user_metadata?.full_name || session.user.user_metadata?.name || googleEmail.split('@')[0];
+            
+            try {
+              // Call our backend to handle account linking
+              const response = await fetch(`${API_BASE_URL}/auth/link-google-account`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'Authorization': `Bearer ${session.access_token}`
+                },
+                body: JSON.stringify({
+                  googleEmail,
+                  googleId,
+                  googleName
+                })
+              });
+              
+              if (response.ok) {
+                const data = await response.json();
+                if (data.customToken) {
+                  // Use custom JWT token for our system
+                  const sessionData = {
+                    access_token: data.customToken.access_token,
+                    refresh_token: data.customToken.refresh_token,
+                    expires_in: 7 * 24 * 60 * 60
+                  };
+                  localStorage.setItem('auth_session', JSON.stringify(sessionData));
+                  setSession(sessionData);
+                  setUser(data.user);
+                  
+                  if (data.linked) {
+                    toast.success('Google account linked successfully!');
+                  }
+                  return;
+                }
+              }
+            } catch (error) {
+              console.error('Account linking failed:', error);
+            }
+          }
+          
+          // Fallback to regular Supabase session
           setSession(session)
           setUser(session?.user ?? null)
           localStorage.setItem('supabase.auth.token', session.access_token)
@@ -100,6 +187,10 @@ export const AuthProvider = ({ children }) => {
       const data = await response.json()
 
       if (!response.ok) {
+        if (data.shouldLogin) {
+          // User already exists, redirect to login
+          throw new Error(data.error || 'Account already exists. Please log in instead.')
+        }
         throw new Error(data.error || 'Registration failed')
       }
 
@@ -206,12 +297,16 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  const signInWithGoogle = async () => {
+  const signInWithGoogle = async (isSignup = false) => {
     try {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: `${window.location.origin}/dashboard`,
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'select_account'
+          }
         },
       })
 
@@ -387,6 +482,7 @@ export const AuthProvider = ({ children }) => {
     resendOTP,
     signIn,
     signInWithGoogle,
+    signUpWithGoogle: () => signInWithGoogle(true),
     signOut,
     forgotPassword,
     resetPassword,

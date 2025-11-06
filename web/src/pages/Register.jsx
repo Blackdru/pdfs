@@ -21,7 +21,7 @@ const Register = () => {
   const [isVisible, setIsVisible] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const { signUp, verifyOTP, resendOTP, signInWithGoogle } = useAuth()
+  const { signUp, verifyOTP, resendOTP, signUpWithGoogle } = useAuth()
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -85,9 +85,9 @@ const Register = () => {
     setLoading(false)
   }
 
-  const handleGoogleSignIn = async () => {
+  const handleGoogleSignUp = async () => {
     setLoading(true)
-    await signInWithGoogle()
+    await signUpWithGoogle() // Use signup-specific method
     setLoading(false)
   }
 
@@ -422,7 +422,7 @@ const Register = () => {
                     </div>
 
                     <Button
-                      onClick={handleGoogleSignIn}
+                      onClick={handleGoogleSignUp}
                       disabled={loading}
                       type="button"
                       className="w-full bg-white hover:bg-gray-50 dark:bg-gray-800 dark:hover:bg-gray-700 text-gray-900 dark:text-white border-2 border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 py-4 sm:py-6 text-sm sm:text-base font-semibold rounded-lg sm:rounded-xl transition-all duration-300 hover:shadow-lg"

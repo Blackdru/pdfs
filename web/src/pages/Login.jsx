@@ -37,7 +37,7 @@ const Login = () => {
 
   const handleGoogleSignIn = async () => {
     setLoading(true)
-    await signInWithGoogle()
+    await signInWithGoogle(false) // false = login, not signup
     setLoading(false)
   }
 

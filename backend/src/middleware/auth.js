@@ -53,22 +53,52 @@ const authenticateUser = async (req, res, next) => {
         return res.status(401).json({ error: 'Invalid token' });
       }
 
-      // Ensure user profile exists in database
-      const { data: profile, error: profileError } = await supabaseAdmin
+      // Look up user by Google ID or email
+      let profile = null;
+      
+      // First, try to find by Google ID
+      const { data: googleProfile } = await supabaseAdmin
         .from('users')
         .select('*')
-        .eq('id', user.id)
+        .eq('google_id', user.id)
         .single();
 
-      if (profileError && profileError.code === 'PGRST116') {
+      if (googleProfile) {
+        profile = googleProfile;
+      } else {
+        // If not found by Google ID, try by email (for legacy users)
+        const { data: emailProfile } = await supabaseAdmin
+          .from('users')
+          .select('*')
+          .eq('email', user.email)
+          .single();
+
+        if (emailProfile) {
+          // Link this Supabase auth user to existing profile
+          await supabaseAdmin
+            .from('users')
+            .update({ 
+              google_id: user.id,
+              auth_provider: emailProfile.password_hash ? 'both' : 'google',
+              email_verified: true,
+              verified_at: emailProfile.verified_at || new Date().toISOString()
+            })
+            .eq('id', emailProfile.id);
+
+          profile = { ...emailProfile, google_id: user.id };
+        }
+      }
+
+      if (!profile) {
         // User profile doesn't exist, create it
         const { data: newProfile, error: createError } = await supabaseAdmin
           .from('users')
           .insert([
             {
-              id: user.id, // Use Supabase user ID
               email: user.email,
+              google_id: user.id,
               name: user.user_metadata?.name || user.user_metadata?.full_name || user.email.split('@')[0],
+              auth_provider: 'google',
               role: 'user',
               email_verified: true,
               verified_at: new Date().toISOString()
@@ -92,16 +122,7 @@ const authenticateUser = async (req, res, next) => {
             started_at: new Date().toISOString()
           }]);
 
-        req.user = {
-          id: newProfile.id,
-          email: newProfile.email,
-          name: newProfile.name,
-          role: newProfile.role
-        };
-        return next();
-      } else if (profileError) {
-        console.error('Error checking user profile in middleware:', profileError);
-        return res.status(500).json({ error: 'Database error' });
+        profile = newProfile;
       }
 
       // Use profile data for consistency

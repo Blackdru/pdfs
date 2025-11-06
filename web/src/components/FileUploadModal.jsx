@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect } from 'react'
 import { useDropzone } from 'react-dropzone'
 import { Button } from './ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
-import { X, Upload, File, CheckCircle, AlertCircle, Loader2 } from 'lucide-react'
+import { X, Upload, File, CheckCircle, AlertCircle, Loader2, Eye } from 'lucide-react'
 import toast from 'react-hot-toast'
 
 const FileUploadModal = ({ 
@@ -98,7 +98,7 @@ const FileUploadModal = ({
     setIsUploading(true)
     
     try {
-      // Close modal immediately to show processing modal
+      // Close modal immediately to show processing modal or file order preview
       onClose()
       
       // Call the upload handler
@@ -206,9 +206,18 @@ const FileUploadModal = ({
                   {acceptedFiles.includes('.gif') && 'GIF '}
                   files supported (max 50MB each)
                 </p>
-                <p className="text-xs text-secondary">
-                  {multiple ? `Up to ${maxFiles} files` : 'Single file only'}
-                </p>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-2 text-xs text-secondary">
+                  <span>{multiple ? `Up to ${maxFiles} files` : 'Single file only'}</span>
+                  {multiple && (
+                    <span className="hidden sm:inline">•</span>
+                  )}
+                  {multiple && (
+                    <span className="flex items-center gap-1">
+                      <Eye className="w-3 h-3" />
+                      Preview & reorder available
+                    </span>
+                  )}
+                </div>
               </div>
             )}
           </div>

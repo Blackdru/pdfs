@@ -36,12 +36,17 @@ router.post('/register', validateRequest(schemas.register), async (req, res) => 
     // Check if user already exists
     const { data: existingUser } = await supabase
       .from('users')
-      .select('id, email_verified')
+      .select('id, email_verified, auth_provider')
       .eq('email', email)
       .single();
 
     if (existingUser && existingUser.email_verified) {
-      return res.status(400).json({ error: 'User already exists with this email' });
+      // User already exists and is verified - block signup, tell them to login
+      return res.status(400).json({ 
+        error: 'Account already exists. Please log in instead.',
+        shouldLogin: true,
+        authProvider: existingUser.auth_provider
+      });
     }
 
     // Generate OTP
@@ -72,7 +77,7 @@ router.post('/register', validateRequest(schemas.register), async (req, res) => 
     if (existingUser) {
       await supabaseAdmin
         .from('users')
-        .update({ password_hash: passwordHash, name })
+        .update({ password_hash: passwordHash, name, auth_provider: 'email' })
         .eq('email', email);
     } else {
       // Create unverified user
@@ -84,6 +89,7 @@ router.post('/register', validateRequest(schemas.register), async (req, res) => 
             name,
             password_hash: passwordHash,
             email_verified: false,
+            auth_provider: 'email',
             role: 'user'
           }
         ]);
@@ -304,11 +310,28 @@ router.post('/login', validateRequest(schemas.login), async (req, res) => {
       });
     }
 
+    // Check if user has a password set (they might have signed up with OAuth only)
+    if (!user.password_hash) {
+      // User signed up with Google, doesn't have password
+      return res.status(401).json({ 
+        error: 'This account was created with Google. Please continue with Google.',
+        useGoogle: true 
+      });
+    }
+
     // Verify password
     const isValidPassword = await bcrypt.compare(password, user.password_hash);
 
     if (!isValidPassword) {
       return res.status(401).json({ error: 'Invalid email or password' });
+    }
+
+    // Update auth_provider to 'both' if they're logging in with password after Google signup
+    if (user.auth_provider === 'google') {
+      await supabaseAdmin
+        .from('users')
+        .update({ auth_provider: 'both' })
+        .eq('id', user.id);
     }
 
     // Generate tokens
@@ -599,34 +622,81 @@ router.get('/me', async (req, res) => {
   }
 });
 
-// Google OAuth (keeping for backward compatibility)
+// Google OAuth Login - allows existing users to login
 router.get('/google', async (req, res) => {
   try {
+    // Use Supabase OAuth but with better error handling
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${req.protocol}://${req.get('host')}/api/auth/callback`
+        redirectTo: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/dashboard`,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'select_account'
+        }
       }
     });
 
     if (error) {
-      return res.status(400).json({ error: error.message });
+      console.error('Google OAuth error:', error);
+      const redirectUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      return res.redirect(`${redirectUrl}/login?error=oauth_failed&message=${encodeURIComponent(error.message)}`);
     }
 
-    res.redirect(data.url);
+    if (data?.url) {
+      res.redirect(data.url);
+    } else {
+      throw new Error('No OAuth URL returned');
+    }
   } catch (error) {
     console.error('Google OAuth error:', error);
-    res.status(500).json({ error: 'OAuth initialization failed' });
+    const redirectUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    res.redirect(`${redirectUrl}/login?error=oauth_failed&message=OAuth initialization failed`);
   }
 });
 
-// OAuth callback (keeping for backward compatibility)
+// Google OAuth Signup - blocks if user already exists
+router.get('/google-signup', async (req, res) => {
+  try {
+    // Use Supabase OAuth but with better error handling
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${process.env.FRONTEND_URL || 'http://localhost:3000'}/dashboard`,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'select_account'
+        }
+      }
+    });
+
+    if (error) {
+      console.error('Google OAuth signup error:', error);
+      const redirectUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      return res.redirect(`${redirectUrl}/register?error=oauth_failed&message=${encodeURIComponent(error.message)}`);
+    }
+
+    if (data?.url) {
+      res.redirect(data.url);
+    } else {
+      throw new Error('No OAuth URL returned');
+    }
+  } catch (error) {
+    console.error('Google OAuth signup error:', error);
+    const redirectUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    res.redirect(`${redirectUrl}/register?error=oauth_failed&message=OAuth initialization failed`);
+  }
+});
+
+// OAuth callback - handles both login and signup intents
 router.get('/callback', async (req, res) => {
   try {
-    const { code } = req.query;
+    const { code, intent } = req.query;
 
     if (!code) {
-      return res.status(400).json({ error: 'Authorization code required' });
+      console.error('OAuth callback missing authorization code');
+      const redirectUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+      return res.redirect(`${redirectUrl}/login?error=oauth_failed&message=Authorization failed. Please try again.`);
     }
 
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
@@ -635,32 +705,257 @@ router.get('/callback', async (req, res) => {
       return res.status(400).json({ error: error.message });
     }
 
-    // Create or update user profile
+    // Check if user with this email already exists in our database
     if (data.user) {
-      const { error: profileError } = await supabase
-        .from('users')
-        .upsert([
-          {
-            id: data.user.id,
-            email: data.user.email,
-            name: data.user.user_metadata?.full_name || data.user.user_metadata?.name || data.user.email.split('@')[0],
-            role: 'user',
-            email_verified: true,
-            verified_at: new Date().toISOString()
-          }
-        ]);
+      const googleEmail = data.user.email;
+      const googleId = data.user.id;
+      const googleName = data.user.user_metadata?.full_name || data.user.user_metadata?.name || googleEmail.split('@')[0];
 
-      if (profileError) {
-        console.error('Profile upsert error:', profileError);
+      // Check for existing user with this email
+      const { data: existingUser } = await supabaseAdmin
+        .from('users')
+        .select('*')
+        .eq('email', googleEmail)
+        .single();
+
+      if (existingUser) {
+        // User already exists
+        if (intent === 'signup') {
+          // Block signup attempt - redirect with error
+          const redirectUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+          return res.redirect(`${redirectUrl}/register?error=account_exists&message=Account already exists. Please log in instead.`);
+        }
+        
+        console.log(`Linking Google account to existing user: ${existingUser.id} (${existingUser.email})`);
+        console.log(`Existing auth_provider: ${existingUser.auth_provider}, has password: ${!!existingUser.password_hash}`);
+        
+        // User exists and this is a login - link the Google account to existing user
+        const newAuthProvider = existingUser.password_hash ? 'both' : 'google';
+        
+        const { error: updateError } = await supabaseAdmin
+          .from('users')
+          .update({ 
+            google_id: googleId,
+            auth_provider: newAuthProvider,
+            email_verified: true,
+            verified_at: existingUser.verified_at || new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', existingUser.id);
+        
+        console.log(`Updating user ${existingUser.id} auth_provider to: ${newAuthProvider}`);
+
+        if (updateError) {
+          console.error('Error updating user with Google info:', updateError);
+          throw new Error('Failed to link Google account');
+        }
+
+        // Ensure user has a subscription (create free if none exists)
+        const { data: existingSubscription } = await supabaseAdmin
+          .from('subscriptions')
+          .select('id, plan, status')
+          .eq('user_id', existingUser.id)
+          .single();
+
+        if (!existingSubscription) {
+          console.log(`Creating free subscription for existing user: ${existingUser.id}`);
+          await supabaseAdmin
+            .from('subscriptions')
+            .insert([
+              {
+                user_id: existingUser.id,
+                plan: 'free',
+                status: 'active',
+                started_at: new Date().toISOString()
+              }
+            ]);
+        } else {
+          console.log(`User has existing subscription: ${existingSubscription.plan} (${existingSubscription.status})`);
+        }
+
+        // Generate JWT tokens for our system using existing user ID
+        const { accessToken, refreshToken } = generateTokens(existingUser.id, existingUser.email);
+
+        // Store session with our custom user ID (not Supabase auth ID)
+        const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+        await supabaseAdmin
+          .from('user_sessions')
+          .insert([
+            {
+              user_id: existingUser.id,
+              token: accessToken,
+              refresh_token: refreshToken,
+              expires_at: expiresAt.toISOString(),
+              ip_address: req.ip,
+              user_agent: req.headers['user-agent']
+            }
+          ]);
+
+        console.log(`OAuth login successful for existing user: ${existingUser.id}`);
+        console.log(`User role: ${existingUser.role}, auth_provider updated to: ${newAuthProvider}`);
+        
+        // Redirect with our JWT tokens
+        const redirectUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+        res.redirect(`${redirectUrl}/auth/callback?access_token=${accessToken}&refresh_token=${refreshToken}&type=custom&linked=true`);
+      } else {
+        // No existing user
+        if (intent === 'login') {
+          // This shouldn't happen in normal flow, but handle gracefully
+          console.log(`No existing user found for login attempt: ${googleEmail}`);
+        }
+        
+        console.log(`Creating new user for Google OAuth: ${googleEmail}`);
+        
+        // New user - create profile with Google auth
+        const { data: newUser, error: createError } = await supabaseAdmin
+          .from('users')
+          .insert([
+            {
+              email: googleEmail,
+              name: googleName,
+              google_id: googleId,
+              auth_provider: 'google',
+              role: 'user',
+              email_verified: true,
+              verified_at: new Date().toISOString()
+            }
+          ])
+          .select()
+          .single();
+
+        if (createError) {
+          console.error('Profile creation error:', createError);
+          throw new Error('Failed to create user profile');
+        }
+
+        // Create free subscription for new user
+        await supabaseAdmin
+          .from('subscriptions')
+          .insert([
+            {
+              user_id: newUser.id,
+              plan: 'free',
+              status: 'active',
+              started_at: new Date().toISOString()
+            }
+          ]);
+
+        // Generate JWT tokens
+        const { accessToken, refreshToken } = generateTokens(newUser.id, newUser.email);
+
+        // Store session
+        const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+        await supabaseAdmin
+          .from('user_sessions')
+          .insert([
+            {
+              user_id: newUser.id,
+              token: accessToken,
+              refresh_token: refreshToken,
+              expires_at: expiresAt.toISOString(),
+              ip_address: req.ip,
+              user_agent: req.headers['user-agent']
+            }
+          ]);
+
+        console.log(`New user created via Google OAuth: ${newUser.id}`);
+        
+        // Redirect with our JWT tokens
+        const redirectUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+        res.redirect(`${redirectUrl}/auth/callback?access_token=${accessToken}&refresh_token=${refreshToken}&type=custom&new=true`);
       }
     }
-
-    // Redirect to frontend with session data
-    const redirectUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
-    res.redirect(`${redirectUrl}/auth/callback?access_token=${data.session.access_token}&refresh_token=${data.session.refresh_token}`);
   } catch (error) {
     console.error('OAuth callback error:', error);
-    res.status(500).json({ error: 'OAuth callback failed' });
+    const redirectUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    res.redirect(`${redirectUrl}/login?error=oauth_failed`);
+  }
+});
+
+// Link Google account endpoint (called from frontend after Supabase OAuth)
+router.post('/link-google-account', async (req, res) => {
+  try {
+    const { googleEmail, googleId, googleName } = req.body;
+    
+    if (!googleEmail || !googleId) {
+      return res.status(400).json({ error: 'Missing Google account information' });
+    }
+    
+    console.log(`Linking Google account: ${googleEmail}`);
+    
+    // Check for existing user with this email
+    const { data: existingUser } = await supabaseAdmin
+      .from('users')
+      .select('*')
+      .eq('email', googleEmail)
+      .single();
+    
+    if (existingUser) {
+      console.log(`Found existing user: ${existingUser.id} (role: ${existingUser.role})`);
+      
+      // Link Google account to existing user
+      const newAuthProvider = existingUser.password_hash ? 'both' : 'google';
+      
+      const { error: updateError } = await supabaseAdmin
+        .from('users')
+        .update({
+          google_id: googleId,
+          auth_provider: newAuthProvider,
+          email_verified: true,
+          verified_at: existingUser.verified_at || new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', existingUser.id);
+      
+      if (updateError) {
+        console.error('Error linking Google account:', updateError);
+        return res.status(500).json({ error: 'Failed to link Google account' });
+      }
+      
+      // Generate custom JWT tokens
+      const { accessToken, refreshToken } = generateTokens(existingUser.id, existingUser.email);
+      
+      // Store session
+      const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+      await supabaseAdmin
+        .from('user_sessions')
+        .insert([
+          {
+            user_id: existingUser.id,
+            token: accessToken,
+            refresh_token: refreshToken,
+            expires_at: expiresAt.toISOString(),
+            ip_address: req.ip,
+            user_agent: req.headers['user-agent']
+          }
+        ]);
+      
+      console.log(`Google account linked successfully for user: ${existingUser.id}`);
+      
+      return res.json({
+        success: true,
+        linked: true,
+        user: {
+          id: existingUser.id,
+          email: existingUser.email,
+          name: existingUser.name,
+          role: existingUser.role,
+          email_verified: true
+        },
+        customToken: {
+          access_token: accessToken,
+          refresh_token: refreshToken
+        }
+      });
+    } else {
+      // New user - this should be handled by regular Supabase flow
+      console.log(`New Google user: ${googleEmail}`);
+      return res.json({ success: true, linked: false });
+    }
+    
+  } catch (error) {
+    console.error('Link Google account error:', error);
+    res.status(500).json({ error: 'Failed to link Google account' });
   }
 });
 

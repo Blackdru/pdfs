@@ -441,29 +441,6 @@ const ModernDashboard = () => {
                 </Button>
               </div>
             </div>
-
-            {/* Tips Card */}
-            <div className={`dark-card p-4 sm:p-6 lg:p-8 bg-blue-950 border-blue-800 ${isVisible ? 'animate-slide-right-fade' : ''}`} style={{ animationDelay: '700ms' }}>
-              <div className="flex items-center mb-3 sm:mb-4">
-                <div className="p-2 sm:p-3 bg-gradient-blue rounded-xl sm:rounded-2xl mr-3 sm:mr-4 flex-shrink-0">
-                  <Heart className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 text-white" />
-                </div>
-                <div className="min-w-0">
-                  <h3 className="text-base sm:text-lg font-bold text-blue-300 truncate">Pro Tip</h3>
-                  <p className="text-xs sm:text-sm text-blue-400 truncate">Boost productivity</p>
-                </div>
-              </div>
-              <p className="text-xs sm:text-sm text-blue-300 mb-4 sm:mb-6 leading-relaxed">
-                Use keyboard shortcuts to speed up your workflow. Press <kbd className="px-2 py-1 bg-blue-900 rounded text-xs font-mono">Ctrl+U</kbd> to quickly upload files!
-              </p>
-              <Button 
-                variant="ghost" 
-                className="text-blue-400 hover:text-blue-300 hover:bg-blue-900 p-0 h-auto font-semibold group text-xs sm:text-sm"
-              >
-                Learn More Shortcuts
-                <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 ml-2 group-hover:translate-x-1 transition-transform duration-200" />
-              </Button>
-            </div>
           </div>
         </div>
       </div>

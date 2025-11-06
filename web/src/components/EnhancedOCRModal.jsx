@@ -30,15 +30,10 @@ import { api } from '../lib/api'
 
 const EnhancedOCRModal = ({ isOpen, onClose, result, fileName, fileId, onResultUpdate }) => {
   const [activeTab, setActiveTab] = useState('results')
-  const [enhancedText, setEnhancedText] = useState('')
   const [translatedText, setTranslatedText] = useState('')
   const [targetLanguage, setTargetLanguage] = useState('')
-  const [isEnhancing, setIsEnhancing] = useState(false)
   const [isTranslating, setIsTranslating] = useState(false)
-  const [enhanceWithAI, setEnhanceWithAI] = useState(true)
-  const [extractOriginal, setExtractOriginal] = useState(false)
   const [autoDetectedLanguage, setAutoDetectedLanguage] = useState('')
-  const [enhancementProgress, setEnhancementProgress] = useState(0)
   const [translationProgress, setTranslationProgress] = useState(0)
 
   const languages = [
@@ -92,74 +87,13 @@ const EnhancedOCRModal = ({ isOpen, onClose, result, fileName, fileId, onResultU
     toast.success('Text copied to clipboard!')
   }
 
-  const handleEnhanceWithAI = async () => {
-    if (!result.text || !fileId) {
-      toast.error('No text available to enhance')
-      return
-    }
-
-    setIsEnhancing(true)
-    setEnhancementProgress(0)
-
-    try {
-      // Simulate progress
-      const progressInterval = setInterval(() => {
-        setEnhancementProgress(prev => {
-          if (prev >= 90) {
-            clearInterval(progressInterval)
-            return 90
-          }
-          return prev + 10
-        })
-      }, 200)
-
-      const response = await api.requestWithRetry('/ai/enhance-text', {
-        method: 'POST',
-        body: JSON.stringify({
-          fileId: fileId,
-          text: result.text,
-          enhanceWithAI: true,
-          extractOriginal: extractOriginal
-        }),
-        timeout: 120000 // 2 minutes timeout
-      }, 2) // Retry up to 2 times
-
-      clearInterval(progressInterval)
-      setEnhancementProgress(100)
-
-      if (response && response.enhancedText) {
-        setEnhancedText(response.enhancedText)
-        setActiveTab('enhanced')
-        toast.success('Text enhanced with AI!')
-        
-        // Update the result if callback provided
-        if (onResultUpdate) {
-          onResultUpdate({
-            ...result,
-            enhancedText: response.enhancedText,
-            aiEnhanced: true
-          })
-        }
-      } else {
-        throw new Error('No enhanced text received')
-      }
-    } catch (error) {
-      console.error('Enhancement error:', error)
-      toast.error(error.response?.data?.error || 'Failed to enhance text with AI')
-    } finally {
-      setIsEnhancing(false)
-      setEnhancementProgress(0)
-    }
-  }
-
   const handleTranslate = async () => {
     if (!targetLanguage) {
       toast.error('Please select a target language')
       return
     }
 
-    const textToTranslate = enhancedText || result.text
-    if (!textToTranslate) {
+    if (!result.text) {
       toast.error('No text available to translate')
       return
     }
@@ -185,7 +119,7 @@ const EnhancedOCRModal = ({ isOpen, onClose, result, fileName, fileId, onResultU
         method: 'POST',
         body: JSON.stringify({
           fileId: fileId,
-          text: textToTranslate,
+          text: result.text,
           targetLanguage: targetLanguageName
         }),
         timeout: 60000 // 1 minute timeout
@@ -210,42 +144,7 @@ const EnhancedOCRModal = ({ isOpen, onClose, result, fileName, fileId, onResultU
     }
   }
 
-  const handleReprocessOCR = async () => {
-    if (!fileId) {
-      toast.error('File ID not available')
-      return
-    }
 
-    try {
-      toast.loading('Reprocessing with new settings...')
-      
-      const response = await api.requestWithRetry('/ai/ocr', {
-        method: 'POST',
-        body: JSON.stringify({
-          fileId: fileId,
-          language: 'auto',
-          enhanceImage: true,
-          aiEnhanced: enhanceWithAI,
-          extractOriginal: extractOriginal,
-          confidenceThreshold: 0.6
-        }),
-        timeout: 120000 // 2 minutes timeout
-      }, 1) // Retry once
-
-      if (response && response.result) {
-        // Update the result
-        if (onResultUpdate) {
-          onResultUpdate(response.result)
-        }
-        toast.dismiss()
-        toast.success('OCR reprocessed successfully!')
-      }
-    } catch (error) {
-      console.error('Reprocess error:', error)
-      toast.dismiss()
-      toast.error('Failed to reprocess OCR')
-    }
-  }
 
   const downloadText = (text, filename) => {
     const blob = new Blob([text], { type: 'text/plain' })
@@ -351,7 +250,7 @@ const EnhancedOCRModal = ({ isOpen, onClose, result, fileName, fileId, onResultU
 
                     <Button 
                       onClick={handleTranslate}
-                      disabled={isTranslating || !targetLanguage || (!result.text && !enhancedText)}
+                      disabled={isTranslating || !targetLanguage || !result.text}
                       className="w-full h-10 sm:h-10 text-xs sm:text-sm"
                       size="sm"
                     >
@@ -404,6 +303,7 @@ const EnhancedOCRModal = ({ isOpen, onClose, result, fileName, fileId, onResultU
                             size="sm" 
                             variant="outline" 
                             className="h-9 sm:h-9 text-xs sm:text-sm px-3"
+                            disabled={!result.text}
                           >
                             <Copy className="h-4 w-4 sm:mr-1.5 flex-shrink-0" />
                             <span className="hidden sm:inline">Copy</span>
@@ -413,6 +313,7 @@ const EnhancedOCRModal = ({ isOpen, onClose, result, fileName, fileId, onResultU
                             size="sm" 
                             variant="outline"
                             className="h-9 sm:h-9 text-xs sm:text-sm px-3"
+                            disabled={!result.text}
                           >
                             <Download className="h-4 w-4 sm:mr-1.5 flex-shrink-0" />
                             <span className="hidden sm:inline">Download</span>
@@ -441,6 +342,7 @@ const EnhancedOCRModal = ({ isOpen, onClose, result, fileName, fileId, onResultU
                             size="sm" 
                             variant="outline" 
                             className="h-9 sm:h-9 text-xs sm:text-sm px-3"
+                            disabled={!translatedText}
                           >
                             <Copy className="h-4 w-4 sm:mr-1.5 flex-shrink-0" />
                             <span className="hidden sm:inline">Copy</span>
@@ -450,6 +352,7 @@ const EnhancedOCRModal = ({ isOpen, onClose, result, fileName, fileId, onResultU
                             size="sm" 
                             variant="outline"
                             className="h-9 sm:h-9 text-xs sm:text-sm px-3"
+                            disabled={!translatedText}
                           >
                             <Download className="h-4 w-4 sm:mr-1.5 flex-shrink-0" />
                             <span className="hidden sm:inline">Download</span>

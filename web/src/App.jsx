@@ -7,12 +7,10 @@ import { SubscriptionProvider } from './contexts/SubscriptionContext'
 import ErrorBoundary from './components/ErrorBoundary'
 
 // Pages
-import Home from './pages/Home'
 import ModernHome from './pages/ModernHome'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import ForgotPassword from './pages/ForgotPassword'
-import Dashboard from './pages/Dashboard'
 import ModernDashboard from './pages/ModernDashboard'
 import Tools from './pages/Tools'
 import AdvancedTools from './pages/AdvancedTools'
@@ -32,7 +30,6 @@ import AISmartSummary from './pages/AISmartSummary'
 import ResumeGenerator from './pages/ResumeGenerator'
 
 // Components
-import Navbar from './components/Navbar'
 import ModernNavbar from './components/ModernNavbar'
 import Footer from './components/Footer'
 import ProtectedRoute from './components/ProtectedRoute'

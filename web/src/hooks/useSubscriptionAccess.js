@@ -21,6 +21,7 @@ const TOOL_REQUIREMENTS = {
   'pdf-to-office': 'pro',
   'office-to-pdf': 'pro',
   'advanced-html-to-pdf': 'pro',
+  'password-protect': 'pro',
   
   // Premium tools - require premium
   'encrypt-pro': 'pro',

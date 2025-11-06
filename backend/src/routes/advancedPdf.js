@@ -1,6 +1,6 @@
 const express = require('express');
 const { supabase, supabaseAdmin } = require('../config/supabase');
-const { authenticateUser } = require('../middleware/auth');
+const { authenticateUser, optionalAuth } = require('../middleware/auth');
 const { requireProPlan, requireBasicPlan, trackUsage } = require('../middleware/subscriptionMiddleware');
 const advancedPdfService = require('../services/advancedPdfService');
 const ocrService = require('../services/ocrService');
@@ -400,7 +400,7 @@ router.post('/password-protect',
 
 // Password removal - Remove password protection from PDFs
 router.post('/password-remove',
-  authenticateUser,
+  optionalAuth,
   trackUsage('pdf_operation', 1),
   validateRequest({
     body: Joi.object({
@@ -412,14 +412,19 @@ router.post('/password-remove',
   async (req, res) => {
     try {
       const { fileId, password, outputName } = req.body;
+      const userId = req.user?.id || null;
 
       // Get file metadata
-      const { data: file, error: fileError } = await supabaseAdmin
+      const query = supabaseAdmin
         .from('files')
         .select('*')
-        .eq('id', fileId)
-        .eq('user_id', req.user.id)
-        .single();
+        .eq('id', fileId);
+      
+      if (userId) {
+        query.eq('user_id', userId);
+      }
+      
+      const { data: file, error: fileError } = await query.single();
 
       if (fileError || !file) {
         return res.status(404).json({ error: 'File not found' });
@@ -436,7 +441,7 @@ router.post('/password-remove',
       const { data: unlockedFile, error: saveError } = await supabaseAdmin
         .from('files')
         .insert([{
-          user_id: req.user.id,
+          user_id: userId,
           filename: result.filename,
           original_name: result.filename,
           type: 'application/pdf',
@@ -456,17 +461,19 @@ router.post('/password-remove',
         throw new Error('Failed to save unlocked file: ' + saveError.message);
       }
 
-      // Log operation (don't log the password)
-      await supabaseAdmin
-        .from('history')
-        .insert([{
-          user_id: req.user.id,
-          file_id: unlockedFile.id,
-          action: 'password_remove',
-          metadata: { 
-            source_file: fileId
-          }
-        }]);
+      // Log operation (don't log the password) - only if authenticated
+      if (userId) {
+        await supabaseAdmin
+          .from('history')
+          .insert([{
+            user_id: userId,
+            file_id: unlockedFile.id,
+            action: 'password_remove',
+            metadata: { 
+              source_file: fileId
+            }
+          }]);
+      }
 
       res.json({
         message: 'Password removed successfully',

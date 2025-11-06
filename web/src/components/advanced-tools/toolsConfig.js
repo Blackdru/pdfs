@@ -168,24 +168,6 @@ export const proTools = [
     features: ['AES-256 encryption', 'Password protection', 'Permission control', 'Audit trails']
   },
   {
-    id: 'password-remove',
-    icon: Shield,
-    title: 'Password Remover',
-    description: 'Remove password protection from PDFs with advanced decryption',
-    color: 'from-amber-500 to-orange-700',
-    bgColor: 'bg-amber-50',
-    borderColor: 'border-amber-200',
-    textColor: 'text-amber-700',
-    iconBg: 'bg-amber-500',
-    acceptedFiles: '.pdf',
-    multipleFiles: true,
-    minFiles: 1,
-    category: 'Security',
-    popularity: 82,
-    processingTime: '< 45s',
-    features: ['Password removal', 'Batch processing', 'Permission unlock', 'Fast decryption']
-  },
-  {
     id: 'images-to-pdf',
     icon: Upload,
     title: 'Images to PDF Pro',

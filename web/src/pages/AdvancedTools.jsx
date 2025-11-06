@@ -15,7 +15,6 @@ import ToolProcessor from '../components/advanced-tools/ToolProcessor'
 import ResultsDisplay from '../components/advanced-tools/ResultsDisplay'
 import EnhancedOCRModal from '../components/EnhancedOCRModal'
 import PasswordProtectModal from '../components/PasswordProtectModal'
-import PasswordRemoveModal from '../components/PasswordRemoveModal'
 import { proTools, PROCESSING_STEPS_CONFIG } from '../components/advanced-tools/toolsConfig'
 import toast from 'react-hot-toast'
 import { AlertCircle, FileText } from 'lucide-react'
@@ -57,7 +56,6 @@ const AdvancedTools = () => {
   const [showFileOrderPreview, setShowFileOrderPreview] = useState(false)
   const [pendingFiles, setPendingFiles] = useState([])
   const [showPasswordProtectModal, setShowPasswordProtectModal] = useState(false)
-  const [showPasswordRemoveModal, setShowPasswordRemoveModal] = useState(false)
   const [pendingPasswordFiles, setPendingPasswordFiles] = useState([])
 
   const categories = ['All', 'AI-Powered', 'Professional', 'Security']
@@ -147,13 +145,6 @@ const AdvancedTools = () => {
     if (selectedTool?.id === 'password-protect') {
       setPendingPasswordFiles(validFiles)
       setShowPasswordProtectModal(true)
-      setShowUploadModal(false)
-      return
-    }
-    
-    if (selectedTool?.id === 'password-remove') {
-      setPendingPasswordFiles(validFiles)
-      setShowPasswordRemoveModal(true)
       setShowUploadModal(false)
       return
     }
@@ -306,9 +297,6 @@ const AdvancedTools = () => {
           break
         case 'password-protect':
           result = await handlePasswordProtect(uploadedFileIds, toolSettings)
-          break
-        case 'password-remove':
-          result = await handlePasswordRemove(uploadedFileIds, toolSettings)
           break
         case 'images-to-pdf':
           result = await handleImagesToPDF(uploadedFileIds, toolSettings)
@@ -714,54 +702,6 @@ const AdvancedTools = () => {
     setUploadedFiles(pendingPasswordFiles)
     setPendingPasswordFiles([])
     await handleAutoProcess(pendingPasswordFiles, settings)
-  }
-
-  const handlePasswordRemoveConfirm = async (settings) => {
-    setUploadedFiles(pendingPasswordFiles)
-    setPendingPasswordFiles([])
-    await handleAutoProcess(pendingPasswordFiles, settings)
-  }
-
-  const handlePasswordRemove = async (fileIds, settings = {}) => {
-    const unlockedFiles = []
-    
-    if (!settings.password) {
-      throw new Error('Password is required to unlock the PDF')
-    }
-    
-    for (const fileId of fileIds) {
-      const password = settings.password
-      
-      const response = await fetch(`${API_BASE_URL}/pdf/advanced/password-remove`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session?.access_token}`
-        },
-        body: JSON.stringify({
-          fileId: fileId,
-          password: password,
-          outputName: `unlocked_${Date.now()}.pdf`
-        })
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        const errorMessage = errorData.error || 'Password removal failed'
-        
-        // Show specific error for incorrect password
-        if (errorMessage.includes('Incorrect password')) {
-          throw new Error('❌ Incorrect password. Please try again with the correct password.')
-        }
-        throw new Error(errorMessage)
-      }
-
-      const result = await response.json()
-      unlockedFiles.push(result.file)
-    }
-
-    toast.success(`✅ ${unlockedFiles.length} file(s) unlocked successfully!`)
-    return { files: unlockedFiles }
   }
 
   const handleImagesToPDF = async (fileIds, settings = {}) => {
@@ -1227,17 +1167,6 @@ const AdvancedTools = () => {
               setPendingPasswordFiles([])
             }}
             onConfirm={handlePasswordProtectConfirm}
-            fileCount={pendingPasswordFiles.length}
-          />
-
-          {/* Password Remove Modal */}
-          <PasswordRemoveModal
-            isOpen={showPasswordRemoveModal}
-            onClose={() => {
-              setShowPasswordRemoveModal(false)
-              setPendingPasswordFiles([])
-            }}
-            onConfirm={handlePasswordRemoveConfirm}
             fileCount={pendingPasswordFiles.length}
           />
         </div>

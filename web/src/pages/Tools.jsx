@@ -1270,59 +1270,83 @@ const Tools = () => {
             </div>
           )}
 
-          {/* OCR Results Display - Mobile First */}
+          {/* OCR Results Display - Fully Responsive */}
           {ocrResults && (
-            <div className="bg-surface rounded-2xl sm:rounded-3xl border border-border p-4 sm:p-6 lg:p-8 mb-6 sm:mb-8">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3">
-                <div className="flex items-center">
-                  <Eye className="h-5 w-5 sm:h-6 sm:w-6 text-cyan-400 mr-2 sm:mr-3" />
-                  <h3 className="text-lg sm:text-xl font-semibold text-card-foreground">OCR Results</h3>
-                </div>
-                <div className="flex items-center gap-2 sm:space-x-3">
-                  <div className="bg-green-600 text-white text-xs font-bold px-2 sm:px-3 py-1 rounded-full">
-                    {Math.round((ocrResults.confidence || 0) * 100)}%
+            <div className="bg-surface rounded-xl sm:rounded-2xl lg:rounded-3xl border border-border p-3 sm:p-5 md:p-6 lg:p-8 mb-4 sm:mb-6 lg:mb-8 shadow-lg">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 sm:mb-5 md:mb-6 gap-2 sm:gap-3">
+                <div className="flex items-center min-w-0">
+                  <div className="flex-shrink-0 p-1.5 sm:p-2 bg-cyan-500/10 rounded-lg sm:rounded-xl mr-2 sm:mr-3">
+                    <Eye className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-cyan-400" />
                   </div>
-                  <span className="text-xs sm:text-sm bg-elevated text-muted-foreground px-2 sm:px-3 py-1 rounded-full truncate">
+                  <h3 className="text-base sm:text-lg md:text-xl font-bold text-card-foreground truncate">OCR Results</h3>
+                </div>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <div className="bg-green-600 text-white text-xs sm:text-sm font-bold px-2 sm:px-3 py-1 sm:py-1.5 rounded-full whitespace-nowrap">
+                    {Math.round((ocrResults.confidence || 0) * 100)}% Accurate
+                  </div>
+                  <span className="text-xs sm:text-sm bg-elevated text-muted-foreground px-2 sm:px-3 py-1 sm:py-1.5 rounded-full truncate max-w-[120px] sm:max-w-none">
                     {ocrResults.detectedLanguage || 'Unknown'}
                   </span>
                 </div>
               </div>
               
-              <div className="space-y-4 sm:space-y-6">
-                {/* File Info - Mobile First */}
-                <div className="bg-elevated rounded-xl p-3 sm:p-4">
-                  <h4 className="font-medium text-card-foreground mb-2 flex items-center text-sm sm:text-base">
-                    <FileText className="h-3 w-3 sm:h-4 sm:w-4 mr-2 flex-shrink-0" />
-                    <span className="truncate">{ocrResults.filename}</span>
+              <div className="space-y-3 sm:space-y-4 md:space-y-5">
+                {/* File Info - Fully Responsive */}
+                <div className="bg-elevated rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-5">
+                  <h4 className="font-semibold text-card-foreground mb-2 sm:mb-3 flex items-center text-xs sm:text-sm md:text-base">
+                    <FileText className="h-3 w-3 sm:h-4 sm:w-4 mr-2 flex-shrink-0 text-blue-400" />
+                    <span className="truncate" title={ocrResults.filename}>{ocrResults.filename}</span>
                   </h4>
-                  <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
-                    <span>{ocrResults.pageCount || 1} page(s)</span>
-                    <span className="truncate">Lang: {ocrResults.detectedLanguage || 'Auto'}</span>
-                    <span>{Math.round((ocrResults.confidence || 0) * 100)}%</span>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3 md:gap-4">
+                    <div className="bg-accent rounded-lg p-2 sm:p-3">
+                      <div className="text-xs text-secondary mb-0.5">Pages</div>
+                      <div className="text-sm sm:text-base font-semibold text-card-foreground">{ocrResults.pageCount || 1}</div>
+                    </div>
+                    <div className="bg-accent rounded-lg p-2 sm:p-3">
+                      <div className="text-xs text-secondary mb-0.5">Language</div>
+                      <div className="text-sm sm:text-base font-semibold text-card-foreground truncate">{ocrResults.detectedLanguage || 'Auto'}</div>
+                    </div>
+                    <div className="bg-accent rounded-lg p-2 sm:p-3 col-span-2 sm:col-span-1">
+                      <div className="text-xs text-secondary mb-0.5">Confidence</div>
+                      <div className="text-sm sm:text-base font-semibold text-green-400">{Math.round((ocrResults.confidence || 0) * 100)}%</div>
+                    </div>
                   </div>
                 </div>
 
-                {/* Extracted Text - Mobile First */}
-                <div className="bg-elevated rounded-xl p-3 sm:p-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 gap-2">
-                    <h4 className="font-medium text-card-foreground text-sm sm:text-base">Extracted Text</h4>
+                {/* Extracted Text - Fully Responsive */}
+                <div className="bg-elevated rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-5">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-3 sm:mb-4 gap-2">
+                    <h4 className="font-semibold text-card-foreground text-sm sm:text-base md:text-lg flex items-center">
+                      <FileText className="h-4 w-4 sm:h-5 sm:w-5 mr-2 text-purple-400 flex-shrink-0" />
+                      Extracted Text
+                    </h4>
                     <Button
-                      onClick={() => navigator.clipboard.writeText(ocrResults.text)}
+                      onClick={() => {
+                        navigator.clipboard.writeText(ocrResults.text)
+                        toast.success('Text copied to clipboard!')
+                      }}
                       size="sm"
                       variant="outline"
-                      className="border-border text-card-foreground hover:bg-accent w-full sm:w-auto mobile-touch-target"
+                      className="border-border text-card-foreground hover:bg-accent w-full sm:w-auto min-h-[44px] touch-manipulation text-xs sm:text-sm"
                     >
                       <Copy className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                      Copy
+                      Copy Text
                     </Button>
                   </div>
-                  <div className="bg-accent rounded-lg p-3 sm:p-4 max-h-64 sm:max-h-96 overflow-y-auto">
-                    <pre className="text-card-foreground text-xs sm:text-sm whitespace-pre-wrap font-mono leading-relaxed">
+                  <div className="bg-accent rounded-lg p-3 sm:p-4 md:p-5 max-h-[300px] sm:max-h-[400px] md:max-h-[500px] lg:max-h-[600px] overflow-y-auto modern-scrollbar border border-border">
+                    <pre className="text-card-foreground text-xs sm:text-sm md:text-base whitespace-pre-wrap font-mono leading-relaxed break-words">
                       {ocrResults.text || 'No text extracted'}
                     </pre>
                   </div>
-                  <div className="mt-2 sm:mt-3 text-xs text-secondary">
-                    {ocrResults.text ? `${ocrResults.text.length} characters extracted` : 'No text found'}
+                  <div className="mt-2 sm:mt-3 flex items-center justify-between text-xs sm:text-sm text-secondary">
+                    <span>
+                      {ocrResults.text ? `${ocrResults.text.length.toLocaleString()} characters` : 'No text found'}
+                    </span>
+                    {ocrResults.text && (
+                      <span>
+                        {ocrResults.text.split(/\s+/).filter(w => w.length > 0).length.toLocaleString()} words
+                      </span>
+                    )}
                   </div>
                 </div>
 

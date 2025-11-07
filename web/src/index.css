@@ -147,10 +147,11 @@
     @apply rounded-3xl;
   }
   
-  /* Button System - Modern Gradient Colors */
+  /* Button System - Modern Gradient Colors with Mobile Support */
   .btn-dark-primary {
-    @apply text-white font-semibold px-8 py-4 rounded-2xl relative overflow-hidden;
+    @apply text-white font-semibold px-4 py-2.5 sm:px-6 sm:py-3 md:px-8 md:py-4 rounded-xl sm:rounded-2xl relative overflow-hidden;
     @apply transition-all duration-300 hover:shadow-2xl active:scale-95 transform hover:-translate-y-1;
+    @apply text-sm sm:text-base min-h-[44px] touch-manipulation;
     background: linear-gradient(135deg, rgb(59, 140, 255) 0%, rgb(155, 100, 255) 100%);
     box-shadow: 0 10px 30px -5px rgba(59, 140, 255, 0.5);
   }
@@ -161,8 +162,9 @@
   }
   
   .btn-blue {
-    @apply text-white font-semibold px-8 py-4 rounded-2xl relative overflow-hidden;
+    @apply text-white font-semibold px-4 py-2.5 sm:px-6 sm:py-3 md:px-8 md:py-4 rounded-xl sm:rounded-2xl relative overflow-hidden;
     @apply transition-all duration-300 hover:shadow-2xl active:scale-95 transform hover:-translate-y-1;
+    @apply text-sm sm:text-base min-h-[44px] touch-manipulation;
     background: linear-gradient(135deg, rgb(59, 140, 255) 0%, rgb(34, 211, 238) 100%);
     box-shadow: 0 10px 30px -5px rgba(59, 140, 255, 0.5);
   }
@@ -173,8 +175,9 @@
   }
   
   .btn-purple {
-    @apply text-white font-semibold px-8 py-4 rounded-2xl relative overflow-hidden;
+    @apply text-white font-semibold px-4 py-2.5 sm:px-6 sm:py-3 md:px-8 md:py-4 rounded-xl sm:rounded-2xl relative overflow-hidden;
     @apply transition-all duration-300 hover:shadow-2xl active:scale-95 transform hover:-translate-y-1;
+    @apply text-sm sm:text-base min-h-[44px] touch-manipulation;
     background: linear-gradient(135deg, rgb(155, 100, 255) 0%, rgb(236, 72, 153) 100%);
     box-shadow: 0 10px 30px -5px rgba(155, 100, 255, 0.5);
   }
@@ -185,8 +188,9 @@
   }
   
   .btn-green {
-    @apply text-white font-semibold px-8 py-4 rounded-2xl relative overflow-hidden;
+    @apply text-white font-semibold px-4 py-2.5 sm:px-6 sm:py-3 md:px-8 md:py-4 rounded-xl sm:rounded-2xl relative overflow-hidden;
     @apply transition-all duration-300 hover:shadow-2xl active:scale-95 transform hover:-translate-y-1;
+    @apply text-sm sm:text-base min-h-[44px] touch-manipulation;
     background: linear-gradient(135deg, rgb(52, 211, 153) 0%, rgb(34, 197, 94) 100%);
     box-shadow: 0 10px 30px -5px rgba(52, 211, 153, 0.5);
   }
@@ -197,8 +201,9 @@
   }
   
   .btn-orange {
-    @apply text-white font-semibold px-8 py-4 rounded-2xl relative overflow-hidden;
+    @apply text-white font-semibold px-4 py-2.5 sm:px-6 sm:py-3 md:px-8 md:py-4 rounded-xl sm:rounded-2xl relative overflow-hidden;
     @apply transition-all duration-300 hover:shadow-2xl active:scale-95 transform hover:-translate-y-1;
+    @apply text-sm sm:text-base min-h-[44px] touch-manipulation;
     background: linear-gradient(135deg, rgb(251, 146, 60) 0%, rgb(249, 115, 22) 100%);
     box-shadow: 0 10px 30px -5px rgba(251, 146, 60, 0.5);
   }
@@ -209,8 +214,9 @@
   }
   
   .btn-red {
-    @apply text-white font-semibold px-8 py-4 rounded-2xl relative overflow-hidden;
+    @apply text-white font-semibold px-4 py-2.5 sm:px-6 sm:py-3 md:px-8 md:py-4 rounded-xl sm:rounded-2xl relative overflow-hidden;
     @apply transition-all duration-300 hover:shadow-2xl active:scale-95 transform hover:-translate-y-1;
+    @apply text-sm sm:text-base min-h-[44px] touch-manipulation;
     background: linear-gradient(135deg, rgb(248, 113, 113) 0%, rgb(239, 68, 68) 100%);
     box-shadow: 0 10px 30px -5px rgba(248, 113, 113, 0.5);
   }
@@ -221,8 +227,9 @@
   }
   
   .btn-dark-outline {
-    @apply font-semibold px-8 py-4 rounded-2xl border-2;
+    @apply font-semibold px-4 py-2.5 sm:px-6 sm:py-3 md:px-8 md:py-4 rounded-xl sm:rounded-2xl border-2;
     @apply transition-all duration-300 active:scale-95 transform hover:-translate-y-1;
+    @apply text-sm sm:text-base min-h-[44px] touch-manipulation;
     background: transparent;
     color: rgb(165, 200, 255);
     border-color: rgb(45, 95, 200);
@@ -235,8 +242,9 @@
   }
   
   .btn-dark-glass {
-    @apply font-semibold px-8 py-4 rounded-2xl;
+    @apply font-semibold px-4 py-2.5 sm:px-6 sm:py-3 md:px-8 md:py-4 rounded-xl sm:rounded-2xl;
     @apply transition-all duration-300 active:scale-95 transform hover:-translate-y-1;
+    @apply text-sm sm:text-base min-h-[44px] touch-manipulation;
     background: rgba(15, 23, 42, 0.8);
     border: 1px solid rgb(45, 95, 200);
     backdrop-filter: blur(12px);
@@ -586,6 +594,27 @@
   [data-radix-select-item]:hover,
   [data-radix-select-item][data-highlighted] {
     background-color: rgb(45, 95, 200) !important;
+  }
+  
+  /* Dropdown Menu Responsive Styles */
+  .dropdown-dark {
+    @apply rounded-2xl sm:rounded-3xl border border-border;
+    background-color: rgb(15, 23, 42);
+    max-width: calc(100vw - 2rem);
+    max-height: 85vh;
+    overflow-y: auto;
+  }
+  
+  .dropdown-item-dark {
+    @apply flex items-center px-3 py-2.5 sm:px-4 sm:py-3 rounded-xl sm:rounded-2xl;
+    @apply text-sm sm:text-base font-medium transition-all duration-200;
+    @apply hover:bg-elevated focus:bg-elevated cursor-pointer;
+    @apply min-h-[44px] touch-manipulation;
+    color: rgb(203, 213, 225);
+  }
+  
+  .dropdown-item-dark:hover {
+    color: rgb(248, 250, 252);
   }
   
   /* Scrollbar */

@@ -19,14 +19,14 @@ const DropdownMenuSubTrigger = React.forwardRef(({ className, inset, children, .
   <DropdownMenuPrimitive.SubTrigger
     ref={ref}
     className={cn(
-      "flex cursor-default select-none items-center rounded-xl px-4 py-3 text-sm outline-none transition-all duration-200 focus:bg-elevated data-[state=open]:bg-elevated text-muted-foreground hover:text-card-foreground hover:bg-elevated",
-      inset && "pl-8",
+      "flex cursor-default select-none items-center rounded-lg sm:rounded-xl px-3 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm outline-none transition-all duration-200 focus:bg-elevated data-[state=open]:bg-elevated text-muted-foreground hover:text-card-foreground hover:bg-elevated min-h-[44px] touch-manipulation",
+      inset && "pl-6 sm:pl-8",
       className
     )}
     {...props}
   >
     {children}
-    <ChevronRight className="ml-auto h-4 w-4" />
+    <ChevronRight className="ml-auto h-3 w-3 sm:h-4 sm:w-4" />
   </DropdownMenuPrimitive.SubTrigger>
 ))
 DropdownMenuSubTrigger.displayName = DropdownMenuPrimitive.SubTrigger.displayName
@@ -54,8 +54,8 @@ const DropdownMenuContent = React.forwardRef(({ className, sideOffset = 4, ...pr
       ref={ref}
       sideOffset={sideOffset}
       className={cn(
-        "z-50 min-w-[12rem] overflow-hidden rounded-2xl border p-3 shadow-2xl data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
-        "bg-card text-card-foreground border-border",
+        "z-50 min-w-[10rem] sm:min-w-[12rem] max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl sm:rounded-2xl border p-2 sm:p-3 shadow-2xl data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+        "bg-card text-card-foreground border-border max-h-[85vh] overflow-y-auto",
         className
       )}
       style={{ 
@@ -72,8 +72,8 @@ const DropdownMenuItem = React.forwardRef(({ className, inset, ...props }, ref) 
   <DropdownMenuPrimitive.Item
     ref={ref}
     className={cn(
-      "relative flex cursor-default select-none items-center rounded-xl px-4 py-3 text-sm outline-none transition-all duration-200 focus:bg-elevated focus:text-card-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 text-muted-foreground hover:text-card-foreground hover:bg-elevated",
-      inset && "pl-8",
+      "relative flex cursor-default select-none items-center rounded-lg sm:rounded-xl px-3 py-2.5 sm:px-4 sm:py-3 text-xs sm:text-sm outline-none transition-all duration-200 focus:bg-elevated focus:text-card-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 text-muted-foreground hover:text-card-foreground hover:bg-elevated min-h-[44px] touch-manipulation",
+      inset && "pl-6 sm:pl-8",
       className
     )}
     {...props}

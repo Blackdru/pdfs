@@ -92,18 +92,18 @@ const ModernNavbar = () => {
         <div className="layout-dark-container">
           <div className="flex h-20 items-center justify-between">
             {/* Logo */}
-            <Link to="/" className="flex items-center space-x-2 sm:space-x-4 group">
+            <Link to="/" className="flex items-center space-x-2 sm:space-x-3 md:space-x-4 group flex-shrink-0">
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-blue rounded-2xl sm:rounded-3xl scale-110" />
-                <div className="relative bg-white p-1.5 sm:p-2 rounded-2xl sm:rounded-3xl group-hover:scale-105 transition-transform duration-300">
-                  <img src="/logo.png" alt="RobotPDF Logo" className="h-6 w-6 sm:h-8 sm:w-8 object-contain" />
+                <div className="absolute inset-0 bg-gradient-blue rounded-xl sm:rounded-2xl md:rounded-3xl scale-110" />
+                <div className="relative bg-white p-1 sm:p-1.5 md:p-2 rounded-xl sm:rounded-2xl md:rounded-3xl group-hover:scale-105 transition-transform duration-300">
+                  <img src="/logo.png" alt="RobotPDF Logo" className="h-5 w-5 sm:h-7 sm:w-7 md:h-8 md:w-8 object-contain" />
                 </div>
               </div>
-              <div className="flex flex-col">
-                <span className="text-lg sm:text-2xl font-bold text-gradient-grey font-poppins">
+              <div className="flex flex-col min-w-0">
+                <span className="text-base sm:text-xl md:text-2xl font-bold text-gradient-grey font-poppins whitespace-nowrap">
                   RobotPDF
                 </span>
-                <span className="text-xs text-secondary -mt-1 font-semibold hidden lg:block">
+                <span className="text-[10px] sm:text-xs text-secondary -mt-0.5 sm:-mt-1 font-semibold hidden lg:block whitespace-nowrap">
                   ✨ AI-Powered Document Magic
                 </span>
               </div>

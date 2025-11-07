@@ -145,18 +145,18 @@ const FileUploadModal = ({
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
-      <Card className="bg-surface border-border rounded-3xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-in fade-in duration-300">
-        <CardHeader className="px-4 sm:px-8 py-4 sm:py-6 border-b border-border">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2 sm:space-x-4 min-w-0 flex-1">
-              <div className="p-2 sm:p-3 bg-blue-600 rounded-xl flex-shrink-0">
-                <ToolIcon className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+    <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-3 sm:p-4 z-50 backdrop-blur-sm">
+      <Card className="bg-surface border-border rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto animate-in fade-in duration-300 modern-scrollbar">
+        <CardHeader className="px-3 sm:px-6 md:px-8 py-3 sm:py-5 md:py-6 border-b border-border">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center space-x-2 sm:space-x-3 md:space-x-4 min-w-0 flex-1">
+              <div className="p-1.5 sm:p-2 md:p-3 bg-blue-600 rounded-lg sm:rounded-xl flex-shrink-0">
+                <ToolIcon className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-white" />
               </div>
               <div className="min-w-0 flex-1">
-                <CardTitle className="text-base sm:text-xl font-bold text-foreground truncate">{title}</CardTitle>
+                <CardTitle className="text-sm sm:text-lg md:text-xl font-bold text-foreground truncate">{title}</CardTitle>
                 {toolName && (
-                  <p className="text-xs sm:text-sm text-blue-400 mt-1 truncate">for {toolName}</p>
+                  <p className="text-xs sm:text-sm text-blue-400 mt-0.5 sm:mt-1 truncate">for {toolName}</p>
                 )}
               </div>
             </div>
@@ -164,10 +164,10 @@ const FileUploadModal = ({
               variant="ghost"
               size="sm"
               onClick={onClose}
-              className="text-muted-foreground hover:text-card-foreground hover:bg-elevated p-2 rounded-xl flex-shrink-0 ml-2"
+              className="text-muted-foreground hover:text-card-foreground hover:bg-elevated p-1.5 sm:p-2 rounded-lg sm:rounded-xl flex-shrink-0"
               disabled={isUploading}
             >
-              <X className="h-5 w-5" />
+              <X className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
           </div>
           {description && (
@@ -175,28 +175,28 @@ const FileUploadModal = ({
           )}
         </CardHeader>
         
-        <CardContent className="px-4 sm:px-8 py-4 sm:py-6 space-y-4 sm:space-y-6">
+        <CardContent className="px-3 sm:px-6 md:px-8 py-3 sm:py-5 md:py-6 space-y-3 sm:space-y-5 md:space-y-6">
           {/* Dropzone */}
           <div
             {...getRootProps()}
-            className={`border-2 border-dashed rounded-2xl p-4 sm:p-8 text-center cursor-pointer transition-all duration-300 ${
+            className={`border-2 border-dashed rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 text-center cursor-pointer transition-all duration-300 touch-manipulation ${
               isDragActive 
                 ? 'border-blue-400 bg-blue-900/20' 
                 : 'border-grey-700 hover:border-border hover:bg-secondary/50'
             }`}
           >
             <input {...getInputProps()} />
-            <Upload className={`mx-auto h-8 w-8 sm:h-12 sm:w-12 mb-3 sm:mb-4 ${
+            <Upload className={`mx-auto h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 mb-2 sm:mb-3 md:mb-4 ${
               isDragActive ? 'text-blue-400' : 'text-grey-400'
             }`} />
             {isDragActive ? (
               <div>
-                <p className="text-base sm:text-lg font-semibold text-blue-300 mb-1 sm:mb-2">Drop the files here...</p>
-                <p className="text-sm sm:text-base text-blue-400">Release to upload your files</p>
+                <p className="text-sm sm:text-base md:text-lg font-semibold text-blue-300 mb-1 sm:mb-2">Drop the files here...</p>
+                <p className="text-xs sm:text-sm md:text-base text-blue-400">Release to upload your files</p>
               </div>
             ) : (
               <div>
-                <p className="text-base sm:text-lg font-semibold text-card-foreground mb-2">
+                <p className="text-sm sm:text-base md:text-lg font-semibold text-card-foreground mb-1 sm:mb-2">
                   Drag & drop files here, or click to select
                 </p>
                 <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4">

@@ -1039,42 +1039,6 @@ const Tools = () => {
       </div>
 
       <div className="relative z-10">
-        {/* Hero Section - Mobile First */}
-        <div className="bg-gradient-to-br from-grey-900 via-grey-800 to-grey-900 border-b border-border">
-          <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-8 sm:py-12 md:py-16">
-            <div className="text-center">
-              <div className="inline-flex items-center px-3 py-1.5 sm:px-4 sm:py-2 bg-blue-900 text-blue-300 rounded-full text-xs sm:text-sm font-medium mb-4 sm:mb-6">
-                <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                Professional PDF Tools
-              </div>
-              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-foreground mb-4 sm:mb-6 px-2">
-                Transform Your PDFs
-                <span className="block text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 mt-1 sm:mt-2">
-                  Like Magic
-                </span>
-              </h1>
-              <p className="text-sm sm:text-base md:text-lg lg:text-xl text-muted-foreground max-w-3xl mx-auto mb-6 sm:mb-8 px-4">
-                Choose from our powerful suite of PDF tools to merge, split, compress, and convert your documents with professional-grade quality.
-              </p>
-              
-              {/* Stats - Mobile Optimized */}
-              <div className="grid grid-cols-3 gap-4 sm:gap-6 md:gap-8 max-w-2xl mx-auto px-4">
-                <div className="text-center">
-                  <div className="text-xl sm:text-2xl md:text-3xl font-bold text-blue-400 mb-1 sm:mb-2">1M+</div>
-                  <div className="text-xs sm:text-sm text-muted-foreground">Files Processed</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-xl sm:text-2xl md:text-3xl font-bold text-green-400 mb-1 sm:mb-2">99.9%</div>
-                  <div className="text-xs sm:text-sm text-muted-foreground">Uptime</div>
-                </div>
-                <div className="text-center">
-                  <div className="text-xl sm:text-2xl md:text-3xl font-bold text-purple-400 mb-1 sm:mb-2">50K+</div>
-                  <div className="text-xs sm:text-sm text-muted-foreground">Happy Users</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
 
         {/* Usage Warning */}
         {usageExceeded && (

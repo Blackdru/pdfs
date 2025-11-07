@@ -34,6 +34,7 @@ import ModernNavbar from './components/ModernNavbar'
 import Footer from './components/Footer'
 import ProtectedRoute from './components/ProtectedRoute'
 import AdminRoute from './components/AdminRoute'
+import ScrollToTop from './components/ScrollToTop'
 
 const AppContent = () => {
   const { theme } = useTheme()
@@ -142,6 +143,7 @@ const AppContent = () => {
   
   return (
     <div className="min-h-screen bg-background font-inter flex flex-col">
+      <ScrollToTop />
       <ModernNavbar />
       <main className="modern-scrollbar flex-1">
         <Routes>

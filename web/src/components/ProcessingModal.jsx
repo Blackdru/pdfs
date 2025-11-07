@@ -77,28 +77,28 @@ const ProcessingModal = ({
 
   return (
     <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-3 sm:p-4 z-50">
-      <Card className="bg-card border-border rounded-2xl shadow-2xl w-full max-w-[92vw] sm:max-w-md max-h-[90vh] overflow-y-auto">
-        <CardHeader className="px-4 sm:px-6 py-4 sm:py-5 border-b border-border text-center">
-          <div className={`mx-auto mb-3 sm:mb-4 p-3 sm:p-4 rounded-full transition-all duration-500 ${getBgColor()} ${
+      <Card className="bg-card border-border rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-[95vw] sm:max-w-md max-h-[90vh] overflow-y-auto modern-scrollbar">
+        <CardHeader className="px-3 sm:px-5 md:px-6 py-3 sm:py-4 md:py-5 border-b border-border text-center">
+          <div className={`mx-auto mb-2 sm:mb-3 md:mb-4 p-2 sm:p-3 md:p-4 rounded-full transition-all duration-500 ${getBgColor()} ${
             !isCompleted && !isError ? 'animate-pulse' : ''
           }`}>
             {isCompleted ? (
-              <CheckCircle className="h-6 w-6 sm:h-8 sm:w-8 text-green-400" />
+              <CheckCircle className="h-5 w-5 sm:h-7 sm:w-7 md:h-8 md:w-8 text-green-400" />
             ) : isError ? (
-              <AlertCircle className="h-6 w-6 sm:h-8 sm:w-8 text-red-400" />
+              <AlertCircle className="h-5 w-5 sm:h-7 sm:w-7 md:h-8 md:w-8 text-red-400" />
             ) : (
-              <Icon className={`h-6 w-6 sm:h-8 sm:w-8 ${getIconColor()}`} />
+              <Icon className={`h-5 w-5 sm:h-7 sm:w-7 md:h-8 md:w-8 ${getIconColor()}`} />
             )}
           </div>
-          <CardTitle className="text-lg sm:text-xl font-bold text-foreground mb-2">{title}</CardTitle>
-          <p className="text-xs sm:text-sm text-muted-foreground break-words px-2">
+          <CardTitle className="text-base sm:text-lg md:text-xl font-bold text-foreground mb-1 sm:mb-2 px-2">{title}</CardTitle>
+          <p className="text-xs sm:text-sm text-muted-foreground break-words px-1 sm:px-2">
             {fileName}
           </p>
           
           {/* Time indicators */}
-          <div className="flex justify-center items-center space-x-3 sm:space-x-4 mt-3 text-xs text-secondary">
-            <div className="flex items-center">
-              <Clock className="h-3 w-3 mr-1" />
+          <div className="flex justify-center items-center gap-2 sm:gap-3 md:gap-4 mt-2 sm:mt-3 text-xs text-secondary flex-wrap">
+            <div className="flex items-center gap-1">
+              <Clock className="h-3 w-3 flex-shrink-0" />
               <span>{formatTime(elapsedTime)}</span>
             </div>
             {estimatedTime && !isCompleted && (
@@ -109,24 +109,24 @@ const ProcessingModal = ({
           </div>
         </CardHeader>
         
-        <CardContent className="px-4 sm:px-6 py-4 sm:py-5 space-y-4 sm:space-y-5">
+        <CardContent className="px-3 sm:px-5 md:px-6 py-3 sm:py-4 md:py-5 space-y-3 sm:space-y-4 md:space-y-5">
           {/* Progress Section */}
-          <div className="space-y-3">
+          <div className="space-y-2 sm:space-y-3">
             <div className="flex items-center justify-between gap-2">
-              <span className="flex items-center flex-1 min-w-0">
+              <span className="flex items-center flex-1 min-w-0 gap-1 sm:gap-2">
                 {!isCompleted && !isError && (
-                  <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin mr-2 flex-shrink-0 text-blue-400" />
+                  <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin flex-shrink-0 text-blue-400" />
                 )}
                 <span className="text-xs sm:text-sm font-medium text-card-foreground truncate">{stage}</span>
               </span>
-              <span className={`font-bold text-base sm:text-lg ${getIconColor()}`}>
+              <span className={`font-bold text-sm sm:text-base md:text-lg ${getIconColor()} flex-shrink-0`}>
                 {Math.round(progress)}%
               </span>
             </div>
             
             {/* Enhanced Progress Bar */}
             <div className="relative">
-              <div className="w-full bg-gray-700 rounded-full h-2 sm:h-2.5 overflow-hidden">
+              <div className="w-full bg-gray-700 rounded-full h-1.5 sm:h-2 md:h-2.5 overflow-hidden">
                 <div 
                   className={`h-full ${isCompleted ? 'bg-green-600' : isError ? 'bg-red-600' : 'bg-blue-600'} transition-all duration-500 ease-out`}
                   style={{ width: `${Math.min(progress, 100)}%` }}

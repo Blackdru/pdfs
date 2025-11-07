@@ -19,7 +19,7 @@ const Footer = () => {
                 <span className="text-xl font-bold text-gradient-grey font-poppins">
                   RobotPDF
                 </span>
-                <p className="text-sm text-secondary -mt-1">
+                <p className="text-sm text-primary-200 -mt-1">
                   ✨ AI-Powered Document Magic
                 </p>
               </div>
@@ -29,17 +29,12 @@ const Footer = () => {
               and advanced document processing tools. Built for professionals who demand excellence.
             </p>
             <div className="flex flex-col space-y-2">
-              <div className="flex items-center text-secondary text-sm">
+              <div className="flex items-center text-primary-200 text-sm">
                 <span>Made with</span>
                 <Heart className="h-4 w-4 mx-1 text-red-500 fill-current" />
                 <span>for document productivity</span>
               </div>
-              <div className="flex items-center text-sm font-semibold">
-                <span className="text-orange-500">🇮🇳</span>
-                <span className="ml-2 bg-gradient-to-r from-orange-500 via-white to-green-500 bg-clip-text text-transparent">
-                  Made in India
-                </span>
-              </div>
+              
             </div>
           </div>
 
@@ -103,9 +98,14 @@ const Footer = () => {
         {/* Bottom */}
         <div className="border-t border-border mt-8 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex flex-col md:flex-row items-center gap-4">
-            <p className="text-primary text-sm">
-              © 2025 Budrock Technologies Private Limited. All rights reserved.
+            <p className="text-primary-200 text-sm">
+              © 2025. All rights reserved.
             </p>
+            <div>
+             <p className="text-primary-200 text-sm">
+              Budrock Technologies Private Limited.
+             </p>
+            </div>
             <div className="flex items-center px-3 py-1.5 rounded-full bg-gradient-to-r from-orange-500/10 via-white/5 to-green-500/10 border border-orange-500/20">
               <span className="text-lg mr-1.5">🇮🇳</span>
               <span className="text-xs font-semibold bg-gradient-to-r from-orange-500 via-white to-green-500 bg-clip-text text-transparent">

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { FileText, Heart, Shield, CreditCard, RefreshCw, Mail, HelpCircle } from 'lucide-react'
+import logoIcon from '../assets/icon.png'
 
 const Footer = () => {
   return (
@@ -10,7 +11,7 @@ const Footer = () => {
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center space-x-4 mb-4">
               <div className="relative">
-                <img src="/assets/icon.png" alt="RobotPDF Logo" className="h-10 w-10 sm:h-12 sm:w-12 object-contain" />
+                <img src={logoIcon} alt="RobotPDF Logo" className="h-10 w-10 sm:h-12 sm:w-12 object-contain" />
               </div>
               <div>
                 <span className="text-xl font-bold text-gradient-grey font-poppins">

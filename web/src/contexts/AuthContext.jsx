@@ -87,7 +87,6 @@ export const AuthProvider = ({ children }) => {
         data: { subscription },
       } = supabase.auth.onAuthStateChange(async (event, session) => {
         if (event === 'SIGNED_IN' && session) {
-          console.log('Google OAuth sign in detected');
           
           // Check if this is a Google OAuth user
           if (session.user?.app_metadata?.provider === 'google') {
@@ -123,8 +122,10 @@ export const AuthProvider = ({ children }) => {
                   setSession(sessionData);
                   setUser(data.user);
                   
-                  if (data.linked) {
+                  // Only show toast on initial link, not on every auth state change
+                  if (data.linked && !localStorage.getItem('google_linked_shown')) {
                     toast.success('Google account linked successfully!');
+                    localStorage.setItem('google_linked_shown', 'true');
                   }
                   return;
                 }

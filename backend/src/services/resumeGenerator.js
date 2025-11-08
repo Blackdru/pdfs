@@ -16,7 +16,7 @@ class ResumeGenerator {
           'X-Title': 'RobotPDF Resume Generator'
         }
       });
-      this.model = 'z-ai/glm-4.5-air:free';
+      this.model = 'meta-llama/llama-3.3-70b-instruct:free';
     } else if (process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.startsWith('sk-')) {
       this.client = new OpenAI({
         apiKey: process.env.OPENAI_API_KEY,
@@ -101,21 +101,13 @@ class ResumeGenerator {
         model: this.model,
         messages: [
           {
-            role: 'system',
-            content: `You are an expert resume writer and career consultant with 15+ years of experience. 
-Your task is to create professional, ATS-optimized resumes that highlight achievements and use strong action verbs.
-You MUST be creative and expand on the provided information to create compelling, detailed achievement statements.
-Each work experience MUST have 4-6 detailed bullet points with quantifiable metrics.
-Output ONLY valid JSON format. No markdown code blocks, no explanations, just pure JSON.`
-          },
-          {
             role: 'user',
             content: prompt
           }
         ],
-        temperature: 0.8,
-        max_tokens: 8000,
-        timeout: 120000
+        temperature: 0.7,
+        max_tokens: 4000,
+        timeout: 90000
       });
 
       const generatedContent = response.choices[0].message.content;
@@ -197,56 +189,97 @@ ${userData.certifications && userData.certifications.length > 0 ? `CERTIFICATION
 
 ${userData.languages && userData.languages.length > 0 ? `LANGUAGES:\n${userData.languages.map(l => `- ${l.language}: ${l.proficiency}`).join('\n')}\n` : ''}
 
-CRITICAL INSTRUCTIONS - YOU MUST FOLLOW THESE EXACTLY:
+CRITICAL INSTRUCTIONS - FOLLOW THESE EXACTLY:
 
-1. PROFESSIONAL SUMMARY (MANDATORY - 4-5 sentences):
-   - Write a compelling, achievement-focused summary for a ${targetRole} in ${industry}
-   - Include specific years of experience based on work history
-   - Mention 2-3 key quantifiable achievements (use percentages, dollar amounts, or metrics)
-   - Incorporate industry-specific keywords and technical skills
-   - Highlight leadership qualities and business impact
-   - Make it powerful and memorable
+1. PROFESSIONAL SUMMARY (MANDATORY - YOU MUST CREATE THIS):
+   - Write a compelling 2-3 line professional summary for a ${targetRole} in ${industry}
+   - Calculate years of experience from work history dates
+   - Mention 2-3 key skills from their technical skills list
+   - Include their target role and industry
+   - Example: "Experienced Software Developer with 3+ years building scalable web applications using React, Node.js, and Python. Proven track record in delivering high-quality solutions for the technology industry. Strong problem-solving skills and collaborative team player."
 
-2. WORK EXPERIENCE (CRITICAL - BE VERY DETAILED AND CREATIVE):
-   For EACH work experience entry, you MUST:
-   - Generate 4-6 detailed, impactful achievement bullet points
-   - Start EVERY bullet with a strong action verb (Led, Spearheaded, Architected, Drove, Achieved, Implemented, Optimized, etc.)
-   - Include SPECIFIC quantifiable metrics in EVERY bullet:
-     * Percentages (increased revenue by 40%, reduced costs by 35%, improved efficiency by 50%)
-     * Dollar amounts ($5M budget, $2M in savings, $10M revenue growth)
-     * Numbers (managed team of 15, served 10,000+ customers, processed 500+ transactions daily)
-     * Time savings (reduced processing time from 5 days to 2 hours)
-   - Show business impact and value delivered
-   - Use past tense for completed roles, present tense for current roles
-   - Make each bullet tell a story of success and achievement
-   - BE CREATIVE but realistic - expand on the basic information provided
-   - If only basic info is provided, intelligently infer and create detailed achievements based on the role and industry
+2. EDUCATION (MANDATORY ENHANCEMENT - YOU MUST ADD COURSEWORK):
+   - List degree, institution, location, and graduation date
+   - Include GPA if provided and above 3.0
+   - YOU MUST ALWAYS add relevant coursework based on the degree field
+   - Add 4-6 relevant courses that match the degree and target role
+   - Format as: "Relevant Coursework: Course1, Course2, Course3, Course4"
+   
+   EXAMPLES YOU MUST FOLLOW:
+   - Computer Science/IT: "Relevant Coursework: Data Structures & Algorithms, Database Management Systems, Web Development, Software Engineering, Operating Systems, Computer Networks"
+   - Electrical Engineering: "Relevant Coursework: Circuit Analysis, Digital Electronics, Microprocessors, Control Systems, Power Systems, Signal Processing"
+   - Business/MBA: "Relevant Coursework: Financial Analysis, Marketing Strategy, Operations Management, Business Analytics, Strategic Planning, Leadership"
+   - Mechanical Engineering: "Relevant Coursework: Thermodynamics, Fluid Mechanics, Machine Design, Manufacturing Processes, CAD/CAM, Materials Science"
+   - Data Science: "Relevant Coursework: Machine Learning, Statistical Analysis, Data Mining, Python Programming, Big Data Analytics, Visualization"
+   
+   CRITICAL: Even if user didn't mention coursework, YOU MUST intelligently add it based on their degree
 
-3. EXPAND AND ENHANCE:
-   - If the user provided minimal information, YOU MUST expand it creatively
-   - Use your knowledge of ${targetRole} roles in ${industry} to create realistic, impressive achievements
-   - Add industry-specific terminology and technical details
-   - Make the resume stand out with concrete examples of success
+3. WORK EXPERIENCE (CRITICAL - YOU MUST ENHANCE AND EXPAND):
+   For EACH work experience entry, YOU MUST create 3-5 DETAILED bullet points:
+   
+   IMPORTANT: If user provided minimal or no achievements, YOU MUST intelligently create realistic achievements based on the job title and company.
+   
+   STRUCTURE OF EACH BULLET:
+   - Start with professional action verbs: Contributed, Developed, Assisted, Coordinated, Implemented, Troubleshooted, Resolved, Managed, Created, Supported
+   - Describe specific tasks and responsibilities
+   - ALWAYS include numerical results (%, numbers, metrics)
+   - Keep bullets concise (1-2 lines)
+   - Be realistic and professional
+   
+   EXAMPLES OF WHAT TO GENERATE:
+   - If job title is "Software Developer": "Developed and maintained web applications using React and Node.js, serving 10,000+ active users with 99% uptime"
+   - If job title is "Customer Support": "Resolved 100+ customer inquiries daily via phone and email, maintaining 95% satisfaction rating"
+   - If job title is "Data Analyst": "Analyzed sales data using Python and SQL, identifying trends that increased revenue by 15%"
+   
+   VERB TENSE:
+   - Past tense for previous roles: "Contributed", "Developed", "Assisted"
+   - Present tense for current role: "Contribute", "Develop", "Assist"
 
-4. ATS OPTIMIZATION:
-   - Use industry-standard keywords from ${industry}
-   - Include role-specific terminology for ${targetRole}
-   - Format dates consistently as MM/YYYY
-   - Ensure all mandatory fields are populated
-   - Use standard section headings
+4. TECHNICAL SKILLS (YOU MUST ENHANCE):
+   - List all technical skills provided by user
+   - Group into: Programming Languages, Frameworks/Libraries, Databases, Cloud/DevOps
+   - If user provided basic skills, intelligently add related common skills for their role
+   - Example: If user has "HTML, CSS, JS" and role is "Web Developer", add "React, Node.js, Express"
+   - Keep skills relevant to target role and industry
+   - Format as clean, scannable list
 
-5. PROFESSIONAL FORMATTING:
-   - Keep bullet points concise but impactful (1-2 lines each)
-   - Use consistent formatting throughout
-   - Prioritize most impressive achievements first
+5. PROJECTS/VOLUNTEER (if provided):
+   - Use same bullet format as work experience
+   - 2-3 bullets per project
+   - Include technologies used
+   - Mention impact or outcome
 
-EXAMPLE OF EXCELLENT ACHIEVEMENT BULLETS:
-- "Spearheaded cloud migration initiative to AWS, reducing infrastructure costs by 35% ($500K annually) while improving system uptime from 95% to 99.9%"
-- "Led cross-functional team of 12 engineers to deliver enterprise SaaS platform, achieving $2M in first-year revenue and 95% customer satisfaction rate"
-- "Architected and implemented microservices architecture serving 10,000+ daily active users, reducing API response time by 60% and improving scalability by 300%"
-- "Drove digital transformation strategy resulting in 40% increase in operational efficiency and $1.5M cost savings through process automation"
+6. STRENGTHS (if requested):
+   - List 2 key strengths
+   - One short sentence each
+   - Professional and factual
 
-Return ONLY this exact JSON structure (no markdown, no code blocks, no extra text):
+7. REFERENCES (if requested):
+   - Name, role/title, phone number
+   - No email addresses
+   - Format: "John Smith - Former Manager - (555) 123-4567"
+
+FORMATTING RULES:
+- Use standard section headings: SUMMARY, EDUCATION, EXPERIENCE, TECHNICAL SKILLS, PROJECTS, STRENGTHS, REFERENCES
+- Format dates as MM/YYYY - MM/YYYY
+- No tables, no complex formatting
+- Clean spacing between sections
+- Professional and readable
+
+CRITICAL: YOU MUST ENHANCE USER INPUT
+- If user wrote "worked on projects" → YOU write "Developed and deployed 5+ web applications using React and Node.js, serving 10,000+ users"
+- If user wrote "helped customers" → YOU write "Resolved 100+ customer inquiries daily via phone and email, achieving 95% satisfaction rating"
+- If user wrote "did data analysis" → YOU write "Analyzed sales data using Python and SQL, identifying trends that increased revenue by 15%"
+- If user wrote "managed team" → YOU write "Coordinated and led team of 8 developers, ensuring on-time delivery of 10+ projects"
+
+EXAMPLES OF GOOD BULLETS:
+- "Contributed to development of customer portal using React and Node.js, serving 5,000+ active users"
+- "Resolved 150+ technical support tickets monthly with 95% customer satisfaction rating"
+- "Assisted in implementing automated testing framework, reducing bug detection time by 25%"
+- "Coordinated team meetings and project timelines for 8-person development team"
+- "Developed Python scripts to automate data processing, saving 10 hours per week"
+
+Return ONLY valid JSON in this exact structure (no markdown, no code blocks, no extra text):
 {
   "contact": {
     "name": "${userData.name}",
@@ -281,6 +314,7 @@ Return ONLY this exact JSON structure (no markdown, no code blocks, no extra tex
       "location": "City, State/Country (leave empty if not provided)",
       "graduationDate": "MM/YYYY or YYYY",
       "gpa": "X.X/4.0 (leave empty if not provided)",
+      "coursework": "Relevant Coursework: Course1, Course2, Course3, Course4, Course5, Course6 (YOU MUST ADD THIS)",
       "honors": ["Honor 1", "Honor 2"]
     }
   ],
@@ -374,6 +408,7 @@ Return ONLY this exact JSON structure (no markdown, no code blocks, no extra tex
             location: edu.location || '',
             graduationDate: edu.graduationDate || '',
             gpa: edu.gpa || '',
+            coursework: edu.coursework || '',
             honors: Array.isArray(edu.honors) ? edu.honors : []
           }));
         }

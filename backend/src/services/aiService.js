@@ -278,8 +278,12 @@ class AIService {
     const prompt = prompts[summaryType] || prompts.auto;
 
     try {
+      // Use OpenRouter for summary if configured
+      const useOpenRouter = process.env.USE_OPENROUTER_FOR_SUMMARY === 'true' && this.isUsingOpenRouter;
+      const summaryModel = useOpenRouter ? this.model : (this.isUsingOpenAI ? this.model : this.model);
+      
       const response = await this.openai.chat.completions.create({
-        model: this.model,
+        model: summaryModel,
         messages: [
           {
             role: 'system',
@@ -324,8 +328,12 @@ class AIService {
     ];
 
     try {
+      // Use OpenRouter for chat if configured
+      const useOpenRouter = process.env.USE_OPENROUTER_FOR_CHAT === 'true' && this.isUsingOpenRouter;
+      const chatModel = useOpenRouter ? this.model : (this.isUsingOpenAI ? this.model : this.model);
+      
       const response = await this.openai.chat.completions.create({
-        model: this.model,
+        model: chatModel,
         messages: messages,
         max_tokens: 500,
         temperature: 0.7,

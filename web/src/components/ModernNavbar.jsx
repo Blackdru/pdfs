@@ -93,11 +93,8 @@ const ModernNavbar = () => {
           <div className="flex h-20 items-center justify-between">
             {/* Logo */}
             <Link to="/" className="flex items-center space-x-2 sm:space-x-3 md:space-x-4 group flex-shrink-0">
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-blue rounded-xl sm:rounded-2xl md:rounded-3xl scale-110" />
-                <div className="relative bg-white p-1 sm:p-1.5 md:p-2 rounded-xl sm:rounded-2xl md:rounded-3xl group-hover:scale-105 transition-transform duration-300">
-                  <img src="/logo.png" alt="RobotPDF Logo" className="h-5 w-5 sm:h-7 sm:w-7 md:h-8 md:w-8 object-contain" />
-                </div>
+              <div className="relative group-hover:scale-105 transition-transform duration-300">
+                <img src="/assets/icon.png" alt="RobotPDF Logo" className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 lg:h-14 lg:w-14 object-contain" />
               </div>
               <div className="flex flex-col min-w-0">
                 <span className="text-base sm:text-xl md:text-2xl font-bold text-gradient-grey font-poppins whitespace-nowrap">

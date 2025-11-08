@@ -10,10 +10,7 @@ const Footer = () => {
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center space-x-4 mb-4">
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-blue rounded-2xl scale-110" />
-                <div className="relative bg-white p-1.5 rounded-2xl ">
-                  <img src="/logo.png" alt="RobotPDF Logo" className="h-7 w-7 object-contain" />
-                </div>
+                <img src="/assets/icon.png" alt="RobotPDF Logo" className="h-10 w-10 sm:h-12 sm:w-12 object-contain" />
               </div>
               <div>
                 <span className="text-xl font-bold text-gradient-grey font-poppins">

@@ -2,14 +2,42 @@ const OpenAI = require('openai');
 
 class ResumeAI {
   constructor() {
-    this.client = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-      baseURL: process.env.AI_BASE_URL || 'https://api.openai.com/v1'
-    });
-    this.model = process.env.AI_MODEL || 'gpt-4o-mini';
+    const useOpenRouter = process.env.OPENROUTER_API_KEY && 
+                         process.env.OPENROUTER_API_KEY !== 'your_openrouter_api_key_here' &&
+                         process.env.OPENROUTER_API_KEY !== 'sk-test-key-for-development' &&
+                         (process.env.OPENROUTER_API_KEY.startsWith('sk-or-') || process.env.OPENROUTER_API_KEY.startsWith('sk-or-v1-'));
+    
+    if (useOpenRouter) {
+      this.client = new OpenAI({
+        apiKey: process.env.OPENROUTER_API_KEY,
+        baseURL: 'https://openrouter.ai/api/v1',
+        defaultHeaders: {
+          'HTTP-Referer': 'http://localhost:5000',
+          'X-Title': 'RobotPDF Resume AI'
+        }
+      });
+      this.model = 'meta-llama/llama-3.3-70b-instruct:free';
+    } else if (process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY.startsWith('sk-')) {
+      this.client = new OpenAI({
+        apiKey: process.env.OPENAI_API_KEY,
+        baseURL: process.env.AI_BASE_URL || 'https://api.openai.com/v1'
+      });
+      this.model = process.env.AI_MODEL || 'gpt-4o-mini';
+    } else {
+      this.client = null;
+      this.model = null;
+    }
+  }
+
+  isEnabled() {
+    return this.client !== null && this.model !== null;
   }
 
   async optimizeResume(resumeData, jobDescription, tone = 'professional') {
+    if (!this.isEnabled()) {
+      throw new Error('AI service is not configured. Please set up OpenRouter or OpenAI API key.');
+    }
+
     try {
       const prompt = this.buildOptimizationPrompt(resumeData, jobDescription, tone);
       
@@ -18,15 +46,15 @@ class ResumeAI {
         messages: [
           {
             role: 'system',
-            content: 'You are a professional resume writer and career coach with expertise in ATS optimization and modern hiring practices.'
+            content: 'You are an elite professional resume writer and career strategist with expertise in ATS optimization, keyword targeting, and creating compelling achievement-focused resumes that get interviews.'
           },
           {
             role: 'user',
             content: prompt
           }
         ],
-        temperature: 0.7,
-        max_tokens: 2000
+        temperature: 0.75,
+        max_tokens: 3000
       });
 
       const optimizedContent = response.choices[0].message.content;
@@ -38,25 +66,56 @@ class ResumeAI {
   }
 
   buildOptimizationPrompt(resumeData, jobDescription, tone) {
-    return `You are a professional resume writer. Rewrite and optimize the following resume to perfectly match the job description. Make it ATS-friendly with measurable impact and clear bullet points.
+    return `You are an elite resume optimization expert. Transform this resume to perfectly align with the target job while maintaining authenticity.
 
-RESUME DATA:
+CURRENT RESUME:
 ${JSON.stringify(resumeData, null, 2)}
 
-JOB DESCRIPTION:
+TARGET JOB DESCRIPTION:
 ${jobDescription}
 
-TONE: ${tone}
+DESIRED TONE: ${tone}
 
-INSTRUCTIONS:
-1. Tailor the summary/objective to match the job requirements
-2. Rewrite experience bullets to highlight relevant skills and achievements
-3. Use action verbs and quantify results where possible
-4. Include keywords from the job description naturally
-5. Keep formatting ATS-friendly (no tables, columns, or complex formatting)
-6. Maintain truthfulness - enhance but don't fabricate
+OPTIMIZATION REQUIREMENTS:
 
-Return the optimized resume as JSON with the same structure as the input, with improved content in each section.`;
+1. KEYWORD OPTIMIZATION:
+   - Extract 15-20 critical keywords from the job description
+   - Naturally integrate these keywords throughout the resume
+   - Match exact terminology used in the job posting
+   - Prioritize technical skills, tools, and methodologies mentioned
+
+2. PROFESSIONAL SUMMARY:
+   - Rewrite to directly address the job requirements
+   - Highlight 3-4 relevant achievements with metrics
+   - Position candidate as ideal fit for this specific role
+   - Include key qualifications mentioned in job description
+
+3. WORK EXPERIENCE OPTIMIZATION:
+   - Rewrite each bullet to emphasize relevant skills and achievements
+   - Add quantifiable metrics (percentages, dollar amounts, scale)
+   - Use powerful action verbs (Spearheaded, Architected, Drove, Optimized)
+   - Prioritize experiences most relevant to target role
+   - Show direct alignment with job requirements
+
+4. SKILLS ALIGNMENT:
+   - Reorganize skills to prioritize those in job description
+   - Add any relevant skills from job posting that candidate likely has
+   - Group skills strategically (Technical, Tools, Soft Skills)
+
+5. ATS OPTIMIZATION:
+   - Use standard section headings
+   - Format dates consistently (MM/YYYY)
+   - Avoid tables, graphics, or complex formatting
+   - Ensure keyword density without stuffing
+   - Use industry-standard terminology
+
+6. AUTHENTICITY:
+   - Enhance and optimize existing information
+   - Don't fabricate experiences or skills
+   - Stay truthful while presenting information in best light
+   - Expand on achievements with realistic metrics
+
+Return the optimized resume as JSON with the same structure as the input, with significantly improved and tailored content.`;
   }
 
   parseOptimizedResume(content, originalData) {
@@ -73,6 +132,10 @@ Return the optimized resume as JSON with the same structure as the input, with i
   }
 
   async calculateATSScore(resumeData, jobDescription) {
+    if (!this.isEnabled()) {
+      throw new Error('AI service is not configured. Please set up OpenRouter or OpenAI API key.');
+    }
+
     try {
       const prompt = this.buildATSScorePrompt(resumeData, jobDescription);
       
@@ -81,7 +144,7 @@ Return the optimized resume as JSON with the same structure as the input, with i
         messages: [
           {
             role: 'system',
-            content: 'You are an ATS (Applicant Tracking System) expert who analyzes resumes against job descriptions.'
+            content: 'You are an ATS (Applicant Tracking System) expert and technical recruiter who analyzes resume compatibility with job descriptions using industry-standard scoring criteria.'
           },
           {
             role: 'user',
@@ -89,7 +152,7 @@ Return the optimized resume as JSON with the same structure as the input, with i
           }
         ],
         temperature: 0.3,
-        max_tokens: 1000
+        max_tokens: 1500
       });
 
       const scoreContent = response.choices[0].message.content;
@@ -154,6 +217,10 @@ Provide a score from 0-100 and detailed feedback in the following JSON format:
   }
 
   async generateCoverLetter(resumeData, jobDescription, companyName, tone = 'professional') {
+    if (!this.isEnabled()) {
+      throw new Error('AI service is not configured. Please set up OpenRouter or OpenAI API key.');
+    }
+
     try {
       const prompt = this.buildCoverLetterPrompt(resumeData, jobDescription, companyName, tone);
       
@@ -162,7 +229,7 @@ Provide a score from 0-100 and detailed feedback in the following JSON format:
         messages: [
           {
             role: 'system',
-            content: 'You are a professional cover letter writer who creates compelling, personalized cover letters.'
+            content: 'You are an expert cover letter writer who creates compelling, personalized cover letters that capture attention and demonstrate perfect fit for the role.'
           },
           {
             role: 'user',
@@ -170,7 +237,7 @@ Provide a score from 0-100 and detailed feedback in the following JSON format:
           }
         ],
         temperature: 0.8,
-        max_tokens: 800
+        max_tokens: 1000
       });
 
       return response.choices[0].message.content.trim();
@@ -205,6 +272,10 @@ Format as a professional business letter without address headers.`;
   }
 
   async enhanceJobDescription(resumeData, rawJobDescription) {
+    if (!this.isEnabled()) {
+      return { clean_description: rawJobDescription };
+    }
+
     try {
       const prompt = `Extract and structure the following job description into a clean format:
 
@@ -223,11 +294,11 @@ Return a JSON object with:
       const response = await this.client.chat.completions.create({
         model: this.model,
         messages: [
-          { role: 'system', content: 'You are a job description parser.' },
+          { role: 'system', content: 'You are a job description parser and analyzer.' },
           { role: 'user', content: prompt }
         ],
         temperature: 0.3,
-        max_tokens: 800
+        max_tokens: 1000
       });
 
       const content = response.choices[0].message.content;

@@ -121,10 +121,10 @@ const ModernHome = () => {
   ]
 
   const stats = [
-    { number: '10M+', label: 'Documents Processed', icon: FileText, color: 'text-blue-400' },
-    { number: '500K+', label: 'Happy Users', icon: Users, color: 'text-emerald-400' },
+    { number: '10K+', label: 'Documents Processed', icon: FileText, color: 'text-blue-400' },
+    { number: '5K+', label: 'Happy Users', icon: Users, color: 'text-emerald-400' },
     { number: '99.9%', label: 'Uptime', icon: TrendingUp, color: 'text-purple-400' },
-    { number: '4.9/5', label: 'User Rating', icon: Star, color: 'text-orange-400' }
+    { number: '4.8/5', label: 'User Rating', icon: Star, color: 'text-orange-400' }
   ]
 
   return (
@@ -321,124 +321,6 @@ const ModernHome = () => {
                 </p>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works */}
-      <section className="relative py-10 sm:py-20 px-3 sm:px-4">
-        <div className="container mx-auto max-w-7xl">
-          {/* Section Header */}
-          <div className="text-center mb-8 sm:mb-16">
-            <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full bg-gradient-to-r from-orange-500/10 to-red-500/10 border border-orange-500/20 backdrop-blur-sm mb-4 sm:mb-6">
-              <Zap className="h-3 w-3 sm:h-4 sm:w-4 text-orange-400" />
-              <span className="text-xs sm:text-sm font-medium text-orange-200">Simple Process</span>
-            </div>
-            <h2 className="text-2xl sm:text-4xl md:text-5xl font-bold text-white mb-3 sm:mb-4 px-4">
-              Three Steps to Success
-            </h2>
-            <p className="text-base sm:text-xl text-slate-300 max-w-2xl mx-auto px-4">
-              Transform your documents in just three simple steps
-            </p>
-          </div>
-          
-          {/* Steps */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 max-w-5xl mx-auto">
-            {[
-              {
-                icon: Upload,
-                title: 'Upload Files',
-                description: 'Drag and drop your PDFs or select them from your device',
-                gradient: 'from-blue-500 to-cyan-500',
-                number: '01'
-              },
-              {
-                icon: Palette,
-                title: 'Choose Tool',
-                description: 'Select from our suite of powerful AI-powered tools',
-                gradient: 'from-purple-500 to-pink-500',
-                number: '02'
-              },
-              {
-                icon: Download,
-                title: 'Download Result',
-                description: 'Get your processed files instantly with perfect quality',
-                gradient: 'from-emerald-500 to-teal-500',
-                number: '03'
-              }
-            ].map((step, index) => (
-              <div 
-                key={index}
-                className={`relative text-center ${
-                  isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-                }`}
-                style={{ transitionDelay: `${index * 200}ms` }}
-              >
-                {/* Connector Line */}
-                {index < 2 && (
-                  <div className="hidden sm:block absolute top-12 sm:top-16 left-full w-full h-0.5 bg-gradient-to-r from-slate-700 to-transparent"></div>
-                )}
-                
-                {/* Step Number */}
-                <div className={`relative inline-flex items-center justify-center w-24 h-24 sm:w-32 sm:h-32 rounded-2xl sm:rounded-3xl bg-gradient-to-br ${step.gradient} mb-4 sm:mb-6 shadow-2xl`}>
-                  <span className="text-3xl sm:text-5xl font-bold text-white">{step.number}</span>
-                  <step.icon className="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 h-6 w-6 sm:h-8 sm:w-8 text-white/50" />
-                </div>
-                
-                <h3 className="text-lg sm:text-2xl font-bold text-white mb-2 sm:mb-3 px-4">
-                  {step.title}
-                </h3>
-                <p className="text-sm sm:text-base text-slate-400 leading-relaxed px-4">
-                  {step.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-
-      {/* Final CTA */}
-      <section className="relative py-16 sm:py-32 px-3 sm:px-4 mb-16 sm:mb-0">
-        <div className="container mx-auto max-w-4xl text-center">
-          <div className={`${isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'} transition-all duration-1000`}>
-            <h2 className="text-2xl sm:text-4xl md:text-6xl font-bold text-white mb-4 sm:mb-6 px-4">
-              Ready to Transform Your Workflow?
-            </h2>
-            <p className="text-base sm:text-xl text-slate-300 mb-8 sm:mb-12 leading-relaxed px-4">
-              Join thousands of users who trust RobotPDF for their document processing needs.
-              Start your free journey today.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-stretch sm:items-center px-4">
-              {user ? (
-                <Button 
-                  onClick={() => navigate('/dashboard')} 
-                  className="group px-8 sm:px-10 py-5 sm:py-7 text-lg sm:text-xl font-semibold rounded-xl sm:rounded-2xl bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-2xl shadow-blue-500/50 hover:shadow-blue-500/60 transition-all duration-300 hover:-translate-y-1 w-full sm:w-auto"
-                >
-                  <Rocket className="inline-block mr-2 h-5 w-5 sm:h-6 sm:w-6" />
-                  Launch Dashboard
-                  <ArrowRight className="inline-block ml-2 h-5 w-5 sm:h-6 sm:w-6 group-hover:translate-x-1 transition-transform" />
-                </Button>
-              ) : (
-                <>
-                  <Button 
-                    onClick={() => navigate('/tools')} 
-                    className="group px-8 sm:px-10 py-5 sm:py-7 text-lg sm:text-xl font-semibold rounded-xl sm:rounded-2xl bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white shadow-2xl shadow-blue-500/50 hover:shadow-blue-500/60 transition-all duration-300 hover:-translate-y-1 w-full sm:w-auto"
-                  >
-                    <Play className="inline-block mr-2 h-5 w-5 sm:h-6 sm:w-6" />
-                    Start Free
-                    <ArrowRight className="inline-block ml-2 h-5 w-5 sm:h-6 sm:w-6 group-hover:translate-x-1 transition-transform" />
-                  </Button>
-                  <Button 
-                    onClick={() => navigate('/pricing')}
-                    className="px-8 sm:px-10 py-5 sm:py-7 text-lg sm:text-xl font-semibold rounded-xl sm:rounded-2xl bg-white/5 hover:bg-white/10 text-white border border-white/10 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 w-full sm:w-auto"
-                  >
-                    View Pricing
-                  </Button>
-                </>
-              )}
-            </div>
           </div>
         </div>
       </section>

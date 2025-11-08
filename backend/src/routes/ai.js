@@ -9,6 +9,7 @@ const {
 } = require('../middleware/subscriptionMiddleware');
 const aiService = require('../services/aiService');
 const ocrService = require('../services/ocrService');
+const directAIService = require('../services/directAIService');
 const { planLimits } = require('../../../shared/planLimits');
 
 const router = express.Router();
@@ -112,7 +113,51 @@ router.post('/ocr',
       
       console.log('File found:', file.filename, 'Type:', file.type);
 
-      // Check if OCR service is available
+      // For images with direct AI enabled, skip OCR completely
+      const isImage = file.type.startsWith('image/');
+      const useDirectAI = process.env.USE_DIRECT_AI_FOR_IMAGES === 'true';
+      
+      if (isImage && useDirectAI && directAIService.isEnabled()) {
+        console.log('Step 4: Image ready for Direct AI Vision - skipping OCR');
+        
+        // Mark file as ready for direct AI (no text extraction)
+        const { error: updateError } = await supabaseAdmin
+          .from('files')
+          .update({
+            has_ocr: true,
+            metadata: {
+              ...file.metadata,
+              ai_method: 'direct_vision',
+              ready_for_chat: true,
+              model: directAIService.visionModel,
+              processedAt: new Date().toISOString()
+            }
+          })
+          .eq('id', fileId);
+
+        if (updateError) {
+          console.error('Error updating file:', updateError);
+        }
+
+        return res.json({
+          message: 'File ready for Direct AI Vision chat (no OCR needed)',
+          result: {
+            text: '',
+            confidence: 1.0,
+            detectedLanguage: 'auto',
+            aiEnhanced: true,
+            method: 'direct_vision_ready',
+            model: directAIService.visionModel
+          },
+          fileInfo: {
+            filename: file.filename,
+            type: file.type,
+            size: file.size
+          }
+        });
+      }
+
+      // Fallback to traditional OCR
       console.log('Step 4: Checking OCR service availability...');
       if (!ocrService.isEnabled()) {
         console.log('OCR service is disabled');
@@ -146,16 +191,16 @@ router.post('/ocr',
       
       // Determine if this is a PDF or image file
       const isPDF = file.type === 'application/pdf' || file.filename.toLowerCase().endsWith('.pdf');
-      const isImage = file.type.startsWith('image/') || /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(file.filename);
+      const isImageFile = file.type.startsWith('image/') || /\.(jpg|jpeg|png|gif|bmp|webp)$/i.test(file.filename);
       
-      console.log('File type detection:', { isPDF, isImage, mimeType: file.type, filename: file.filename });
+      console.log('File type detection:', { isPDF, isImage: isImageFile, mimeType: file.type, filename: file.filename });
       
       // Use the new AI-enhanced OCR method
       const ocrResult = await ocrService.extractTextWithAI(buffer, {
         enhanceWithAI: aiEnhanced,
         extractOriginal: extractOriginal,
         language: language,
-        fileType: isPDF ? 'pdf' : 'image',
+        fileType: isPDF ? 'pdf' : (isImageFile ? 'image' : 'unknown'),
         confidenceThreshold: confidenceThreshold
       });
       
@@ -246,6 +291,20 @@ router.post('/create-embeddings',
     }
 
     console.log('File found:', file.filename, 'Has OCR:', file.has_ocr);
+
+    // For images with direct AI, skip embeddings - they don't need it
+    const isImage = file.type.startsWith('image/');
+    const useDirectAI = process.env.USE_DIRECT_AI_FOR_IMAGES === 'true';
+    
+    if (isImage && useDirectAI && directAIService.isEnabled()) {
+      console.log('Image uses direct AI - skipping embeddings');
+      return res.json({
+        message: 'Image ready for direct AI chat (no embeddings needed)',
+        fileId: fileId,
+        status: 'ready',
+        method: 'direct_vision'
+      });
+    }
 
     if (!aiService.isEnabled()) {
       console.log('AI service is not enabled');
@@ -894,7 +953,7 @@ router.post('/chat-pdf', authenticateUser, async (req, res) => {
       });
     }
 
-    // Get file with extracted text
+    // Get file
     const { data: file, error: fileError } = await supabaseAdmin
       .from('files')
       .select('*')
@@ -906,7 +965,62 @@ router.post('/chat-pdf', authenticateUser, async (req, res) => {
       return res.status(404).json({ error: 'File not found' });
     }
 
-    if (!file.extracted_text && !file.has_ocr) {
+    // Try direct AI vision first for images
+    const isImage = file.type.startsWith('image/');
+    if (isImage && directAIService.isEnabled()) {
+      try {
+        console.log('Using direct AI vision for chat with image');
+        const { data: fileBuffer } = await supabaseAdmin.storage
+          .from('files')
+          .download(file.path);
+        
+        const buffer = Buffer.from(await fileBuffer.arrayBuffer());
+        
+        // Get conversation history
+        const { data: conversationHistory } = await supabaseAdmin
+          .from('chat_messages')
+          .select('role, content')
+          .eq('session_id', sessionId)
+          .order('created_at', { ascending: true })
+          .limit(10);
+        
+        const result = await directAIService.chatWithDocument(
+          buffer,
+          file.type,
+          message,
+          conversationHistory || []
+        );
+        
+        // Create session if needed
+        let currentSessionId = sessionId;
+        if (!currentSessionId) {
+          const { data: newSession } = await supabaseAdmin
+            .from('chat_sessions')
+            .insert([{ user_id: req.user.id, file_id: fileId, title: `Chat with ${file.filename}` }])
+            .select()
+            .single();
+          currentSessionId = newSession.id;
+        }
+        
+        // Save messages
+        await supabaseAdmin.from('chat_messages').insert([
+          { session_id: currentSessionId, role: 'user', content: message },
+          { session_id: currentSessionId, role: 'assistant', content: result.response }
+        ]);
+        
+        return res.json({
+          sessionId: currentSessionId,
+          response: result.response,
+          method: 'direct_vision'
+        });
+      } catch (visionError) {
+        console.log('Direct vision failed, falling back to OCR method:', visionError.message);
+      }
+    }
+
+    // For images using direct AI, no extracted text needed
+    const useDirectAI = file.metadata?.ai_method === 'direct_vision';
+    if (!useDirectAI && !file.extracted_text && !file.has_ocr) {
       return res.status(400).json({ 
         error: 'File has no extracted text. Please run OCR first.',
         needsOCR: true
@@ -1005,7 +1119,7 @@ router.post('/chat-pdf', authenticateUser, async (req, res) => {
     res.json({
       sessionId: currentSessionId,
       response: aiResponse,
-      message: 'Chat response generated successfully'
+      method: 'ocr_based'
     });
 
   } catch (error) {
@@ -1395,6 +1509,244 @@ router.post('/ocr-test', authenticateUser, async (req, res) => {
     });
   } catch (error) {
     console.error('OCR test error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Direct AI Vision Analysis - Send file directly to AI without OCR
+router.post('/direct-analyze',
+  authenticateUser,
+  requireFeature('ai_features'),
+  async (req, res) => {
+  try {
+    console.log('=== DIRECT AI ANALYZE ENDPOINT CALLED ===');
+    const { fileId, action = 'extract', message } = req.body;
+
+    if (!fileId) {
+      return res.status(400).json({ error: 'File ID is required' });
+    }
+
+    if (!directAIService.isEnabled()) {
+      return res.status(503).json({ 
+        error: 'Direct AI vision service is not available. Please configure OpenAI API key.',
+        fallbackToOCR: true
+      });
+    }
+
+    // Get file from database
+    const { data: file, error: fileError } = await supabaseAdmin
+      .from('files')
+      .select('*')
+      .eq('id', fileId)
+      .eq('user_id', req.user.id)
+      .single();
+
+    if (fileError || !file) {
+      return res.status(404).json({ error: 'File not found' });
+    }
+
+    // Check if file type is supported
+    if (!directAIService.isSupportedFileType(file.type)) {
+      return res.status(400).json({ 
+        error: 'File type not supported for direct AI analysis',
+        supportedTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp'],
+        fallbackToOCR: true
+      });
+    }
+
+    // Download file from storage
+    const { data: fileBuffer, error: downloadError } = await supabaseAdmin.storage
+      .from('files')
+      .download(file.path);
+
+    if (downloadError) {
+      return res.status(500).json({ error: 'Failed to download file' });
+    }
+
+    const buffer = Buffer.from(await fileBuffer.arrayBuffer());
+
+    // Analyze with vision model
+    const result = await directAIService.analyzeWithVision(
+      buffer,
+      file.type,
+      action,
+      message
+    );
+
+    // Update file record
+    await supabaseAdmin
+      .from('files')
+      .update({
+        extracted_text: result.text,
+        has_ocr: true,
+        metadata: {
+          ...file.metadata,
+          ai_method: 'direct_vision',
+          model: result.model,
+          processedAt: new Date().toISOString()
+        }
+      })
+      .eq('id', fileId);
+
+    res.json({
+      message: 'Direct AI analysis completed',
+      result: result,
+      fileInfo: {
+        filename: file.filename,
+        type: file.type
+      }
+    });
+
+  } catch (error) {
+    console.error('Direct AI analysis error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Direct AI Chat - Chat with document using vision model
+router.post('/direct-chat',
+  authenticateUser,
+  requireFeature('pdf_chat'),
+  async (req, res) => {
+  try {
+    console.log('=== DIRECT AI CHAT ENDPOINT CALLED ===');
+    const { fileId, message, conversationHistory = [] } = req.body;
+
+    if (!fileId || !message) {
+      return res.status(400).json({ error: 'File ID and message are required' });
+    }
+
+    if (!directAIService.isEnabled()) {
+      return res.status(503).json({ 
+        error: 'Direct AI vision service is not available',
+        fallbackToOCR: true
+      });
+    }
+
+    // Get file from database
+    const { data: file, error: fileError } = await supabaseAdmin
+      .from('files')
+      .select('*')
+      .eq('id', fileId)
+      .eq('user_id', req.user.id)
+      .single();
+
+    if (fileError || !file) {
+      return res.status(404).json({ error: 'File not found' });
+    }
+
+    // Check if file type is supported
+    if (!directAIService.isSupportedFileType(file.type)) {
+      return res.status(400).json({ 
+        error: 'File type not supported for direct AI chat',
+        fallbackToOCR: true
+      });
+    }
+
+    // Download file from storage
+    const { data: fileBuffer, error: downloadError } = await supabaseAdmin.storage
+      .from('files')
+      .download(file.path);
+
+    if (downloadError) {
+      return res.status(500).json({ error: 'Failed to download file' });
+    }
+
+    const buffer = Buffer.from(await fileBuffer.arrayBuffer());
+
+    // Chat with document using vision model
+    const result = await directAIService.chatWithDocument(
+      buffer,
+      file.type,
+      message,
+      conversationHistory
+    );
+
+    res.json({
+      message: 'Chat response generated',
+      response: result.response,
+      model: result.model,
+      method: 'direct_vision'
+    });
+
+  } catch (error) {
+    console.error('Direct AI chat error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Direct AI Summary - Generate summary using vision model
+router.post('/direct-summary',
+  authenticateUser,
+  requireFeature('summaries'),
+  async (req, res) => {
+  try {
+    console.log('=== DIRECT AI SUMMARY ENDPOINT CALLED ===');
+    const { 
+      fileId, 
+      includeKeyPoints = true, 
+      includeSentiment = false, 
+      includeEntities = false 
+    } = req.body;
+
+    if (!fileId) {
+      return res.status(400).json({ error: 'File ID is required' });
+    }
+
+    if (!directAIService.isEnabled()) {
+      return res.status(503).json({ 
+        error: 'Direct AI vision service is not available',
+        fallbackToOCR: true
+      });
+    }
+
+    // Get file from database
+    const { data: file, error: fileError } = await supabaseAdmin
+      .from('files')
+      .select('*')
+      .eq('id', fileId)
+      .eq('user_id', req.user.id)
+      .single();
+
+    if (fileError || !file) {
+      return res.status(404).json({ error: 'File not found' });
+    }
+
+    // Check if file type is supported
+    if (!directAIService.isSupportedFileType(file.type)) {
+      return res.status(400).json({ 
+        error: 'File type not supported for direct AI summary',
+        fallbackToOCR: true
+      });
+    }
+
+    // Download file from storage
+    const { data: fileBuffer, error: downloadError } = await supabaseAdmin.storage
+      .from('files')
+      .download(file.path);
+
+    if (downloadError) {
+      return res.status(500).json({ error: 'Failed to download file' });
+    }
+
+    const buffer = Buffer.from(await fileBuffer.arrayBuffer());
+
+    // Generate summary using vision model
+    const result = await directAIService.generateSmartSummary(
+      buffer,
+      file.type,
+      { includeKeyPoints, includeSentiment, includeEntities }
+    );
+
+    res.json({
+      message: 'Summary generated successfully',
+      result: result,
+      fileId: fileId,
+      method: 'direct_vision'
+    });
+
+  } catch (error) {
+    console.error('Direct AI summary error:', error);
     res.status(500).json({ error: error.message });
   }
 });

@@ -3,7 +3,6 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { useSubscription } from '../contexts/SubscriptionContext'
 import { Button } from './ui/button'
-import logoIcon from '../assets/icon.png'
 import { 
   FileText, 
   User, 
@@ -95,7 +94,7 @@ const ModernNavbar = () => {
             {/* Logo */}
             <Link to="/" className="flex items-center space-x-2 sm:space-x-3 md:space-x-4 group flex-shrink-0">
               <div className="relative group-hover:scale-105 transition-transform duration-300">
-                <img src={logoIcon} alt="RobotPDF Logo" className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 lg:h-14 lg:w-14 object-contain" />
+                <img src="/icon.png" alt="RobotPDF Logo" className="h-8 w-8 sm:h-10 sm:w-10 md:h-12 md:w-12 lg:h-14 lg:w-14 object-contain" />
               </div>
               <div className="flex flex-col min-w-0">
                 <span className="text-base sm:text-xl md:text-2xl font-bold text-gradient-grey font-poppins whitespace-nowrap">

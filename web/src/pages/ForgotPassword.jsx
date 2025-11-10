@@ -87,12 +87,7 @@ const ForgotPassword = () => {
           {/* Logo & Header */}
           <div className="text-center mb-6 sm:mb-8">
             <div className="flex justify-center items-center mb-3 sm:mb-4">
-              <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl sm:rounded-2xl blur-lg opacity-50"></div>
-                <div className="relative bg-white p-2 sm:p-3 rounded-xl sm:rounded-2xl shadow-xl">
-                  <img src="/logo.png" alt="RobotPDF Logo" className="h-10 w-10 sm:h-12 sm:w-12 object-contain" />
-                </div>
-              </div>
+              <img src="/logo.png" alt="RobotPDF Logo" className="h-10 w-10 sm:h-12 sm:w-12 object-contain" />
             </div>
             <h2 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
               {step === 1 ? 'Reset Your Password' : 'Enter New Password'}

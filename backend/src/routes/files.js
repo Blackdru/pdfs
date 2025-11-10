@@ -108,7 +108,7 @@ router.post('/upload', optionalAuth, extendTimeout, dynamicUpload, async (req, r
         .single();
 
       if (userCheckError || !userExists) {
-        console.log('User not found in database, creating profile...');
+        console.log('User not found in database, attempting to create profile...');
         
         // Try to create user profile automatically
         try {
@@ -125,24 +125,52 @@ router.post('/upload', optionalAuth, extendTimeout, dynamicUpload, async (req, r
 
           if (createError) {
             console.error('Failed to create user profile:', createError);
-            return res.status(400).json({ 
-              error: 'User profile not found and could not be created. Please log out and log in again.' 
-            });
+            
+            // Check if error is due to duplicate key (user already exists)
+            if (createError.code === '23505') {
+              console.log('User already exists in database (duplicate key), fetching existing user...');
+              
+              // Try to fetch the existing user again
+              const { data: existingUser, error: fetchError } = await supabaseAdmin
+                .from('users')
+                .select('id, email, name')
+                .eq('email', req.user.email)
+                .single();
+              
+              if (existingUser) {
+                console.log('Successfully retrieved existing user:', existingUser.id);
+                // Continue with file upload - user exists
+              } else {
+                console.error('Could not retrieve existing user:', fetchError);
+                return res.status(400).json({ 
+                  error: 'User profile conflict. Please log out and log in again.' 
+                });
+              }
+            } else {
+              return res.status(400).json({ 
+                error: 'User profile not found and could not be created. Please log out and log in again.' 
+              });
+            }
+          } else {
+            console.log('User profile created successfully:', newUser.id);
+
+            // Create free subscription for new user
+            try {
+              await supabaseAdmin
+                .from('subscriptions')
+                .insert([{
+                  user_id: newUser.id,
+                  plan: 'free',
+                  status: 'active',
+                  started_at: new Date().toISOString()
+                }]);
+
+              console.log('Free subscription created for user:', newUser.id);
+            } catch (subError) {
+              console.error('Error creating subscription:', subError);
+              // Don't fail the upload if subscription creation fails
+            }
           }
-
-          console.log('User profile created successfully:', newUser.id);
-
-          // Create free subscription for new user
-          await supabaseAdmin
-            .from('subscriptions')
-            .insert([{
-              user_id: newUser.id,
-              plan: 'free',
-              status: 'active',
-              started_at: new Date().toISOString()
-            }]);
-
-          console.log('Free subscription created for user:', newUser.id);
         } catch (createErr) {
           console.error('Error creating user profile:', createErr);
           return res.status(400).json({ 

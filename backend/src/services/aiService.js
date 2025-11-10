@@ -278,16 +278,27 @@ class AIService {
     const prompt = prompts[summaryType] || prompts.auto;
 
     try {
-      // Use OpenRouter for summary if configured
-      const useOpenRouter = process.env.USE_OPENROUTER_FOR_SUMMARY === 'true' && this.isUsingOpenRouter;
-      const summaryModel = useOpenRouter ? this.model : (this.isUsingOpenAI ? this.model : this.model);
+      // ALWAYS use FREE model for summaries to save costs
+      let summaryModel;
+      
+      if (this.isUsingOpenRouter) {
+        // Use FREE Llama 3.3 70B model from OpenRouter (no cost)
+        summaryModel = 'meta-llama/llama-3.3-70b-instruct:free';
+        console.log('AI Summary: Using FREE Llama 3.3 70B via OpenRouter');
+      } else if (this.isUsingOpenAI) {
+        // Fallback to OpenAI only if OpenRouter is not configured
+        summaryModel = this.model;
+        console.log('AI Summary: OpenRouter not available, falling back to OpenAI model:', summaryModel);
+      } else {
+        throw new Error('No AI service available for summarization');
+      }
       
       const response = await this.openai.chat.completions.create({
         model: summaryModel,
         messages: [
           {
             role: 'system',
-            content: 'You are a helpful assistant that creates clear, accurate summaries of documents. Focus on the most important information and maintain the original context.'
+            content: 'You are a helpful assistant that creates clear, accurate summaries of documents. Focus on the most important information and maintain the original context. Write in plain text without markdown formatting.'
           },
           {
             role: 'user',
@@ -314,12 +325,13 @@ class AIService {
     const context = relevantChunks.map(chunk => chunk.chunk_text).join('\n\n');
     
     const systemPrompt = `You are a helpful AI assistant that answers questions about PDF documents. 
-    Use the provided context from the PDF to answer questions accurately. 
-    If the answer is not in the context, say so clearly.
-    Be concise but thorough in your responses.
-    
-    Context from PDF:
-    ${context}`;
+Use the provided context from the PDF to answer questions accurately. 
+If the answer is not in the context, say so clearly.
+Be concise but thorough in your responses.
+IMPORTANT: Format your response in plain text without using markdown syntax like ** or ##. Write naturally without any formatting markers.
+
+Context from PDF:
+${context}`;
 
     const messages = [
       { role: 'system', content: systemPrompt },
@@ -328,9 +340,19 @@ class AIService {
     ];
 
     try {
-      // Use OpenRouter for chat if configured
-      const useOpenRouter = process.env.USE_OPENROUTER_FOR_CHAT === 'true' && this.isUsingOpenRouter;
-      const chatModel = useOpenRouter ? this.model : (this.isUsingOpenAI ? this.model : this.model);
+      // Use GPT-4o-mini via OpenRouter for high-quality chat responses
+      let chatModel;
+      if (this.isUsingOpenRouter) {
+        // Use GPT-4o-mini through OpenRouter
+        chatModel = 'openai/gpt-4o-mini';
+        console.log('AI Chat: Using GPT-4o-mini via OpenRouter');
+      } else if (this.isUsingOpenAI) {
+        chatModel = 'gpt-4o-mini';
+        console.log('AI Chat: Using GPT-4o-mini via OpenAI');
+      } else {
+        chatModel = this.model;
+        console.log('AI Chat: Using default model:', chatModel);
+      }
       
       const response = await this.openai.chat.completions.create({
         model: chatModel,
@@ -339,7 +361,18 @@ class AIService {
         temperature: 0.7,
       });
 
-      return response.choices[0].message.content.trim();
+      let responseText = response.choices[0].message.content.trim();
+      
+      // Clean up any markdown formatting that might appear
+      responseText = responseText
+        .replace(/\*\*(.*?)\*\*/g, '$1')  // Remove **bold** markers
+        .replace(/__(.*?)__/g, '$1')      // Remove __bold__ markers
+        .replace(/\*(.*?)\*/g, '$1')      // Remove *italic* markers
+        .replace(/_(.*?)_/g, '$1')        // Remove _italic_ markers
+        .replace(/#{1,6}\s+/g, '')        // Remove # heading markers
+        .replace(/`{1,3}(.*?)`{1,3}/g, '$1'); // Remove code markers
+      
+      return responseText;
     } catch (error) {
       console.error('Error in PDF chat:', error);
       throw new Error('Failed to generate response');

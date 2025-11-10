@@ -12,11 +12,11 @@ import UpgradeModal from '../components/UpgradeModal'
 import FileOrderPreview from '../components/FileOrderPreview'
 import PasswordRemoveModal from '../components/PasswordRemoveModal'
 import toast from 'react-hot-toast'
-import { 
-  GitMerge, 
-  Scissors, 
-  Archive, 
-  Image, 
+import {
+  GitMerge,
+  Scissors,
+  Archive,
+  Image,
   FileText,
   Upload,
   Download,
@@ -46,14 +46,14 @@ import {
 const Tools = () => {
   const { user, session } = useAuth()
   const { subscription, usage } = useSubscription()
-  const { 
-    checkAccess, 
-    showUpgradeModal, 
-    upgradeModalData, 
+  const {
+    checkAccess,
+    showUpgradeModal,
+    upgradeModalData,
     closeUpgradeModal,
-    filterToolsByAccess 
+    filterToolsByAccess
   } = useSubscriptionAccess()
-  
+
   const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
   const [selectedTool, setSelectedTool] = useState(null)
   const [uploadedFiles, setUploadedFiles] = useState([])
@@ -250,7 +250,7 @@ const Tools = () => {
       popularity: 82,
       processingTime: '< 45s'
     },
-      ]
+  ]
 
   const categories = ['All', 'Basic', 'Optimization', 'Conversion', 'Security']
   const [selectedCategory, setSelectedCategory] = useState('All')
@@ -346,7 +346,7 @@ const Tools = () => {
     const hasToolAccess = checkAccess(tool.id, tool.title, tool.description)
 
     if (!hasToolAccess) {
-      
+
       return // Access denied, upgrade modal will be shown
     }
 
@@ -358,7 +358,7 @@ const Tools = () => {
     setIsProcessing(false)
     setClearFileUpload(true)
     setTimeout(() => setClearFileUpload(false), 100)
-    
+
     // Scroll to upload section after tool selection
     setTimeout(() => {
       const uploadSection = document.getElementById('upload-section')
@@ -373,13 +373,13 @@ const Tools = () => {
     setOcrResults(null)
     setToolResults(null)
     setProcessedFiles([])
-    
+
     // Validate files for selected tool
     const validFiles = validateFilesForTool(files, selectedTool)
     if (validFiles.length === 0) {
       return
     }
-    
+
     // Check if tool needs password input
     if (selectedTool?.id === 'password-remove') {
       setPendingPasswordFiles(validFiles)
@@ -387,10 +387,10 @@ const Tools = () => {
       setShowUploadModal(false)
       return
     }
-    
+
     // Check if tool needs file ordering (any tool with multiple files support)
     const needsOrdering = selectedTool?.multipleFiles && validFiles.length > 1
-    
+
     if (needsOrdering) {
       // Show file order preview
       setPendingFiles(validFiles)
@@ -400,7 +400,7 @@ const Tools = () => {
       // Process directly
       setUploadedFiles(validFiles)
       setShowUploadModal(false)
-      
+
       // Auto-process if we have enough files
       const minRequired = selectedTool?.minFiles === 0 ? 1 : (selectedTool?.minFiles || 1)
       if (validFiles.length >= minRequired) {
@@ -414,7 +414,7 @@ const Tools = () => {
     setUploadedFiles(pendingPasswordFiles)
     setToolSettings(settings)
     setPendingPasswordFiles([])
-    
+
     // Auto-process with password settings
     await handleAutoProcess(pendingPasswordFiles, settings)
   }
@@ -423,7 +423,7 @@ const Tools = () => {
     setShowFileOrderPreview(false)
     setUploadedFiles(orderedFiles)
     setPendingFiles([])
-    
+
     // Auto-process with ordered files
     await handleAutoProcess(orderedFiles)
   }
@@ -435,34 +435,34 @@ const Tools = () => {
 
   const validateFilesForTool = (files, tool) => {
     if (!tool) return files
-    
+
     const validFiles = []
     const invalidFiles = []
-    
+
     files.forEach(file => {
       const isValid = tool.acceptedFiles.split(',').some(type => {
         const cleanType = type.trim().replace('.', '')
         return file.type.includes(cleanType) || file.name.toLowerCase().endsWith(type.trim())
       })
-      
+
       if (isValid) {
         validFiles.push(file)
       } else {
         invalidFiles.push(file)
       }
     })
-    
+
     if (invalidFiles.length > 0) {
       toast.error(`Invalid files for ${tool.title}: ${invalidFiles.map(f => f.name).join(', ')}`)
     }
-    
+
     return validFiles
   }
 
   const handleAutoProcess = async (files, settings = {}) => {
     // Merge settings with toolSettings
     const finalSettings = { ...toolSettings, ...settings }
-    
+
     // For HTML to PDF, allow processing with no files if URL is provided
     if (!selectedTool) return
     if (selectedTool.id !== 'html-to-pdf' && files.length === 0) return
@@ -475,31 +475,31 @@ const Tools = () => {
     }
 
     setIsProcessing(true)
-    
+
     // Initialize progress tracking
     initializeProcessingSteps(selectedTool.id)
     updateProgress(5, 'Preparing files for processing...', 0)
     await new Promise(resolve => setTimeout(resolve, 300))
-    
+
     try {
       let uploadedFileIds = []
-      
+
       // Upload files with detailed progress (skip if no files for HTML to PDF with URL)
       if (files.length > 0) {
         for (let i = 0; i < files.length; i++) {
           const file = files[i]
           const fileNum = i + 1
           const totalFiles = files.length
-          
+
           try {
             // Calculate progress: 5% to 30% for uploads
             const uploadProgress = 5 + ((fileNum - 1) / totalFiles) * 25
             updateProgress(uploadProgress, `Uploading file ${fileNum}/${totalFiles}: ${file.name}...`, 0)
 
             const response = await api.uploadFile(file)
-            
+
             uploadedFileIds.push(response.file.id)
-            
+
             // Show completion for this file
             const completedProgress = 5 + (fileNum / totalFiles) * 25
             updateProgress(completedProgress, `Uploaded ${fileNum}/${totalFiles} files`, 0)
@@ -526,10 +526,10 @@ const Tools = () => {
       // Process based on tool type with detailed progress
       let result
       const outputName = `${selectedTool.id}-${Date.now()}`
-      
+
       updateProgress(40, 'Initializing processing...', 1)
       await new Promise(resolve => setTimeout(resolve, 300))
-      
+
       switch (selectedTool.id) {
         case 'merge':
           if (uploadedFileIds.length < 2) {
@@ -542,12 +542,12 @@ const Tools = () => {
           result = await api.mergePDFs(uploadedFileIds, `${outputName}.pdf`)
           updateProgress(85, 'Merge complete!', 2)
           break
-          
+
         case 'split':
           updateProgress(50, 'Analyzing PDF structure...', 2)
           await new Promise(resolve => setTimeout(resolve, 500))
           updateProgress(65, 'Splitting pages...', 2)
-          
+
           // Split returns a ZIP stream directly
           const splitResponse = await fetch(`${API_BASE_URL}/pdf/split`, {
             method: 'POST',
@@ -555,41 +555,41 @@ const Tools = () => {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${session?.access_token}`
             },
-            body: JSON.stringify({ 
-              fileId: uploadedFileIds[0], 
-              outputName: `${outputName}.pdf` 
+            body: JSON.stringify({
+              fileId: uploadedFileIds[0],
+              outputName: `${outputName}.pdf`
             })
           })
-          
+
           if (!splitResponse.ok) {
             const errorData = await splitResponse.json()
             throw new Error(errorData.error || 'Split failed')
           }
-          
+
           updateProgress(85, 'Preparing download...', 3)
           const splitBlob = await splitResponse.blob()
           updateProgress(100, 'Complete!', 3)
           downloadBlob(splitBlob, `${outputName}_split.zip`)
           toast.success('PDF split successfully! Files downloaded as ZIP.')
-          
+
           setUploadedFiles([])
           setIsProcessing(false)
           return
-          
+
         case 'compress':
           updateProgress(50, 'Analyzing file content...', 2)
           await new Promise(resolve => setTimeout(resolve, 500))
-          
+
           // For multiple files, compress each one
           const compressedFiles = []
           const totalToCompress = uploadedFileIds.length
-          
+
           for (let i = 0; i < uploadedFileIds.length; i++) {
             const fileId = uploadedFileIds[i]
             try {
               const compressProgress = 50 + ((i + 1) / totalToCompress) * 35
               updateProgress(compressProgress, `Compressing file ${i + 1}/${totalToCompress}...`, 2)
-              
+
               const compressed = await api.compressPDF(fileId, 0.5, `compressed-${fileId}.pdf`)
               compressedFiles.push(compressed.file)
             } catch (error) {
@@ -601,92 +601,92 @@ const Tools = () => {
               }
             }
           }
-          
+
           if (compressedFiles.length === 0) {
             toast.error('No files could be compressed - all files are already optimized')
             setUploadedFiles([])
             setIsProcessing(false)
             return
           }
-          
+
           updateProgress(85, 'Compression complete!', 2)
           result = { files: compressedFiles }
           break
-          
+
         case 'convert':
           // Validate that all files are images
           const imageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
           const hasNonImages = files.some(file => !imageTypes.includes(file.type))
-          
+
           if (hasNonImages) {
             const nonImageFiles = files.filter(file => !imageTypes.includes(file.type))
             toast.error(`Only image files allowed. Remove: ${nonImageFiles.map(f => f.name).join(', ')}`)
             return
           }
-          
+
           updateProgress(50, 'Processing images...', 2)
           await new Promise(resolve => setTimeout(resolve, 500))
           updateProgress(70, 'Creating PDF...', 2)
           result = await api.convertImagesToPDF(uploadedFileIds, `${outputName}.pdf`)
           updateProgress(85, 'Conversion complete!', 2)
           break
-          
+
         case 'password-remove':
           // Remove password protection from PDF
           console.log('Password remove - Settings:', finalSettings)
-          
+
           if (!finalSettings.password) {
             toast.error('Password is required to unlock the PDF')
             setIsProcessing(false)
             return
           }
-          
+
           console.log('Password remove - Starting with password:', finalSettings.password.substring(0, 2) + '***')
           updateProgress(50, 'Verifying password...', 2)
           await new Promise(resolve => setTimeout(resolve, 500))
-          
+
           const unlockedFiles = []
           let passwordError = false
-          
+
           for (const fileId of uploadedFileIds) {
             if (passwordError) break // Stop if we already had an error
-            
+
             try {
               updateProgress(60, 'Removing password protection...', 2)
               console.log('Attempting to unlock file:', fileId)
-              
+
               const unlocked = await api.post('/pdf/advanced/password-remove', {
                 fileId: fileId,
                 password: finalSettings.password,
                 outputName: `unlocked_${Date.now()}.pdf`
               })
-              
+
               console.log('File unlocked successfully:', unlocked)
-              
+
               // Verify we got a valid response
               if (!unlocked || !unlocked.file) {
                 throw new Error('Invalid response from server')
               }
-              
+
               unlockedFiles.push(unlocked.file)
             } catch (error) {
               console.error('Password removal error:', error)
               console.error('Error type:', typeof error)
               console.error('Error object:', JSON.stringify(error, null, 2))
-              
+
               passwordError = true
               const errorMsg = error?.message || String(error)
-              
+
               // Check if it's a password error
-              if (errorMsg.includes('Incorrect password') || 
-                  errorMsg.includes('password') || 
-                  errorMsg.includes('decrypt') ||
-                  errorMsg.includes('encrypted')) {
+              if (errorMsg.includes('Incorrect password') ||
+                errorMsg.includes('password') ||
+                errorMsg.includes('decrypt') ||
+                errorMsg.includes('encrypted')) {
                 toast.error('❌ Incorrect password. Please check your password and try again.', { duration: 6000 })
               } else {
                 toast.error(`Failed to remove password: ${errorMsg}`, { duration: 5000 })
               }
-              
+
               // Stop processing immediately
               console.log('Stopping processing due to error')
               setUploadedFiles([])
@@ -694,39 +694,39 @@ const Tools = () => {
               setProcessingProgress(0)
               setProcessingStage('')
               setCurrentStep(0)
-              
+
               // Force return to prevent any further processing
               throw error
             }
           }
-          
+
           // Only continue if no errors occurred
           if (passwordError || unlockedFiles.length === 0) {
             console.log('No files were unlocked, stopping')
             setIsProcessing(false)
             return
           }
-          
+
           console.log('All files unlocked successfully:', unlockedFiles.length)
           updateProgress(85, 'Password removed successfully!', 2)
           result = { files: unlockedFiles }
           break
-          
+
         case 'ocr':
           // Perform OCR on the uploaded file
-          
+
           toast.loading('Processing OCR with multi-language support...', { id: 'ocr-processing' })
-          
+
           try {
             result = await api.post('/ai/ocr', {
               fileId: uploadedFileIds[0],
               language: 'eng+tel', // Default to English + Telugu for better ID card recognition
               enhanceImage: true
             })
-            
+
             toast.dismiss('ocr-processing')
             toast.success('OCR processing completed! Text extracted successfully.')
-            
+
             // Store OCR results for display
             setOcrResults({
               text: result.result.text,
@@ -740,20 +740,20 @@ const Tools = () => {
             toast.dismiss('ocr-processing')
             throw ocrError
           }
-          
+
           setUploadedFiles([])
           setIsProcessing(false)
           return
-          
+
         case 'html-to-pdf':
           // Convert HTML/URL to PDF
           updateProgress(50, 'Processing...', 1)
           await new Promise(resolve => setTimeout(resolve, 500))
-          
+
           // Check if URL or file was provided
           const urlInput = document.getElementById('html-url-input')
           const url = urlInput?.value?.trim()
-          
+
           if (url) {
             // URL conversion
             // Validate URL format
@@ -764,12 +764,12 @@ const Tools = () => {
               setIsProcessing(false)
               return
             }
-            
+
             updateProgress(65, 'Fetching and rendering webpage...', 2)
-            
+
             try {
               result = await api.convertHTMLToPDF(url, `${outputName}.pdf`)
-              
+
               updateProgress(85, 'PDF created successfully!', 2)
               toast.success('Webpage converted to PDF!')
             } catch (error) {
@@ -779,10 +779,10 @@ const Tools = () => {
           } else if (uploadedFileIds.length > 0) {
             // HTML file conversion
             updateProgress(65, 'Converting HTML file to PDF...', 2)
-            
+
             try {
               result = await api.convertHTMLFileToPDF(uploadedFileIds[0], `${outputName}.pdf`)
-              
+
               updateProgress(85, 'PDF created successfully!', 2)
               toast.success('HTML file converted to PDF!')
             } catch (error) {
@@ -795,29 +795,29 @@ const Tools = () => {
             return
           }
           break
-          
+
         case 'ai-chat':
           // Initialize AI chat for the uploaded PDF
-          
+
           toast.loading('Preparing document for AI chat...', { id: 'ai-chat-init' })
-          
+
           try {
             // First, try to create embeddings directly
-            result = await api.post('/ai/create-embeddings', { 
-              fileId: uploadedFileIds[0] 
+            result = await api.post('/ai/create-embeddings', {
+              fileId: uploadedFileIds[0]
             })
-            
+
             toast.dismiss('ai-chat-init')
             toast.success('AI Chat initialized! You can now chat with your document.')
           } catch (embeddingError) {
 
             // If embeddings fail due to no text content, run OCR first
-            if (embeddingError.message.includes('No text content found') || 
-                embeddingError.message.includes('Please run OCR')) {
-              
+            if (embeddingError.message.includes('No text content found') ||
+              embeddingError.message.includes('Please run OCR')) {
+
               toast.dismiss('ai-chat-init')
               toast.loading('Extracting text from document...', { id: 'ai-chat-ocr' })
-              
+
               try {
                 // Run OCR first
                 const ocrResult = await api.post('/ai/ocr', {
@@ -828,15 +828,15 @@ const Tools = () => {
 
                 toast.dismiss('ai-chat-ocr')
                 toast.loading('Creating AI embeddings...', { id: 'ai-chat-embeddings' })
-                
+
                 // Now try to create embeddings again
-                result = await api.post('/ai/create-embeddings', { 
-                  fileId: uploadedFileIds[0] 
+                result = await api.post('/ai/create-embeddings', {
+                  fileId: uploadedFileIds[0]
                 })
-                
+
                 toast.dismiss('ai-chat-embeddings')
                 toast.success('AI Chat initialized! Text extracted and processed successfully.')
-                
+
               } catch (ocrError) {
                 console.error('OCR failed for AI chat:', ocrError)
                 toast.dismiss('ai-chat-ocr')
@@ -849,7 +849,7 @@ const Tools = () => {
               throw embeddingError
             }
           }
-          
+
           // Set up AI Assistant
           setCurrentFileForAI({
             id: uploadedFileIds[0],
@@ -857,59 +857,59 @@ const Tools = () => {
           })
           setShowAIAssistant(true)
           setAiAssistantMinimized(false)
-          
+
           setUploadedFiles([])
           setIsProcessing(false)
           return
-          
+
         case 'pdf-to-word':
           // Convert PDF to Word (DOCX)
           updateProgress(50, 'Analyzing PDF structure...', 1)
           await new Promise(resolve => setTimeout(resolve, 500))
           updateProgress(70, 'Converting to Word...', 2)
-          
+
           result = await api.convertPDFToWord(uploadedFileIds[0], `${outputName}.docx`)
-          
+
           updateProgress(85, 'Conversion complete!', 2)
           toast.success('PDF converted to Word successfully!')
           break
-          
+
         case 'word-to-pdf':
           // Convert Word to PDF
           updateProgress(50, 'Processing Word document...', 1)
           await new Promise(resolve => setTimeout(resolve, 500))
           updateProgress(70, 'Converting to PDF...', 2)
-          
+
           result = await api.convertWordToPDF(uploadedFileIds[0], `${outputName}.pdf`)
-          
+
           updateProgress(85, 'Conversion complete!', 2)
           toast.success('Word converted to PDF successfully!')
           break
-          
+
         case 'pdf-to-excel':
           // Convert PDF to Excel (XLSX)
           updateProgress(50, 'Analyzing PDF structure...', 1)
           await new Promise(resolve => setTimeout(resolve, 500))
           updateProgress(70, 'Converting to Excel...', 2)
-          
+
           result = await api.convertPDFToExcel(uploadedFileIds[0], `${outputName}.xlsx`)
-          
+
           updateProgress(85, 'Conversion complete!', 2)
           toast.success('PDF converted to Excel successfully!')
           break
-          
+
         case 'excel-to-pdf':
           // Convert Excel to PDF
           updateProgress(50, 'Processing Excel spreadsheet...', 1)
           await new Promise(resolve => setTimeout(resolve, 500))
           updateProgress(70, 'Converting to PDF...', 2)
-          
+
           result = await api.convertExcelToPDF(uploadedFileIds[0], `${outputName}.pdf`)
-          
+
           updateProgress(85, 'Conversion complete!', 2)
           toast.success('Excel converted to PDF successfully!')
           break
-          
+
         default:
           throw new Error('Unknown tool type')
       }
@@ -925,7 +925,7 @@ const Tools = () => {
       // Handle download with progress
       updateProgress(90, 'Preparing download...', processingSteps.length - 1)
       await new Promise(resolve => setTimeout(resolve, 300))
-      
+
       if (result.file) {
         // Single file result
         try {
@@ -942,13 +942,13 @@ const Tools = () => {
         // Multiple files result
         let downloadCount = 0
         const totalFiles = result.files.length
-        
+
         for (let i = 0; i < result.files.length; i++) {
           const file = result.files[i]
           try {
             const downloadProgress = 90 + ((i + 1) / totalFiles) * 10
             updateProgress(downloadProgress, `Downloading file ${i + 1}/${totalFiles}...`, processingSteps.length - 1)
-            
+
             const blob = await api.downloadFile(file.id)
             downloadBlob(blob, file.filename)
             downloadCount++
@@ -957,9 +957,9 @@ const Tools = () => {
             console.error('Download error for file:', file.filename, downloadError)
           }
         }
-        
+
         updateProgress(100, 'Complete!', processingSteps.length - 1)
-        
+
         if (downloadCount > 0) {
           toast.success(`Processing completed! ${downloadCount} file(s) downloaded.`)
         } else {
@@ -988,16 +988,16 @@ const Tools = () => {
         updateProgress(100, 'Complete!', processingSteps.length - 1)
         toast.success('Processing completed successfully!')
       }
-      
+
       // Clear uploaded files after successful processing
       setUploadedFiles([])
-      
+
     } catch (error) {
       console.error('Processing error:', error)
-      
+
       // Enhanced error messages
       const errorMsg = error?.message || String(error)
-      
+
       if (errorMsg.includes('File too large') || errorMsg.includes('File size exceeds')) {
         toast.error(errorMsg, { duration: 6000 })
       } else if (errorMsg.includes('No token provided') || errorMsg.includes('Unauthorized')) {
@@ -1058,23 +1058,22 @@ const Tools = () => {
 
         {/* Category Filter */}
         <div className="max-w-7xl mx-auto mobile-container py-6 sm:py-8">
-        <div className="mobile-overflow-x pb-2 mb-6 sm:mb-8 lg:mb-12">
-        <div className="flex justify-center gap-2 sm:gap-3 min-w-max px-2">
-        {categories.map((category) => (
-        <button
-        key={category}
-        onClick={() => setSelectedCategory(category)}
-        className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-full font-medium transition-all duration-300 whitespace-nowrap text-xs sm:text-sm mobile-touch-target ${
-        selectedCategory === category
-        ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
-        : 'bg-grey-800 text-grey-300 hover:bg-accent hover:text-foreground'
-        }`}
-        >
-        {category}
-        </button>
-        ))}
-        </div>
-        </div>
+          <div className="mobile-overflow-x pb-2 mb-6 sm:mb-8 lg:mb-12">
+            <div className="flex justify-center gap-2 sm:gap-3 min-w-max px-2">
+              {categories.map((category) => (
+                <button
+                  key={category}
+                  onClick={() => setSelectedCategory(category)}
+                  className={`px-3 sm:px-4 py-2 sm:py-2.5 rounded-full font-medium transition-all duration-300 whitespace-nowrap text-xs sm:text-sm mobile-touch-target ${selectedCategory === category
+                    ? 'bg-blue-600 text-white shadow-lg shadow-blue-600/30'
+                    : 'bg-grey-800 text-grey-300 hover:bg-accent hover:text-foreground'
+                    }`}
+                >
+                  {category}
+                </button>
+              ))}
+            </div>
+          </div>
 
           {/* Tools Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6 mb-8 sm:mb-12 lg:mb-16">
@@ -1082,58 +1081,60 @@ const Tools = () => {
               <div
                 key={tool.id}
                 onClick={() => handleToolSelect(tool)}
-                className={`group relative bg-grey-900 rounded-2xl sm:rounded-3xl border-2 transition-all duration-500 cursor-pointer hover:scale-105 hover:shadow-2xl mobile-touch-target ${
-                  selectedTool?.id === tool.id
-                    ? 'border-blue-500 shadow-2xl shadow-blue-500/20'
-                    : 'border-grey-800 hover:border-border'
-                }`}
+                className={`group relative bg-grey-900 rounded-2xl sm:rounded-3xl border-2 transition-all duration-500 cursor-pointer hover:scale-105 hover:shadow-2xl mobile-touch-target ${selectedTool?.id === tool.id
+                  ? 'border-blue-500 shadow-2xl shadow-blue-500/20'
+                  : 'border-grey-800 hover:border-border'
+                  }`}
               >
-                {/* Popularity Badge */}
-                <div className="absolute -top-2 -right-2 sm:-top-3 sm:-right-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs font-bold px-2 py-1 sm:px-3 sm:py-1 rounded-full flex items-center">
-                  <TrendingUp className="h-2 w-2 sm:h-3 sm:w-3 mr-1" />
-                  {tool.popularity}%
-                </div>
-
-                <div className="p-4 sm:p-6 lg:p-8">
-                  {/* Icon */}
-                  <div className={`w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 ${tool.iconBg} rounded-xl sm:rounded-2xl flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300`}>
-                    <tool.icon className="h-6 w-6 sm:h-7 sm:w-7 lg:h-8 lg:w-8 text-white" />
+                  {/* Popularity Badge */}
+                  <div className="absolute -top-2 -right-2 sm:-top-3 sm:-right-3 bg-gradient-to-r from-yellow-500 to-orange-500 text-white text-xs font-bold px-2 py-1 sm:px-3 sm:py-1 rounded-full flex items-center">
+                    <TrendingUp className="h-2 w-2 sm:h-3 sm:w-3 mr-1" />
+                    {tool.popularity}%
                   </div>
 
-                  {/* Content */}
-                  <div className="mb-4 sm:mb-6">
-                    <div className="flex items-start justify-between mb-2 sm:mb-3 gap-2">
-                      <h3 className="text-base sm:text-lg lg:text-xl font-bold text-foreground flex-1">{tool.title}</h3>
-                      <span className="text-xs bg-elevated text-muted-foreground px-2 py-0.5 sm:py-1 rounded-full whitespace-nowrap flex-shrink-0">
-                        {tool.category}
-                      </span>
+                  <div className="p-4 sm:p-6 lg:p-8">
+                    {/* Icon */}
+                    <div className={`w-12 h-12 sm:w-14 sm:h-14 lg:w-16 lg:h-16 ${tool.iconBg} rounded-xl sm:rounded-2xl flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-300`}>
+                      <tool.icon className="h-6 w-6 sm:h-7 sm:w-7 lg:h-8 lg:w-8 text-white" />
                     </div>
-                    <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4 line-clamp-2">{tool.description}</p>
-                    
-                    {/* Features */}
-                    <div className="flex items-center justify-between text-xs sm:text-sm text-gray-400 mb-3 sm:mb-4">
-                      <div className="flex items-center">
-                        <Clock className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                        <span className="truncate">{tool.processingTime}</span>
-                      </div>
-                      <div className="flex items-center">
-                        <Shield className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                        <span>Secure</span>
-                      </div>
-                    </div>
-                  </div>
 
-                  {/* Action Button */}
-                  <Button 
-                    className={`w-full bg-gradient-to-r ${tool.color} text-white hover:shadow-lg transition-all duration-300 text-xs sm:text-sm h-9 sm:h-10 mobile-touch-target`}
-                  >
-                    <Play className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-                    Select Tool
-                  </Button>
+                    {/* Content */}
+                    <div className="mb-4 sm:mb-6">
+                      <div className="flex items-start justify-between mb-2 sm:mb-3 gap-2">
+                        <h3 className="text-base sm:text-lg lg:text-xl font-bold text-foreground flex-1">{tool.title}</h3>
+                        <span className="text-xs bg-elevated text-muted-foreground px-2 py-0.5 sm:py-1 rounded-full whitespace-nowrap flex-shrink-0">
+                          {tool.category}
+                        </span>
+                      </div>
+                      <p className="text-xs sm:text-sm text-muted-foreground mb-3 sm:mb-4 line-clamp-2">{tool.description}</p>
+
+                      {/* Features */}
+                      <div className="flex items-center justify-between text-xs sm:text-sm text-gray-400 mb-3 sm:mb-4">
+                        <div className="flex items-center">
+                          <Clock className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                          <span className="truncate">{tool.processingTime}</span>
+                        </div>
+                        <div className="flex items-center">
+                          <Shield className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                          <span>Secure</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Action Button */}
+                    <Button
+                      className={`w-full bg-gradient-to-r ${tool.color} text-white hover:shadow-lg transition-all duration-300 text-xs sm:text-sm h-9 sm:h-10 mobile-touch-target`}
+                    >
+                      <Play className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                      Select Tool
+                    </Button>
+                  </div>
                 </div>
-              </div>
+
             ))}
           </div>
+
+
 
           {/* Selected Tool Processing Area */}
           {selectedTool && (
@@ -1155,7 +1156,7 @@ const Tools = () => {
                     <h3 className="text-base sm:text-lg font-semibold text-card-foreground mb-3 sm:mb-4">
                       Enter Webpage URL
                     </h3>
-                    
+
                     <div className="max-w-2xl mx-auto mb-4">
                       <input
                         id="html-url-input"
@@ -1164,8 +1165,8 @@ const Tools = () => {
                         className="w-full px-4 py-3 bg-accent border border-border rounded-lg text-card-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm sm:text-base"
                       />
                     </div>
-                   
-                    
+
+
                     <Button
                       onClick={async () => {
                         const urlInput = document.getElementById('html-url-input')
@@ -1189,7 +1190,7 @@ const Tools = () => {
                     <h3 className="text-base sm:text-lg font-semibold text-card-foreground mb-3 sm:mb-4">
                       {selectedTool.multipleFiles ? 'Upload Files' : 'Upload File'}
                     </h3>
-                    
+
                     <Button
                       onClick={() => setShowUploadModal(true)}
                       className={`bg-gradient-to-r ${selectedTool.color} text-white px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base lg:text-lg font-semibold hover:shadow-lg transition-all duration-300 mobile-touch-target w-full sm:w-auto`}
@@ -1232,7 +1233,7 @@ const Tools = () => {
                   <div className="mt-4 p-3 sm:p-4 bg-blue-900 border border-blue-800 rounded-xl flex items-start sm:items-center">
                     <Info className="h-4 w-4 sm:h-5 sm:w-5 text-blue-400 mr-2 sm:mr-3 flex-shrink-0 mt-0.5 sm:mt-0" />
                     <p className="text-xs sm:text-sm text-blue-300">
-                      You need at least {selectedTool.minFiles} files to use this tool. 
+                      You need at least {selectedTool.minFiles} files to use this tool.
                       Upload {selectedTool.minFiles - uploadedFiles.length} more file(s).
                     </p>
                   </div>
@@ -1289,7 +1290,7 @@ const Tools = () => {
                   </span>
                 </div>
               </div>
-              
+
               <div className="space-y-3 sm:space-y-4 md:space-y-5">
                 {/* File Info - Fully Responsive */}
                 <div className="bg-elevated rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-5">
@@ -1402,7 +1403,7 @@ const Tools = () => {
                   Ready
                 </div>
               </div>
-              
+
               <div className="bg-elevated rounded-xl p-4 sm:p-6 text-center">
                 <MessageSquare className="h-10 w-10 sm:h-12 sm:w-12 text-pink-400 mx-auto mb-3 sm:mb-4" />
                 <h4 className="text-base sm:text-lg font-semibold text-card-foreground mb-2">
@@ -1432,7 +1433,7 @@ const Tools = () => {
                   Success
                 </div>
               </div>
-              
+
               <div className="bg-elevated rounded-xl p-4 sm:p-6">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div className="flex-1">
@@ -1453,7 +1454,7 @@ const Tools = () => {
             </div>
           )}
 
-                  </div>
+        </div>
       </div>
 
       {/* File Upload Modal */}
@@ -1471,7 +1472,7 @@ const Tools = () => {
       />
 
       {/* Processing Modal */}
-      <ProcessingModal 
+      <ProcessingModal
         isOpen={isProcessing}
         title={selectedTool ? `${selectedTool.title}` : 'Processing'}
         fileName={uploadedFiles.map(f => f.name).join(', ')}

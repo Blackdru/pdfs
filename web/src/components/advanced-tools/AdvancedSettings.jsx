@@ -1080,23 +1080,6 @@ const AdvancedSettings = ({
                 <Settings className="h-4 w-4 mr-2" />
                 HTML to PDF Configuration
               </h4>
-              
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-card-foreground mb-2">
-                  Webpage URL (Optional if uploading HTML file)
-                </label>
-                <input
-                  type="url"
-                  placeholder="https://example.com"
-                  value={toolSettings.url || ''}
-                  onChange={(e) => {
-                    const value = e.target.value.trim();
-                    setToolSettings(prev => ({ ...prev, url: value }));
-                  }}
-                  className="w-full bg-grey-600 border border-grey-500 text-card-foreground rounded-lg px-3 py-2"
-                />
-                <p className="text-xs text-muted-foreground mt-1">Enter URL or upload HTML file below - one is required</p>
-              </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>

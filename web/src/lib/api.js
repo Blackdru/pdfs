@@ -545,6 +545,22 @@ class ApiClient {
     })
   }
 
+  async advancedHTMLToPDF(url, outputName = 'webpage.pdf', options = {}) {
+    return this.request('/pdf/advanced/advanced-html-to-pdf', {
+      method: 'POST',
+      body: JSON.stringify({ url, outputName, options }),
+      timeout: 120000, // 2 minutes for advanced webpage conversion
+    })
+  }
+
+  async advancedHTMLFileToPDF(fileId, outputName = 'webpage.pdf', options = {}) {
+    return this.request('/pdf/advanced/advanced-html-file-to-pdf', {
+      method: 'POST',
+      body: JSON.stringify({ fileId, outputName, options }),
+      timeout: 120000, // 2 minutes for advanced HTML file conversion
+    })
+  }
+
   // Advanced PDF operations
   async advancedMergePDFs(fileIds, outputName, options = {}) {
     return this.request('/pdf/advanced/advanced-merge', {

@@ -178,6 +178,18 @@ const AdvancedTools = () => {
     await handleAutoProcess(orderedFiles, toolSettings)
   }
 
+  const handleUrlSubmitted = async (url) => {
+    // Set the URL in tool settings and process immediately
+    const updatedSettings = { ...toolSettings, url }
+    setToolSettings(updatedSettings)
+    
+    // Clear any uploaded files since we're using URL
+    setUploadedFiles([])
+    
+    // Auto-process with URL
+    await handleAutoProcess([], updatedSettings)
+  }
+
   const handleFileOrderCancel = () => {
     setShowFileOrderPreview(false)
     setPendingFiles([])
@@ -797,31 +809,15 @@ const AdvancedTools = () => {
       
       updateProgress(70, 'Creating PDF...', 3)
       
-      const endpoint = hasFile 
-        ? `${API_BASE_URL}/pdf/advanced/advanced-html-file-to-pdf`
-        : `${API_BASE_URL}/pdf/advanced/advanced-html-to-pdf`
+      const outputName = `webpage_${Date.now()}.pdf`
+      let result
       
-      const requestBody = hasFile
-        ? { fileId: fileIds[0], outputName: `webpage_${Date.now()}.pdf`, options }
-        : { url: settings.url, outputName: `webpage_${Date.now()}.pdf`, options }
-      
-      const response = await fetch(endpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${session?.access_token}`
-        },
-        body: JSON.stringify(requestBody)
-      })
-      
-      updateProgress(90, 'Finalizing...', 4)
-      
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'HTML to PDF conversion failed')
+      if (hasFile) {
+        result = await api.advancedHTMLFileToPDF(fileIds[0], outputName, options)
+      } else {
+        result = await api.advancedHTMLToPDF(settings.url, outputName, options)
       }
       
-      const result = await response.json()
       updateProgress(100, 'Complete!', 5)
       
       toast.success(hasFile ? 'HTML file converted to PDF successfully!' : 'Webpage converted to PDF successfully!')
@@ -1078,6 +1074,7 @@ const AdvancedTools = () => {
               setShowUploadModal={setShowUploadModal}
               toolSettings={toolSettings}
               setToolSettings={setToolSettings}
+              onUrlSubmitted={handleUrlSubmitted}
             />
           )}
 
@@ -1095,7 +1092,7 @@ const AdvancedTools = () => {
           />
 
           {/* Modals */}
-          {showUploadModal && (
+          {showUploadModal && selectedTool?.id !== 'advanced-html-to-pdf' && (
             <FileUploadModal
               isOpen={showUploadModal}
               onClose={() => setShowUploadModal(false)}

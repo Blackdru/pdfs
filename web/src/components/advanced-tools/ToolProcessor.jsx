@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Button } from '../ui/button'
 import { Crown, Upload, FileText, Info, Rocket } from 'lucide-react'
 import AdvancedSettings from './AdvancedSettings'
+import HtmlToPdfUploadModal from '../HtmlToPdfUploadModal'
 
 const ToolProcessor = ({
   selectedTool,
@@ -14,7 +15,8 @@ const ToolProcessor = ({
   showUploadModal,
   setShowUploadModal,
   toolSettings,
-  setToolSettings
+  setToolSettings,
+  onUrlSubmitted
 }) => {
   const [showAdvancedSettings, setShowAdvancedSettings] = useState(true)
 
@@ -55,23 +57,22 @@ const ToolProcessor = ({
         {selectedTool.id === 'advanced-html-to-pdf' ? (
           <>
             <h3 className="text-base sm:text-lg font-semibold text-card-foreground mb-3 sm:mb-4">
-              Upload HTML File (Optional if URL provided)
+              Convert HTML to PDF
             </h3>
             <p className="text-xs sm:text-sm text-muted-foreground mb-4">
-              Upload an HTML file or enter a URL in settings above
+              Upload an HTML file or enter a webpage URL to convert to PDF
             </p>
             
             <Button
               onClick={() => setShowUploadModal(true)}
-              variant="outline"
-              className="border-border text-card-foreground hover:bg-accent w-full sm:w-auto mobile-touch-target"
+              className={`bg-gradient-to-r ${selectedTool.color} text-white px-6 sm:px-8 py-3 sm:py-4 text-sm sm:text-base lg:text-lg font-semibold hover:shadow-lg transition-all duration-300 w-full sm:w-auto mobile-touch-target`}
             >
               <Upload className="h-4 w-4 sm:h-5 sm:w-5 mr-2" />
-              Upload HTML File
+              Upload File or Enter URL
             </Button>
             
             <p className="text-xs sm:text-sm text-muted-foreground mt-3">
-              Supports: HTML, HTM files
+              Supports: HTML files or any public webpage URL
             </p>
           </>
         ) : (
@@ -160,6 +161,18 @@ const ToolProcessor = ({
             )}
           </Button>
         </div>
+      )}
+
+      {/* HTML to PDF Upload Modal */}
+      {selectedTool.id === 'advanced-html-to-pdf' && (
+        <HtmlToPdfUploadModal
+          isOpen={showUploadModal}
+          onClose={() => setShowUploadModal(false)}
+          onFilesUploaded={onFilesUploaded}
+          onUrlSubmitted={onUrlSubmitted}
+          acceptedFiles={selectedTool.acceptedFiles}
+          toolName={selectedTool.title}
+        />
       )}
     </div>
   )
